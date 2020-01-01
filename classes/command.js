@@ -1,4 +1,5 @@
 const Commands = require("../constants/commands");
+const Embeds = require("../constants/embeds");
 
 class Command {
   constructor(command, target) {
@@ -28,20 +29,57 @@ class Command {
     return undefined;
   }
   static execute(command, gameState) {
-    switch (command) {
+    switch (command.command) {
+      case Commands.JOIN:
+      case Commands.LEAVE:
+      case Commands.CONFIRM:
+        handlePlayerCommands(command, gameState.meta.channel);
+        break;
+
+      case Commands.ROLE:
+      case Commands.STATUS:
+        handleGameCommands(command, gameState.meta.channel);
+        break;
+
+      case Commands.RULES:
+        handleRulesCommand(command, gameState.meta.channel);
+        break;
+
+      case Commands.ACCUSE:
+      case Commands.LYNCH:
+      case Commands.ACQUIT:
+        handleTrialCommands(command, gameState.meta.channel);
+        break;
+
+      case Commands.TARGET:
+        handleNightActionCommands(command, gameState.meta.channel);
+        break;
+
       default:
         unhandledCommand(command, gameState.meta.channel);
     }
   }
 }
 
+function handlePlayerCommands(command, channel) {
+  channel.send(Embeds.Generic("Player manager."));
+}
+function handleGameCommands(command, channel) {
+  channel.send(Embeds.Generic("Game manager."));
+}
+function handleRulesCommand(command, channel) {
+  channel.send(Embeds.Generic("Rules manager."));
+}
+function handleTrialCommands(command, channel) {
+  channel.send(Embeds.Generic("Trial manager."));
+}
+function handleNightActionCommands(command, channel) {
+  channel.send(Embeds.Generic("NightAction manager."));
+}
 function unhandledCommand(command, channel) {
-  const Embeds = require("../constants/embeds");
-
-  // Send a message to the public channel that an error has occurred.
+  // Send a message to the game channel that an error has occurred.
   const error = `Error: \`${command.command}\` is a recognised command, but has no functionality.`;
-  console.clear();
-  console.log(channel.send(Embeds.GenericError(error)));
+  channel.send(Embeds.GenericError(error));
 }
 
 module.exports = Command;
