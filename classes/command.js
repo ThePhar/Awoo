@@ -2,12 +2,13 @@ const Commands = require("../constants/commands");
 const Embeds = require("../constants/embeds");
 
 class Command {
-  constructor(command, target) {
+  constructor(command, target, executor) {
     this.command = command;
     this.target = target;
+    this.executor = executor;
   }
 
-  static parse(commandString) {
+  static parse(commandString, executor) {
     const splitString = commandString.split(" ");
     const command = splitString.shift();
     let target = splitString.join(" ").toLowerCase().trim();
@@ -21,49 +22,87 @@ class Command {
     // Check if the command is actually recognized in the commands list and return a new Command object.
     for (let key in Commands) {
       if (Commands[key] === command) {
-        return new Command(command, target);
+        return new Command(command, target, executor);
       }
     }
 
     // If we did not return a command earlier, it means it was not in the commands list.
     return undefined;
   }
-  static execute(command, gameState) {
+  static execute(command, game) {
     switch (command.command) {
       case Commands.JOIN:
       case Commands.LEAVE:
       case Commands.CONFIRM:
-        handlePlayerCommands(command, gameState.meta.channel);
+        handlePlayerCommands(command, game);
         break;
 
       case Commands.ROLE:
       case Commands.STATUS:
-        handleGameCommands(command, gameState.meta.channel);
+        handleGameCommands(command, game.getState().meta.channel);
         break;
 
       case Commands.RULES:
-        handleRulesCommand(command, gameState.meta.channel);
+        handleRulesCommand(command, game.getState().meta.channel);
         break;
 
       case Commands.ACCUSE:
       case Commands.LYNCH:
       case Commands.ACQUIT:
-        handleTrialCommands(command, gameState.meta.channel);
+        handleTrialCommands(command, game.getState().meta.channel);
         break;
 
       case Commands.TARGET:
-        handleNightActionCommands(command, gameState.meta.channel);
+        handleNightActionCommands(command, game.getState().meta.channel);
         break;
 
       default:
-        unhandledCommand(command, gameState.meta.channel);
+        unhandledCommand(command, game.getState().meta.channel);
     }
   }
 }
 
-function handlePlayerCommands(command, channel) {
-  channel.send(Embeds.Generic("Player manager."));
+function handlePlayerCommands(command, game) {
+  const Phases = require("../constants/phases");
+  const PlayerSelector = require("../selectors/players");
+  const { PlayerActionCreators } = require("../actions/players");
+  const Player = require("../classes/player");
+
+  const gameState = game.getState();
+  const channel = gameState.meta.channel;
+
+  let player = PlayerSelector.findPlayerById(gameState.players, command.executor.id);
+
+  // Only process join and leave commands in the lobby phase.
+  if (gameState.meta.phase === Phases.LOBBY) {
+    if (command.command === Commands.JOIN) {
+      // Player has already signed up!
+      if (player) {
+        channel.send(Embeds.Generic(`${player.mention()}, you have already signed up for this game.`));
+        return;
+      }
+
+      player = new Player(command.executor);
+      game.dispatch(PlayerActionCreators.PlayerAdd(player));
+      channel.send(Embeds.PlayerJoined(player));
+      return;
+    } else if (command.command === Commands.LEAVE) {
+      // Player was not signed up!
+      if (!player) {
+        channel.send(Embeds.Generic(`<@!${command.executor.id}>, you were already not signed up for this game.`));
+        return;
+      }
+
+      game.dispatch(PlayerActionCreators.PlayerRemove(player));
+      channel.send(Embeds.PlayerLeft(player));
+      return;
+    }
+  }
+
+  // Process confirm commands in the confirmation phase only and by players.
+  if (gameState.meta.phase === Phases.CONFIRMATION && player) {}
 }
+
 function handleGameCommands(command, channel) {
   channel.send(Embeds.Generic("Game manager."));
 }

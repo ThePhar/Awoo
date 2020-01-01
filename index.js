@@ -26,9 +26,9 @@ function processMessages(message) {
 function inspectIncomingMessage(message) {
   // If message begins with the command prefix, treat it as a command.
   if (message.content[0] === "!") {
-    const command = Command.parse(message.content);
+    const command = Command.parse(message.content, message.author);
     if (command) {
-      Command.execute(command, Game.getState());
+      Command.execute(command, Game);
     }
   }
 
@@ -52,32 +52,9 @@ function initializeBotDMReceiver() {
 
 async function initializeGameState() {
   const { MetaActionCreators } = require("./actions/meta");
-  const { PlayerActionCreators } = require("./actions/players");
-  const { TrialActionCreators } = require("./actions/trial");
-
-  // TODO: Remove test object.
-  const Player = require("./classes/player");
-  const player1 = new Player({
-    name: "Phar",
-    id: "12345",
-    bot: false
-  });
-  const player2= new Player({
-    name: "Cain",
-    id: "12346",
-    bot: false
-  });
-  const player3 = new Player({
-    name: "Sin",
-    id: "12347",
-    bot: false
-  });
 
   const gameChannel = await Client.channels.get(Settings.GameChannelID);
   Game.dispatch(MetaActionCreators.LinkChannel(gameChannel));
-  Game.dispatch(PlayerActionCreators.PlayerAdd(player1));
-  Game.dispatch(PlayerActionCreators.PlayerAdd(player2));
-  Game.dispatch(PlayerActionCreators.PlayerAdd(player3));
 }
 
 // Login to Discord.

@@ -27,13 +27,11 @@ class Player {
     }
 
     this.id = client.id;
-    this.name = client.name;
-
+    this.name = client.username;
     this.confirmed = false;
     this.alive = true;
     this.voted = false;
     this.canUseNightAction = false;
-
     this.target = undefined;
     this.accuse = undefined;
   }

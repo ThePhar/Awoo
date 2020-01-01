@@ -1,5 +1,6 @@
 const Phases = {
   LOBBY: "lobby",
+  CONFIRMATION: "confirmation",
   DAY: "day",
   NIGHT: "night",
   DUSK: "dusk",
