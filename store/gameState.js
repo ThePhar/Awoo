@@ -4,7 +4,11 @@ const metaReducer = require("../reducers/meta");
 const playerReducer = require("../reducers/players");
 const trialReducer = require("../reducers/trial");
 
-const Game = Redux.createStore(Redux.combineReducers({ metaReducer, playerReducer, trialReducer }));
+const Game = Redux.createStore(Redux.combineReducers({
+  meta: metaReducer,
+  players: playerReducer,
+  trial: trialReducer
+}));
 
 // Print all changes to game state.
 Game.subscribe(() => {

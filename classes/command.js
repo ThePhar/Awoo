@@ -28,8 +28,20 @@ class Command {
     return undefined;
   }
   static execute(command, gameState) {
-    console.log(command);
+    switch (command) {
+      default:
+        unhandledCommand(command, gameState.meta.channel);
+    }
   }
+}
+
+function unhandledCommand(command, channel) {
+  const Embeds = require("../constants/embeds");
+
+  // Send a message to the public channel that an error has occurred.
+  const error = `Error: \`${command.command}\` is a recognised command, but has no functionality.`;
+  console.clear();
+  console.log(channel.send(Embeds.GenericError(error)));
 }
 
 module.exports = Command;

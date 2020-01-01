@@ -33,7 +33,7 @@ function inspectIncomingMessage(message) {
   }
 
   // Otherwise, handle messages based on game state.
-  // TODO: Write logic based on game state.
+  // TODO: Write logic for normal chat message handling.
 }
 function initializeBotDMReceiver() {
   if (process.env.NODE_ENV === "development") {
@@ -74,7 +74,7 @@ async function initializeGameState() {
   });
 
   const gameChannel = await Client.channels.get(Settings.GameChannelID);
-  // Game.dispatch(MetaActionCreators.LinkChannel(gameChannel));
+  Game.dispatch(MetaActionCreators.LinkChannel(gameChannel));
   Game.dispatch(PlayerActionCreators.PlayerAdd(player1));
   Game.dispatch(PlayerActionCreators.PlayerAdd(player2));
   Game.dispatch(PlayerActionCreators.PlayerAdd(player3));
