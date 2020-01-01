@@ -17,7 +17,7 @@ function processMessages(message) {
   if (message.channel.id === Settings.GameChannelID || message.channel.type === 'dm') {
     // If we are in development mode, allow debug commands from administrator.
     if (process.env.NODE_ENV === 'development') {
-      require('./classes/debug').executeAdminCommands(message);
+      require('./classes/debug').executeAdminCommands(message, Game);
     }
 
     inspectIncomingMessage(message);
