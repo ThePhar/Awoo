@@ -4,6 +4,7 @@ const Player = require("../classes/player");
 
 const Villager = require("../roles/villager");
 const Werewolf = require("../roles/werewolf");
+const Seer = require("../roles/seer");
 
 function PlayersReducer(state = [], action) {
   return produce(state, (draft) => {
@@ -55,6 +56,8 @@ function PlayersReducer(state = [], action) {
                 player.role = new Werewolf();
                 break;
               case "seer":
+                player.role = new Seer();
+                break;
               default:
                 player.role = undefined;
             }

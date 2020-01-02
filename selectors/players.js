@@ -1,5 +1,3 @@
-const Werewolf = require("../roles/werewolf");
-
 const PlayerSelectors = {
   findPlayerById: (players, id) => players.find((player) => player.id === id),
 

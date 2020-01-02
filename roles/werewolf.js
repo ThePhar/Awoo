@@ -6,13 +6,10 @@ const { findAllWerewolfPlayers } = require("../selectors/players");
 
 class Werewolf extends AbstractRole {
   constructor() {
-    super("Werewolf", Teams.WEREWOLVES, Werewolf.generateEmbed);
-
-    this.test = 'test';
+    super("Werewolf", Teams.WEREWOLVES, (Werewolf.generateEmbed));
   }
 
   static generateEmbed(gameState) {
-    console.log(gameState);
     const werewolves = findAllWerewolfPlayers(gameState.players);
 
     return Embeds.WerewolfRole(werewolves);
