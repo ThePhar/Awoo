@@ -111,4 +111,7 @@ temp/
 # Old folders for local reference.
 old/
 
+# Secret files.
+constants/settings.js
+
 # End of https://www.gitignore.io/api/node

@@ -28,6 +28,7 @@ class Player {
 
     this.id = client.id;
     this.name = client.username;
+    this.role = undefined;
     this.confirmed = false;
     this.alive = true;
     this.voted = false;
