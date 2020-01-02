@@ -43,7 +43,7 @@ class Command {
         break;
 
       case Commands.RULES:
-        handleRulesCommand(command, game.getState().meta.channel);
+        handleRulesCommand(command, game);
         break;
 
       case Commands.ACCUSE:
@@ -113,12 +113,20 @@ function handlePlayerCommands(command, game) {
   }
 }
 
-function handleGameCommands(command, channel) {
-  channel.send(Embeds.Generic("Game manager."));
+function handleGameCommands(command, game) {
+
 }
-function handleRulesCommand(command, channel) {
-  channel.send(Embeds.Generic("Rules manager."));
+
+function handleRulesCommand(command, game) {
+  const channel = game.getState().meta.channel;
+
+  // The rules command can be used at any time.
+  if (command.command === Commands.RULES) {
+    channel.send(Embeds.Rules1());
+    channel.send(Embeds.Rules2());
+  }
 }
+
 function handleTrialCommands(command, channel) {
   channel.send(Embeds.Generic("Trial manager."));
 }
