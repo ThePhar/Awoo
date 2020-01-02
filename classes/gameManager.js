@@ -1,6 +1,7 @@
 const moment = require("moment");
 const schedule = require("node-schedule");
 
+const Werewolf = require("../roles/werewolf");
 const Embeds = require("../constants/embeds");
 const Settings = require("../constants/settings");
 const Phases = require("../constants/phases");
@@ -19,7 +20,7 @@ class GameManager {
     this.channel = game.getState().meta.channel;
 
     // TODO: Add objective watcher.
-
+    GameManager.watchForVictoryConditions(game);
     GameManager.startLobby(game);
   }
 
@@ -102,8 +103,9 @@ class GameManager {
     // Send everyone their night action explanations.
     gameState.players.forEach((player) => {
       // Don't bother telling dead players their night actions.
-      if (player.alive) {
-        if (player.role.nightEmbed) {
+      if (player.alive && player.role.nightEmbed) {
+        // Don't send werewolves their embed on the first night.
+        if (player.role.name !== "Werewolf" || gameState.meta.day > 1) {
           player.client.send(player.role.nightEmbed(gameState, player));
         }
       }
@@ -115,18 +117,21 @@ class GameManager {
       timeTilDawn.format(Settings.DATE_FORMATTING)
     ));
 
-    // TODO: Setup for day time.
     this.scheduledPhaseChange = schedule.scheduleJob(timeTilDawn.toDate(), () => {
+      // Process eliminations.
+      Werewolf.processEliminations(game);
+
+      GameManager.eliminateFlaggedPlayers(game);
       GameManager.startDay(game);
     });
-  } 
+  }
   static startDay(game) {
-    // Handle last night's eliminations
     // TODO:
     // Change phase
     game.dispatch(MetaActionCreators.ChangePhase(Phases.DAY));
     // Clear choices.
     game.dispatch(PlayerActionCreators.AllPlayersClearChoices());
+
     // TODO: Change to next night.
     const timeTilDusk = moment().add("10", "seconds");
 
@@ -141,8 +146,55 @@ class GameManager {
 
     // TODO: Add trial logic.
     this.scheduledPhaseChange = schedule.scheduleJob(timeTilDusk.toDate(), () => {
+      GameManager.eliminateFlaggedPlayers(game);
       GameManager.startNight(game);
     });
+  }
+
+  static eliminateFlaggedPlayers(game) {
+    const gameState = game.getState();
+
+    gameState.meta.playersFlaggedForElimination.forEach((elimination) => {
+      this.channel.send(elimination.embed);
+      game.dispatch(PlayerActionCreators.PlayerEliminate(elimination.player));
+    });
+
+    game.dispatch(MetaActionCreators.EmptyPlayersFlaggedForElimination());
+  }
+  static watchForVictoryConditions(game) {
+    const stopWatching = game.subscribe(() => {
+      const gameState = game.getState();
+
+      const livingWerewolfTotal = PlayerSelectors.findAllLivingWerewolves(gameState.players).length;
+      const livingVillagerTotal = PlayerSelectors.findAllLivingVillagers(gameState.players).length;
+
+      // Check for villager victory.
+      if (livingWerewolfTotal === 0) {
+        stopWatching();
+        if (this.scheduledPhaseChange) {
+          this.scheduledPhaseChange.cancel();
+          this.scheduledPhaseChange = undefined;
+        }
+
+        this.channel.send(Embeds.VillagerVictory(
+          PlayerSelectors.findAllVillagerTeam(gameState.players),
+          PlayerSelectors.findAllWerewolfTeam(gameState.players)
+        ));
+      }
+      // Check for werewolf victory.
+      if (livingWerewolfTotal >= livingVillagerTotal) {
+        stopWatching();
+        if (this.scheduledPhaseChange) {
+          this.scheduledPhaseChange.cancel();
+          this.scheduledPhaseChange = undefined;
+        }
+
+        this.channel.send(Embeds.WerewolfVictory(
+          PlayerSelectors.findAllVillagerTeam(gameState.players),
+          PlayerSelectors.findAllWerewolfTeam(gameState.players)
+        ));
+      }
+    })
   }
 
   static getNextMorning() {
@@ -199,7 +251,5 @@ class GameManager {
     return night;
   }
 }
-
-
 
 module.exports = GameManager;

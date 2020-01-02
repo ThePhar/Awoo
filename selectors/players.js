@@ -31,6 +31,9 @@ const PlayerSelectors = {
   findAlivePlayersButMe: (players, ignore) => players.filter((player) => player.id !== ignore.id),
   findAlivePlayers: (players) => players.filter((player) => player.alive),
   findDeadPlayers: (players) => players.filter((player) => !player.alive),
+
+  findAllLivingWerewolves: (players) => players.filter((player) => player.role.name === "Werewolf" && player.alive),
+  findAllLivingVillagers: (players) => players.filter((player) => player.role.name !== "Werewolf" && player.alive),
 };
 
 module.exports = PlayerSelectors;

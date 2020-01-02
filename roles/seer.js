@@ -22,6 +22,8 @@ class Seer extends AbstractRole {
 
       // Target not found.
       if (!target) return;
+      // Target not alive, no target.
+      if (!target.alive) return;
       // Don't allow player to target themselves.
       if (target.id === player.id) return;
 

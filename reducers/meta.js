@@ -26,7 +26,7 @@ function MetaReducer(state = initialState, action) {
         draft.day++;
         break;
       case MetaActions.FLAG_PLAYER_FOR_ELIMINATION:
-        draft.playersFlaggedForElimination.push(action.player);
+        draft.playersFlaggedForElimination.push(action.elimination);
         break;
       case MetaActions.EMPTY_PLAYERS_FLAGGED_FOR_ELIMINATION:
         draft.playersFlaggedForElimination = [];

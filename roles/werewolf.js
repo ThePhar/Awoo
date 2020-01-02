@@ -3,8 +3,10 @@ const Teams = require("../constants/teams");
 const Embeds = require("../constants/embeds");
 const Commands = require("../constants/commands");
 
+const Elimination = require("../classes/elimination");
 const PlayerSelector = require("../selectors/players");
 const { PlayerActionCreators } = require("../actions/players");
+const { MetaActionCreators } = require("../actions/meta");
 
 const { findAllWerewolfPlayers, findAllWerewolfTargets } = require("../selectors/players");
 
@@ -20,8 +22,10 @@ class Werewolf extends AbstractRole {
     if (command.command === Commands.TARGET) {
       const target = PlayerSelector.findPlayerByIdOrName(game.getState().players, command.target);
 
-      // Target not found.
+      // Target not found or alive.
       if (!target) return;
+      // Target not alive, no target.
+      if (!target.alive) return;
       // Don't allow player to target themselves.
       if (target.id === player.id) return;
       // Don't allow werewolves to target other werewolves.
@@ -39,6 +43,17 @@ class Werewolf extends AbstractRole {
     const werewolves = findAllWerewolfPlayers(gameState.players);
 
     return Embeds.WerewolfRole(werewolves);
+  }
+  static processEliminations(game) {
+    // Check and choose a player to eliminate from werewolf choices.
+    const werewolves = PlayerSelector.findAllWerewolvesWithTarget(game.getState().players);
+    if (werewolves.length !== 0) {
+      let target = werewolves[0].target;
+      if (werewolves.every((werewolf) => werewolf.target.id === target.id)) {
+        const elimination = new Elimination(target, Embeds.WerewolfElimination(target));
+        game.dispatch(MetaActionCreators.FlagPlayerForElimination(elimination));
+      }
+    }
   }
 }
 

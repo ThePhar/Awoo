@@ -19,9 +19,9 @@ const MetaActionCreators = {
     type: MetaActions.CHANGE_PHASE,
     phase
   }),
-  FlagPlayerForElimination: (player) => ({
+  FlagPlayerForElimination: (elimination) => ({
     type: MetaActions.FLAG_PLAYER_FOR_ELIMINATION,
-    player
+    elimination
   }),
   EmptyPlayersFlaggedForElimination: (channel) => ({
     type: MetaActions.EMPTY_PLAYERS_FLAGGED_FOR_ELIMINATION
