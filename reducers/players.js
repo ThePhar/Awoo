@@ -2,6 +2,8 @@ const { produce } = require("immer");
 const { PlayerActionCreators, PlayerActions } = require("../actions/players");
 const Player = require("../classes/player");
 
+const Villager = require("../roles/villager");
+
 function PlayersReducer(state = [], action) {
   return produce(state, (draft) => {
     let player;
@@ -41,6 +43,21 @@ function PlayersReducer(state = [], action) {
         draft.forEach((player) => player.canUseNightAction = true);
         break;
       case PlayerActions.ALL_PLAYERS_ASSIGN_ROLE:
+        if (action.role) {
+          draft.forEach((player) => {
+            // TODO: Make a separate function for this?
+            switch (action.role) {
+              case "villager":
+                player.role = new Villager();
+                break;
+              case "werewolf":
+              case "seer":
+              default:
+                player.role = undefined;
+            }
+          })
+        }
+
         // TODO: Write random assignment code.
         break;
       case PlayerActions.ALL_PLAYERS_CLEAR_CHOICES:

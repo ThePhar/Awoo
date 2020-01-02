@@ -10,11 +10,7 @@ class Player {
     // For debugging purposes, we will override the send function to send a HTTP object instead of a DM because discord
     // doesn't allow bots to DM other bots.
     if (this.client.bot) {
-      this.client.send = (content, options) => {
-        console.log(content);
-        console.log();
-        console.log(options);
-
+      this.client.send = (content) => {
         axios.post(`http://localhost:${parseInt(this.client.discriminator).toString()}`, {
           channel: { type: "dm" },
           author: { username: "Awoo Bot" },

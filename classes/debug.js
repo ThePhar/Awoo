@@ -1,5 +1,6 @@
 const Settings = require("../constants/settings");
 const { MetaActionCreators } = require("../actions/meta");
+const { PlayerActionCreators } = require("../actions/players");
 
 class DebuggingFunctions {
   static executeAdminCommands(message, game) {
@@ -13,11 +14,15 @@ class DebuggingFunctions {
 
     if (message.content === "#!clear") {
       this.clear(message.channel);
-    } else if (message.content.startsWith("#!phase ")) {
+    } else if (message.content.startsWith("#!phase")) {
       const phase = message.content.slice(8);
       game.dispatch(MetaActionCreators.ChangePhase(phase));
 
       channel.send(`Phase changed to: \`${game.getState().meta.phase}\``);
+    } else if (message.content.startsWith("#!assign")) {
+      const role = message.content.split(" ")[1];
+
+      game.dispatch(PlayerActionCreators.AllPlayersAssignRole(role));
     }
   }
 

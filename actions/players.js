@@ -50,8 +50,9 @@ const PlayerActionCreators = {
     player
   }),
 
-  AllPlayersAssignRole: () => ({
-    type: PlayerActions.ALL_PLAYERS_ASSIGN_ROLE
+  AllPlayersAssignRole: (role = undefined) => ({
+    type: PlayerActions.ALL_PLAYERS_ASSIGN_ROLE,
+    role
   }),
   AllPlayersEnableNightActions: () => ({
     type: PlayerActions.ALL_PLAYERS_ENABLE_NIGHT_ACTIONS

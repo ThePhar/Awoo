@@ -39,7 +39,7 @@ class Command {
 
       case Commands.ROLE:
       case Commands.STATUS:
-        handleGameCommands(command, game.getState().meta.channel);
+        handleGameCommands(command, game);
         break;
 
       case Commands.RULES:
@@ -114,7 +114,25 @@ function handlePlayerCommands(command, game) {
 }
 
 function handleGameCommands(command, game) {
+  const Phases = require("../constants/phases");
+  const PlayerSelector = require("../selectors/players");
 
+  const state = game.getState;
+  const channel = state().meta.channel;
+
+  let player = PlayerSelector.findPlayerById(state().players, command.executor.id);
+
+  // Do not allow these commands from non-players or if the game is not active.
+  if (!player) return;
+  if (state().meta.phase === Phases.LOBBY) {
+    channel.send(Embeds.Generic(`${player.mention()}, the game hasn't started yet...`));
+    return;
+  }
+
+  // Message the user their role information.
+  if (command.command === Commands.ROLE) {
+    player.client.send(player.role.embed);
+  }
 }
 
 function handleRulesCommand(command, game) {
