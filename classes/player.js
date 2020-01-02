@@ -1,8 +1,5 @@
 const axios = require('axios');
 
-const Embed = require('../constants/embeds');
-const Roles = require('../constants/roles');
-
 class Player {
   constructor(client) {
     this.client = client;
@@ -35,9 +32,6 @@ class Player {
 
   mention() {
     return `<@${this.id}>`;
-  }
-  seerAppearance() {
-    return this.role.seerAppearance;
   }
 }
 

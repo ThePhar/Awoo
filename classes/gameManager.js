@@ -99,7 +99,7 @@ class GameManager {
     // Allow night actions.
     game.dispatch(PlayerActionCreators.AllPlayersEnableNightActions());
     // TODO: Change to next morning.
-    const timeTilDawn = moment().add("10", "seconds");
+    const timeTilDawn = moment().add("30", "seconds");
 
     const gameState = game.getState();
     // Send everyone their night action explanations.
@@ -134,7 +134,7 @@ class GameManager {
     game.dispatch(PlayerActionCreators.AllPlayersClearChoices());
 
     // TODO: Change to next night.
-    const timeTilDusk = moment().add("10", "seconds");
+    const timeTilDusk = moment().add("30", "seconds");
 
     const gameState = game.getState();
     // Send everyone their night action explanations.
@@ -145,7 +145,7 @@ class GameManager {
       timeTilDusk.format(Settings.DATE_FORMATTING)
     ));
 
-    const stopTrialWatch = game.dispatch(() => {
+    const stopTrialWatch = game.subscribe(() => {
       const gameState = game.getState();
 
       // Check if there are 2 accusations.
@@ -201,6 +201,12 @@ class GameManager {
     game.dispatch(MetaActionCreators.EmptyPlayersFlaggedForElimination());
   }
   static watchForVictoryConditions(game) {
+    // Only check for victory conditions DURING a game.
+    if (game.getState().meta.phase === Phases.LOBBY
+      || game.getState().meta.phase === Phases.END
+      || game.getState().meta.phase === Phases.CONFIRMATION)
+      return;
+
     const stopWatching = game.subscribe(() => {
       const gameState = game.getState();
 

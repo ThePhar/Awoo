@@ -7,7 +7,7 @@ const Game = require("./store/gameState");
 
 const Client = new Discord.Client();
 Client.on("ready", async () => {
-  console.clear();
+  // console.clear();
   initializeBotDMReceiver();
   await initializeGameState();
   GameManager.initialize(Game);
@@ -59,13 +59,16 @@ function initializeBotDMReceiver() {
   }
 }
 function conditionallyDeleteMessagesBasedOnGameState(message) {
+  // Do not delete messages from the bot this way.
+  if (message.author.id === Client.user.id) return;
+
   const { findPlayerById } = require('./selectors/players');
   const Phases = require('./constants/phases');
 
   const gameState = Game.getState();
   const player = findPlayerById(gameState.players, message.author.id);
   // Disallow messages from non-players outside of the lobby or end phases.
-  if (!player && (gameState.meta.phase !== Phases.LOBBY && gameState.me.phase !== Phases.END)) {
+  if (!player && (gameState.meta.phase !== Phases.LOBBY && gameState.meta.phase !== Phases.END)) {
     message.delete();
     return;
   }
