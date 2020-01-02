@@ -34,7 +34,6 @@ class Werewolf extends AbstractRole {
       if (game.getState().meta.day === 1) return;
 
       game.dispatch(PlayerActionCreators.PlayerTarget(player, target));
-      // TODO: Move to separate function.
       player.client.send(Embeds.WerewolfTarget(PlayerSelector.findAllWerewolvesWithCommonTarget(game.getState().players, target), target));
     }
   }

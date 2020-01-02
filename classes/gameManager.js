@@ -6,21 +6,22 @@ const Embeds = require("../constants/embeds");
 const Settings = require("../constants/settings");
 const Phases = require("../constants/phases");
 const { PlayerActions, PlayerActionCreators } = require("../actions/players");
-const { MetaActions, MetaActionCreators } = require("../actions/meta");
-const { TrialActions, TrialActionCreators } = require("../actions/trial");
+const { MetaActionCreators } = require("../actions/meta");
+const { TrialActionCreators } = require("../actions/trial");
 const PlayerSelectors = require("../selectors/players");
 
 class GameManager {
   constructor() {
     this.scheduledPhaseChange = undefined;
+    this.hourlyChecker = undefined;
     this.channel = undefined;
   }
 
   // Print the lobby information.
   static initialize(game) {
     this.channel = game.getState().meta.channel;
+    // this.hourlyChecker = schedule.scheduleJob("0 * * * *", () => GameManager.timeRemaining(game));
 
-    // TODO: Add objective watcher.
     GameManager.watchForVictoryConditions(game);
     GameManager.startLobby(game);
   }
@@ -184,6 +185,7 @@ class GameManager {
       if (game.getState().trial.active) {
         GameManager.checkTrialOutcome(game, stopTrialWatch, true);
       }
+      game.dispatch(TrialActionCreators.ResetTrialState());
       GameManager.startNight(game);
     });
   }
@@ -211,6 +213,8 @@ class GameManager {
         if (this.scheduledPhaseChange) {
           this.scheduledPhaseChange.cancel();
           this.scheduledPhaseChange = undefined;
+          this.hourlyChecker.cancel();
+          this.hourlyChecker = undefined;
         }
 
         this.channel.send(Embeds.VillagerVictory(
@@ -224,6 +228,8 @@ class GameManager {
         if (this.scheduledPhaseChange) {
           this.scheduledPhaseChange.cancel();
           this.scheduledPhaseChange = undefined;
+          this.hourlyChecker.cancel();
+          this.hourlyChecker = undefined;
         }
 
         this.channel.send(Embeds.WerewolfVictory(
@@ -252,6 +258,7 @@ class GameManager {
       game.dispatch(TrialActionCreators.EndTrial());
     }
   }
+  static timeRemaining(game) {}
 
   static getNextMorning() {
     const morning = moment();
