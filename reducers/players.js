@@ -51,20 +51,18 @@ function PlayersReducer(state = [], action) {
             switch (action.role) {
               case "villager":
                 player.role = new Villager();
-                break;
+                return;
               case "werewolf":
                 player.role = new Werewolf();
-                break;
+                return;
               case "seer":
                 player.role = new Seer();
-                break;
-              default:
-                player.role = undefined;
+                return;
             }
-          })
+          });
         }
 
-        // TODO: Write random assignment code.
+        randomlyAssignRole(draft);
         break;
       case PlayerActions.ALL_PLAYERS_CLEAR_CHOICES:
         draft.forEach((player) => {
@@ -79,6 +77,54 @@ function PlayersReducer(state = [], action) {
 
 function getPlayer(id, players) {
   return players.find((player) => id === player.id);
+}
+// TODO: Move to different file?
+function randomlyAssignRole(players) {
+  const shuffledPlayers = shuffle(players);
+
+  shuffledPlayers[0].role = new Seer();
+  shuffledPlayers[1].role = new Werewolf();
+  // 6-8 players
+  if (players.length < 9) {
+    for (let i = 2; i < players.length; i++) {
+      shuffledPlayers[i].role = new Villager();
+    }
+  }
+  // 9-11 players
+  else if (players.length < 12) {
+    shuffledPlayers[2].role = new Werewolf();
+    for (let i = 3; i < players.length; i++) {
+      shuffledPlayers[i].role = new Villager();
+    }
+  }
+  // 12+ players
+  else {
+    shuffledPlayers[2].role = new Werewolf();
+    shuffledPlayers[3].role = new Werewolf();
+    for (let i = 4; i < players.length; i++) {
+      shuffledPlayers[i].role = new Villager();
+    }
+  }
+}
+function shuffle(array) {
+  const copiedArray = array.slice(0);
+
+  let currentIndex = copiedArray.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = copiedArray[currentIndex];
+    copiedArray[currentIndex] = copiedArray[randomIndex];
+    copiedArray[randomIndex] = temporaryValue;
+  }
+
+  return copiedArray;
 }
 
 module.exports = PlayersReducer;
