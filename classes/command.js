@@ -62,19 +62,20 @@ class Command {
   }
 }
 
+// TODO: Move functions to separate files.
 function handlePlayerCommands(command, game) {
   const Phases = require("../constants/phases");
   const PlayerSelector = require("../selectors/players");
   const { PlayerActionCreators } = require("../actions/players");
   const Player = require("../classes/player");
 
-  const gameState = game.getState();
-  const channel = gameState.meta.channel;
+  const state = game.getState;
+  const channel = game.getState().meta.channel;
 
-  let player = PlayerSelector.findPlayerById(gameState.players, command.executor.id);
+  let player = PlayerSelector.findPlayerById(state().players, command.executor.id);
 
   // Only process join and leave commands in the lobby phase.
-  if (gameState.meta.phase === Phases.LOBBY) {
+  if (state().meta.phase === Phases.LOBBY) {
     if (command.command === Commands.JOIN) {
       // Player has already signed up!
       if (player) {
@@ -100,7 +101,16 @@ function handlePlayerCommands(command, game) {
   }
 
   // Process confirm commands in the confirmation phase only and by players.
-  if (gameState.meta.phase === Phases.CONFIRMATION && player) {}
+  if (state().meta.phase === Phases.CONFIRMATION && player) {
+    // Player is already confirmed!
+    if (player.confirmed) {
+      channel.send(Embeds.Generic(`${player.mention()}, you have already confirmed your role.`));
+      return;
+    }
+
+    game.dispatch(PlayerActionCreators.PlayerConfirmRole(player));
+    channel.send(Embeds.PlayerConfirmed(player, PlayerSelector.findAllUnconfirmedPlayers(state().players)));
+  }
 }
 
 function handleGameCommands(command, channel) {
