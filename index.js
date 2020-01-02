@@ -25,17 +25,24 @@ function processMessages(message) {
     inspectIncomingMessage(message);
   }
 }
+
 function inspectIncomingMessage(message) {
   // If message begins with the command prefix, treat it as a command.
   if (message.content[0] === "!") {
     const command = Command.parse(message.content, message.author);
     if (command) {
       Command.execute(command, Game);
+
+      if (message.channel.type !== "dm") {
+        message.delete();
+      }
+    } else {
+      conditionallyDeleteMessagesBasedOnGameState(message);
     }
+  } else {
+    conditionallyDeleteMessagesBasedOnGameState(message);
   }
 
-  // Otherwise, handle messages based on game state.
-  // TODO: Write logic for normal chat message handling.
 }
 function initializeBotDMReceiver() {
   if (process.env.NODE_ENV === "development") {
@@ -49,6 +56,22 @@ function initializeBotDMReceiver() {
       res.sendStatus(200);
     });
     app.listen(4444);
+  }
+}
+function conditionallyDeleteMessagesBasedOnGameState(message) {
+  const { findPlayerById } = require('./selectors/players');
+  const Phases = require('./constants/phases');
+
+  const gameState = Game.getState();
+  const player = findPlayerById(gameState.players, message.author.id);
+  // Disallow messages from non-players outside of the lobby or end phases.
+  if (!player && (gameState.meta.phase !== Phases.LOBBY && gameState.me.phase !== Phases.END)) {
+    message.delete();
+    return;
+  }
+  // Disallow messages during the night phase.
+  if (gameState.meta.phase === Phases.NIGHT) {
+    message.delete();
   }
 }
 

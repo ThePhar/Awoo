@@ -215,6 +215,7 @@ class GameManager {
           this.scheduledPhaseChange = undefined;
           this.hourlyChecker.cancel();
           this.hourlyChecker = undefined;
+          game.dispatch(MetaActionCreators.ChangePhase(Phases.END));
         }
 
         this.channel.send(Embeds.VillagerVictory(
@@ -230,6 +231,7 @@ class GameManager {
           this.scheduledPhaseChange = undefined;
           this.hourlyChecker.cancel();
           this.hourlyChecker = undefined;
+          game.dispatch(MetaActionCreators.ChangePhase(Phases.END));
         }
 
         this.channel.send(Embeds.WerewolfVictory(
