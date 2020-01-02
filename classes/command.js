@@ -53,7 +53,7 @@ class Command {
         break;
 
       case Commands.TARGET:
-        handleNightActionCommands(command, game.getState().meta.channel);
+        handleNightActionCommands(command, game);
         break;
 
       default:
@@ -201,8 +201,29 @@ function handleTrialCommands(command, game) {
     }
   }
 }
-function handleNightActionCommands(command, channel) {
-  channel.send(Embeds.Generic("NightAction manager."));
+
+function handleNightActionCommands(command, game) {
+  const Phases = require("../constants/phases");
+  const PlayerSelector = require("../selectors/players");
+  const { TrialActionCreators } = require("../actions/trial");
+  const { PlayerActionCreators } = require("../actions/players");
+
+  const state = game.getState;
+  const channel = state().meta.channel;
+
+  let player = PlayerSelector.findPlayerById(state().players, command.executor.id);
+
+  // Do not allow commands from non-players or dead players.
+  if (!player || !player.alive) return;
+  // Only allow these commands during the Night Phase.
+  if (state().meta.phase !== Phases.NIGHT) return;
+  // Don't allow players who have already used their command use it again.
+  if (!player.canUseNightAction) return;
+  // Don't call night action, if the player doesn't even have that ability.
+  if (!player.role.nightAction) return;
+
+  // Send the data to the role to handle their night action.
+  player.role.nightAction(command, game, player);
 }
 function unhandledCommand(command, channel) {
   // Send a message to the game channel that an error has occurred.

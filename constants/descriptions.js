@@ -174,7 +174,7 @@ const Descriptions = {
     return desc;
   },
   SEER_TARGET: (target) => {
-    return `You peer into ${target.name}'s true identity. They are a **${target.seerAppearance()}**.`;
+    return `You peer into ${target.name}'s true identity. They are a **${target.role.seerAppearance}**.`;
   },
 
   // Accusations and Votes

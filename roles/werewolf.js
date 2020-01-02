@@ -6,7 +6,10 @@ const { findAllWerewolfPlayers } = require("../selectors/players");
 
 class Werewolf extends AbstractRole {
   constructor() {
-    super("Werewolf", Teams.WEREWOLVES, (Werewolf.generateEmbed));
+    super("Werewolf", Teams.WEREWOLVES, Werewolf.generateEmbed);
+
+    this.nightAction = () => console.log("WEREWOLF ACTION FIRED");
+    this.seerAppearance = "werewolf";
   }
 
   static generateEmbed(gameState) {

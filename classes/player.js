@@ -27,8 +27,8 @@ class Player {
     this.role = undefined;
     this.confirmed = false;
     this.alive = true;
+    this.canUseNightAction = true;
     this.voted = false;
-    this.canUseNightAction = false;
     this.target = undefined;
     this.accuse = undefined;
   }
