@@ -131,7 +131,7 @@ function handleGameCommands(command, game) {
 
   // Message the user their role information.
   if (command.command === Commands.ROLE) {
-    player.client.send(player.role.embed);
+    player.client.send(player.role.embed(state()));
   }
 }
 

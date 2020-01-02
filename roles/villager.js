@@ -4,7 +4,7 @@ const Embeds = require("../constants/embeds");
 
 class Villager extends AbstractRole {
   constructor() {
-    super("Villager", Teams.VILLAGERS, Embeds.VillagerRole());
+    super("Villager", Teams.VILLAGERS, () => Embeds.VillagerRole());
   }
 }
 
