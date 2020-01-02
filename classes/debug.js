@@ -1,6 +1,7 @@
 const Settings = require("../constants/settings");
 const { MetaActionCreators } = require("../actions/meta");
 const { PlayerActionCreators } = require("../actions/players");
+const { TrialActionCreators } = require("../actions/trial");
 
 class DebuggingFunctions {
   static executeAdminCommands(message, game) {
@@ -23,6 +24,8 @@ class DebuggingFunctions {
       const role = message.content.split(" ")[1];
 
       game.dispatch(PlayerActionCreators.AllPlayersAssignRole(role));
+    } else if (message.content === "#!trial") {
+      game.dispatch(TrialActionCreators.StartTrial(game.getState().players[0]));
     }
   }
 

@@ -49,7 +49,7 @@ class Command {
       case Commands.ACCUSE:
       case Commands.LYNCH:
       case Commands.ACQUIT:
-        handleTrialCommands(command, game.getState().meta.channel);
+        handleTrialCommands(command, game);
         break;
 
       case Commands.TARGET:
@@ -145,8 +145,61 @@ function handleRulesCommand(command, game) {
   }
 }
 
-function handleTrialCommands(command, channel) {
-  channel.send(Embeds.Generic("Trial manager."));
+function handleTrialCommands(command, game) {
+  const Phases = require("../constants/phases");
+  const PlayerSelector = require("../selectors/players");
+  const { TrialActionCreators } = require("../actions/trial");
+  const { PlayerActionCreators } = require("../actions/players");
+
+  const state = game.getState;
+  const channel = state().meta.channel;
+
+  let player = PlayerSelector.findPlayerById(state().players, command.executor.id);
+
+  // Do not allow commands from non-players or dead players.
+  if (!player || !player.alive) return;
+  // Only allow these commands during the Day phase.
+  if (state().meta.phase !== Phases.DAY) return;
+
+  // There is a trial ongoing.
+  if (state().trial.active) {
+    // Do not allow votes from the accused.
+    if (state().trial.accused.id === player.id) return;
+    // Do not allow votes from those who already voted.
+    if (player.voted) return;
+
+    // GUILTY
+    if (command.command === Commands.LYNCH) {
+      game.dispatch(TrialActionCreators.LynchVote());
+      game.dispatch(PlayerActionCreators.PlayerVote(player));
+      channel.send(Embeds.LynchVote(player, state().trial.accused));
+      return;
+    }
+    // NOT GUILTY
+    if (command.command === Commands.ACQUIT) {
+      game.dispatch(TrialActionCreators.AcquitVote());
+      game.dispatch(PlayerActionCreators.PlayerVote(player));
+      channel.send(Embeds.AcquitVote(player, state().trial.accused));
+    }
+  }
+  // We are in the accusations phase.
+  else {
+    if (command.command === Commands.ACCUSE) {
+      // No target specified.
+      if (command.target === "") return;
+      let target = PlayerSelector.findPlayerByIdOrName(state().players, command.target);
+
+      // No target found, ignore.
+      if (!target) return;
+      // Don't allow people to target themselves.
+      if (target.id === player.id) return;
+      // Don't allow accusations if player is in the immune list.
+      if (state().trial.immune.some((immune) => immune.id === target.id)) return;
+
+      game.dispatch(PlayerActionCreators.PlayerAccuse(player, target));
+      channel.send(Embeds.Accusation(player, target));
+    }
+  }
 }
 function handleNightActionCommands(command, channel) {
   channel.send(Embeds.Generic("NightAction manager."));
