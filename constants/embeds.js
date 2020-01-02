@@ -20,21 +20,21 @@ const Embeds = {
 
     return Embed(d.FIRST_DAY(), c.DAYTIME, t.FIRST_DAY(), fields);
   },
-  DayStart: (alivePlayers, deadPlayers, gameState) => {
+  DayStart: (alivePlayers, deadPlayers, gameState, timeTilDusk) => {
     const fields = [
       Field(f.ALIVE_PLAYERS, alivePlayers, true),
       Field(f.ELIMINATED_PLAYERS, deadPlayers, true)
     ];
 
-    return Embed(d.DAY_START(), c.DAYTIME, t.DAY_START(gameState), fields);
+    return Embed(d.DAY_START(timeTilDusk), c.DAYTIME, t.DAY_START(gameState), fields);
   },
-  NightStart: (alivePlayers, deadPlayers, gameState) => {
+  NightStart: (alivePlayers, deadPlayers, gameState, timeTilDawn) => {
     const fields = [
       Field(f.ALIVE_PLAYERS, alivePlayers, true),
       Field(f.ELIMINATED_PLAYERS, deadPlayers, true)
     ];
 
-    return Embed(d.NIGHT_START(), c.NIGHTTIME, t.NIGHT_START(gameState), fields);
+    return Embed(d.NIGHT_START(timeTilDawn), c.NIGHTTIME, t.NIGHT_START(gameState), fields);
   },
   TrialStart: (alivePlayers, deadPlayers, accusers, accused) => {
     const fields = [
@@ -113,7 +113,7 @@ const Embeds = {
   AcquitVote: (voter, accused) => Embed(d.ACQUIT_VOTE(voter, accused), c.VILLAGER_BLUE),
 
   // Notices
-  TimeRemaining: (gameState) => Embed(d.TIME_REMAINING(gameState), c.INFORMATION),
+  TimeRemaining: (gameState, remainingHours) => Embed(d.TIME_REMAINING(gameState, remainingHours), c.INFORMATION),
   PlayerJoined: (player) => Embed(d.PLAYER_JOINED(player), c.INFORMATION),
   PlayerLeft: (player) => Embed(d.PLAYER_LEFT(player), c.INFORMATION),
   PlayerLeftInProgress: (player) => Embed(d.PLAYER_LEFT_IN_PROGRESS(player), c.INFORMATION),

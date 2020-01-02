@@ -6,13 +6,14 @@ const Commands = require("../constants/commands");
 const PlayerSelector = require("../selectors/players");
 const { PlayerActionCreators } = require("../actions/players");
 
-const { findAllWerewolfPlayers } = require("../selectors/players");
+const { findAllWerewolfPlayers, findAllWerewolfTargets } = require("../selectors/players");
 
 class Werewolf extends AbstractRole {
   constructor() {
     super("Werewolf", Teams.WEREWOLVES, Werewolf.generateEmbed);
 
     this.seerAppearance = "werewolf";
+    this.nightEmbed = (gameState) => Embeds.WerewolfNightAction(findAllWerewolfTargets(gameState.players));
   }
 
   nightAction(command, game, player) {
@@ -25,6 +26,8 @@ class Werewolf extends AbstractRole {
       if (target.id === player.id) return;
       // Don't allow werewolves to target other werewolves.
       if (target.role.name === "Werewolf") return;
+      // Don't allow targeting on the first night.
+      if (game.getState().meta.day === 1) return;
 
       game.dispatch(PlayerActionCreators.PlayerTarget(player, target));
       // TODO: Move to separate function.

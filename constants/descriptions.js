@@ -25,16 +25,16 @@ const Descriptions = {
 
       `Once everyone has confirmed their role, the game will continue.`;
   },
-  DAY_START: () => {
+  DAY_START: (timeTilDusk) => {
     return `> “The events of last night still linger in your minds. You must act quickly before it's too late.”\n\n` +
 
       `You have all awoken and are free to discuss any events you have learned from last night. When you are ready to ` +
       `accuse someone, use ${TargetedExample(Commands.ACCUSE)}. When 2 players have accused the same player, a ` +
       `mob trial will begin.\n\n` +
 
-      `Regardless of whether a player has been lynched today, the night will begin at ${Settings.NIGHT_START_TIME}.`;
+      `Regardless of whether a player has been lynched today, the night will begin ${timeTilDusk}.`;
   },
-  NIGHT_START: () => {
+  NIGHT_START: (timeTilDawn) => {
     return `> “As the sun sets and darkness envelops the village, you all return to your residences for the night, ` +
       `hoping to see the sun again.”\n\n` +
 
@@ -42,7 +42,7 @@ const Descriptions = {
       `receive a DM on what night actions are available. Be sure to perform your night actions before dawn or you ` +
       `will forfeit any actions that may have given you an advantage.\n\n` +
 
-      `The sun will rise at ${Settings.DAY_START_TIME}.`;
+      `The sun will rise ${timeTilDawn}.`;
   },
   TRIAL_START: ([accuser1, accuser2], accused) => {
     return `> “${accuser1.name} and ${accuser2.name} have both accused ${accused.name} of being a Werewolf. They ` +
@@ -79,20 +79,12 @@ const Descriptions = {
 
   // Trial Results Descriptions
   ACQUITTED: (acquitted, gameState) => {
-    let desc = `> “Despite the accusations made against ${acquitted.name}, the rest of the village is not completely ` +
+    return `> “Despite the accusations made against ${acquitted.name}, the rest of the village is not completely ` +
       `convinced that they are a werewolf at this time. Hopefully they can come to an agreement on who is before it's ` +
       `too late.”\n\n` +
 
       `${acquitted.mention()} has been found to be not guilty of being a werewolf and are safe from being accused ` +
       `again today.`;
-
-    // If the day isn't ending, explain to everyone they may make new accusations.
-    if (!gameState.pendingPhaseChange()) {
-      desc += `\n\nSince the sun is still in the sky and no one has been lynched, you may make a new accusation on ` +
-        `someone else before the sun sets.`;
-    }
-
-    return desc;
   },
 
   // Victory Descriptions
@@ -183,11 +175,10 @@ const Descriptions = {
   ACQUIT_VOTE: (voter, accused)   => `${voter.mention()} votes to acquit ${accused.name}!`,
 
   // Notices
-  TIME_REMAINING: (gameState) => {
-    const hours = gameState.remainingHours();
-    const plural = hours === 1 ? "hour" : "hours";
+  TIME_REMAINING: (gameState, remainingHours) => {
+    const plural = remainingHours === 1 ? "hour" : "hours";
 
-    return `There are only ${hours} ${plural} remaining until the ${gameState.phase} ends.`;
+    return `There are only ${remainingHours} ${plural} remaining until the ${gameState.meta.phase} ends.`;
   },
   PLAYER_JOINED: (player) => {
     return `${player.mention()} has signed up for the next game!`;
@@ -202,7 +193,7 @@ const Descriptions = {
     let desc = `${player.mention()} has confirmed their role. `;
 
     // Handle everyone confirmed.
-    if (unconfirmedPlayers.length === 0) return desc + "Preparing to start game...";
+    if (unconfirmedPlayers.length === 0) return desc + "Game will begin tonight.";
 
     if (unconfirmedPlayers.length === 1)
       desc += `We are still waiting on ${unconfirmedPlayers[0].name} to confirm their role.`;

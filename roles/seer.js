@@ -5,12 +5,15 @@ const Commands = require("../constants/commands");
 const PlayerSelector = require("../selectors/players");
 const { PlayerActionCreators } = require("../actions/players");
 
+const { findAlivePlayersButMe } = require("../selectors/players");
+
 class Seer extends AbstractRole {
   constructor() {
     super("Seer", Teams.VILLAGERS, () => Embeds.SeerRole());
 
     // this.nightAction = () => console.log("SEER ACTION FIRED");
     this.seerAppearance = "villager";
+    this.nightEmbed = (gameState, player) => Embeds.SeerNightAction(findAlivePlayersButMe(gameState.players, player));
   }
 
   nightAction(command, game, player) {

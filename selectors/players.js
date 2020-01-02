@@ -11,13 +11,26 @@ const PlayerSelectors = {
     return players.find((player) => player.name.toLowerCase() === string);
   },
 
-  findAllUnconfirmedPlayers: (players) => players.filter((player) => !player.confirmed),
+  findAllUnconfirmedPlayers: (players, ignore = {id:"0"}) => players.filter((player) => !player.confirmed && player.id !== ignore.id),
   findAllWerewolfPlayers: (players) => players.filter((player) => player.role.name === "Werewolf"),
   findAllWerewolvesWithCommonTarget: (players, target) => players.filter((player) => {
     if (player.role.name === "Werewolf") {
       return player.target.id === target.id;
     }
-  })
+  }),
+  findAllWerewolvesWithTarget: (players) => players.filter((player) => {
+    if (player.role.name === "Werewolf") {
+      return !!player.target;
+    }
+  }),
+
+  findAllWerewolfTargets: (players) => players.filter((player) => {
+    if (player.alive && player.role.name !== "Werewolf") return true;
+  }),
+
+  findAlivePlayersButMe: (players, ignore) => players.filter((player) => player.id !== ignore.id),
+  findAlivePlayers: (players) => players.filter((player) => player.alive),
+  findDeadPlayers: (players) => players.filter((player) => !player.alive),
 };
 
 module.exports = PlayerSelectors;

@@ -2,8 +2,8 @@ const Titles = {
   // Phase Titles
   LOBBY:        ()          => `New Werewolf Game`,
   FIRST_DAY:    ()          => `Day 0`,
-  DAY_START:    (gameState) => `Day ${gameState.day}`,
-  NIGHT_START:  (gameState) => `Night ${gameState.day}`,
+  DAY_START:    (gameState) => `Day ${gameState.meta.day}`,
+  NIGHT_START:  (gameState) => `Night ${gameState.meta.day}`,
   TRIAL_START:  (accused)   => `Trial of ${accused.name}`,
 
   // Elimination Titles

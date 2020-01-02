@@ -108,8 +108,8 @@ function handlePlayerCommands(command, game) {
       return;
     }
 
-    channel.send(Embeds.PlayerConfirmed(player, PlayerSelector.findAllUnconfirmedPlayers(state().players)));
     game.dispatch(PlayerActionCreators.PlayerConfirmRole(player));
+    channel.send(Embeds.PlayerConfirmed(player, PlayerSelector.findAllUnconfirmedPlayers(state().players, player)));
   }
 }
 
