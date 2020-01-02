@@ -7,6 +7,7 @@ const Settings = require("../constants/settings");
 const Phases = require("../constants/phases");
 const { PlayerActions, PlayerActionCreators } = require("../actions/players");
 const { MetaActions, MetaActionCreators } = require("../actions/meta");
+const { TrialActions, TrialActionCreators } = require("../actions/trial");
 const PlayerSelectors = require("../selectors/players");
 
 class GameManager {
@@ -126,7 +127,6 @@ class GameManager {
     });
   }
   static startDay(game) {
-    // TODO:
     // Change phase
     game.dispatch(MetaActionCreators.ChangePhase(Phases.DAY));
     // Clear choices.
@@ -144,9 +144,46 @@ class GameManager {
       timeTilDusk.format(Settings.DATE_FORMATTING)
     ));
 
-    // TODO: Add trial logic.
+    const stopTrialWatch = game.dispatch(() => {
+      const gameState = game.getState();
+
+      // Check if there are 2 accusations.
+      if (gameState.meta.lastCommand === PlayerActions.PLAYER_ACCUSE) {
+        const accusingPlayers = PlayerSelectors.findAllAccusingPlayers(gameState.players);
+        let accused;
+        let playersAccusing = [];
+
+        // TODO: Rewrite this to something faster.
+        // Compare each player and see if 2 different players accuse the same player.
+        for (let player of accusingPlayers) {
+          for (let comparer of accusingPlayers) {
+            if (player.id !== comparer.id) {
+              if (player.accuse.id === comparer.accuse.id) {
+                accused = player.accuse;
+                playersAccusing = [player, comparer];
+              }
+            }
+          }
+        }
+
+        if (accused) {
+          this.channel.send(Embeds.TrialStart(
+            PlayerSelectors.findAlivePlayers(gameState.players),
+            PlayerSelectors.findDeadPlayers(gameState.players),
+            playersAccusing,
+            accused
+          ));
+          game.dispatch(TrialActionCreators.StartTrial(accused));
+        }
+      } else if (gameState.meta.lastCommand === PlayerActions.PLAYER_VOTE) {
+        GameManager.checkTrialOutcome(game, stopTrialWatch);
+      }
+    });
+
     this.scheduledPhaseChange = schedule.scheduleJob(timeTilDusk.toDate(), () => {
-      GameManager.eliminateFlaggedPlayers(game);
+      if (game.getState().trial.active) {
+        GameManager.checkTrialOutcome(game, stopTrialWatch, true);
+      }
       GameManager.startNight(game);
     });
   }
@@ -195,6 +232,25 @@ class GameManager {
         ));
       }
     })
+  }
+  static checkTrialOutcome(game, stopChecking, shortCircuit = false) {
+    const gameState = game.getState();
+    const votingThreshold = (PlayerSelectors.findAlivePlayers(gameState.players).length - 1) / 2;
+
+    // Lynch > Acquit
+    if (gameState.trial.lynchVotes > votingThreshold || (shortCircuit && gameState.trial.lynchVotes > gameState.trial.acquitVotes)) {
+      this.channel.send(Embeds.LynchElimination(gameState.trial.accused));
+      game.dispatch(MetaActionCreators.FlagPlayerForElimination(new Elimination(gameState.trial.accused)));
+      game.dispatch(TrialActionCreators.EndTrialLynched());
+      // Stop looking for accusations today.
+      stopChecking();
+      GameManager.eliminateFlaggedPlayers(game);
+    }
+    // Lynch < Acquit
+    else if (gameState.trial.acquitVotes > votingThreshold || shortCircuit) {
+      this.channel.send(Embeds.Acquitted(gameState.trial.accused, gameState));
+      game.dispatch(TrialActionCreators.EndTrial());
+    }
   }
 
   static getNextMorning() {

@@ -57,8 +57,8 @@ const Embeds = {
   },
 
   // Trial Results
-  Acquitted: (acquitted, gameState) => {
-    return Embed(d.ACQUITTED(acquitted, gameState), c.VILLAGER_BLUE, t.ACQUITTED(acquitted));
+  Acquitted: (acquitted) => {
+    return Embed(d.ACQUITTED(acquitted), c.VILLAGER_BLUE, t.ACQUITTED(acquitted));
   },
 
   // Victories

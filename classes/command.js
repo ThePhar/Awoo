@@ -185,6 +185,9 @@ function handleTrialCommands(command, game) {
   // We are in the accusations phase.
   else {
     if (command.command === Commands.ACCUSE) {
+      // Don't allow accusations when trials are not allowed.
+      if (!state().trial.canStartNew) return;
+
       // No target specified.
       if (command.target === "") return;
       let target = PlayerSelector.findPlayerByIdOrName(state().players, command.target);

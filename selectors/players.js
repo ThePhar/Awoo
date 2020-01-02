@@ -11,6 +11,8 @@ const PlayerSelectors = {
     return players.find((player) => player.name.toLowerCase() === string);
   },
 
+  findAllAccusingPlayers: (players) => players.filter((player) => !!player.accuse),
+
   findAllUnconfirmedPlayers: (players, ignore = {id:"0"}) => players.filter((player) => !player.confirmed && player.id !== ignore.id),
   findAllWerewolfPlayers: (players) => players.filter((player) => player.role.name === "Werewolf"),
   findAllWerewolvesWithCommonTarget: (players, target) => players.filter((player) => {

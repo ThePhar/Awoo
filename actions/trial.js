@@ -2,6 +2,7 @@ const TrialActions = {
   RESET_TRIAL_STATE: "RESET_TRIAL_STATE",
   START_TRIAL: "START_TRIAL",
   END_TRIAL: "END_TRIAL",
+  END_TRIAL_LYNCHED: "END_TRIAL_LYNCHED",
   LYNCH_VOTE: "LYNCH_VOTE",
   ACQUIT_VOTE: "ACQUIT_VOTE"
 };
@@ -15,6 +16,9 @@ const TrialActionCreators = {
   }),
   EndTrial: () => ({
     type: TrialActions.END_TRIAL
+  }),
+  EndTrialLynched: () => ({
+    type: TrialActions.END_TRIAL_LYNCHED
   }),
   LynchVote: () => ({
     type: TrialActions.LYNCH_VOTE

@@ -3,6 +3,7 @@ const { TrialActions } = require("../actions/trial");
 
 const initialState = {
   active: false,
+  canStartNew: true,
   immune: [],
   accused: undefined,
   lynchVotes: 0,
@@ -24,6 +25,10 @@ function TrialReducer(state = initialState, action) {
         draft.accused = undefined;
         draft.lynchVotes = 0;
         draft.acquitVotes = 0;
+        break;
+      case TrialActions.END_TRIAL_LYNCHED:
+        draft.active = false;
+        draft.canStartNew = false;
         break;
       case TrialActions.LYNCH_VOTE:
         draft.lynchVotes++;

@@ -78,7 +78,7 @@ const Descriptions = {
   },
 
   // Trial Results Descriptions
-  ACQUITTED: (acquitted, gameState) => {
+  ACQUITTED: (acquitted) => {
     return `> “Despite the accusations made against ${acquitted.name}, the rest of the village is not completely ` +
       `convinced that they are a werewolf at this time. Hopefully they can come to an agreement on who is before it's ` +
       `too late.”\n\n` +
