@@ -13,6 +13,11 @@ const PlayerSelectors = {
 
   findAllUnconfirmedPlayers: (players) => players.filter((player) => !player.confirmed),
   findAllWerewolfPlayers: (players) => players.filter((player) => player.role.name === "Werewolf"),
+  findAllWerewolvesWithCommonTarget: (players, target) => players.filter((player) => {
+    if (player.role.name === "Werewolf") {
+      return player.target.id === target.id;
+    }
+  })
 };
 
 module.exports = PlayerSelectors;
