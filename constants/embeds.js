@@ -119,7 +119,7 @@ const Embeds = {
   PlayerLeftInProgress: (player) => Embed(d.PLAYER_LEFT_IN_PROGRESS(player), c.INFORMATION),
   PlayerConfirmed: (player, unconfirmedPlayers) => Embed(d.PLAYER_CONFIRMED(player, unconfirmedPlayers), c.INFORMATION),
 
-  GameReady: () => Embed(d.GAME_READY(), c.INFORMATION),
+  GameReady: (time) => Embed(d.GAME_READY(time), c.INFORMATION),
   GameNotReady: () => Embed(d.GAME_NOT_READY(), c.INFORMATION),
 
   Generic: (message) => Embed(message, c.INFORMATION),

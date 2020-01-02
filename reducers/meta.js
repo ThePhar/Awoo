@@ -7,11 +7,14 @@ const initialState = {
   channel: undefined,
   day: 0,
   phase: Phases.LOBBY,
-  playersFlaggedForElimination: []
+  playersFlaggedForElimination: [],
+  lastAction: undefined
 };
 
 function MetaReducer(state = initialState, action) {
   return produce(state, (draft) => {
+    draft.lastAction = action.type;
+
     switch (action.type) {
       case MetaActions.LINK_CHANNEL:
         draft.channel = action.channel;

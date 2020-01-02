@@ -84,8 +84,8 @@ function handlePlayerCommands(command, game) {
       }
 
       player = new Player(command.executor);
-      game.dispatch(PlayerActionCreators.PlayerAdd(player));
       channel.send(Embeds.PlayerJoined(player));
+      game.dispatch(PlayerActionCreators.PlayerAdd(player));
       return;
     } else if (command.command === Commands.LEAVE) {
       // Player was not signed up!
@@ -94,8 +94,8 @@ function handlePlayerCommands(command, game) {
         return;
       }
 
-      game.dispatch(PlayerActionCreators.PlayerRemove(player));
       channel.send(Embeds.PlayerLeft(player));
+      game.dispatch(PlayerActionCreators.PlayerRemove(player));
       return;
     }
   }
@@ -108,8 +108,8 @@ function handlePlayerCommands(command, game) {
       return;
     }
 
-    game.dispatch(PlayerActionCreators.PlayerConfirmRole(player));
     channel.send(Embeds.PlayerConfirmed(player, PlayerSelector.findAllUnconfirmedPlayers(state().players)));
+    game.dispatch(PlayerActionCreators.PlayerConfirmRole(player));
   }
 }
 
@@ -170,16 +170,16 @@ function handleTrialCommands(command, game) {
 
     // GUILTY
     if (command.command === Commands.LYNCH) {
+      channel.send(Embeds.LynchVote(player, state().trial.accused));
       game.dispatch(TrialActionCreators.LynchVote());
       game.dispatch(PlayerActionCreators.PlayerVote(player));
-      channel.send(Embeds.LynchVote(player, state().trial.accused));
       return;
     }
     // NOT GUILTY
     if (command.command === Commands.ACQUIT) {
+      channel.send(Embeds.AcquitVote(player, state().trial.accused));
       game.dispatch(TrialActionCreators.AcquitVote());
       game.dispatch(PlayerActionCreators.PlayerVote(player));
-      channel.send(Embeds.AcquitVote(player, state().trial.accused));
     }
   }
   // We are in the accusations phase.
@@ -196,8 +196,8 @@ function handleTrialCommands(command, game) {
       // Don't allow accusations if player is in the immune list.
       if (state().trial.immune.some((immune) => immune.id === target.id)) return;
 
-      game.dispatch(PlayerActionCreators.PlayerAccuse(player, target));
       channel.send(Embeds.Accusation(player, target));
+      game.dispatch(PlayerActionCreators.PlayerAccuse(player, target));
     }
   }
 }

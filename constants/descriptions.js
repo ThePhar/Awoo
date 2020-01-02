@@ -226,8 +226,8 @@ const Descriptions = {
     return desc;
   },
 
-  GAME_READY: () => {
-    return `There are now enough players to start a game. Preparing to start at ${Settings.DAY_START_TIME}. ` +
+  GAME_READY: (time) => {
+    return `There are now enough players to start a game. Preparing to start ${time}. ` +
       `You can still join the next game if you sign up via ${Example(Commands.JOIN)} before the start time.`;
   },
   GAME_NOT_READY: () => {

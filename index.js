@@ -2,13 +2,15 @@ const Discord = require("discord.js");
 const Settings = require("./constants/settings");
 const Command = require("./classes/command");
 
+const GameManager = require("./classes/gameManager");
 const Game = require("./store/gameState");
 
 const Client = new Discord.Client();
-Client.on("ready", () => {
+Client.on("ready", async () => {
   console.clear();
   initializeBotDMReceiver();
-  initializeGameState();
+  await initializeGameState();
+  GameManager.initialize(Game);
 });
 Client.on("message", processMessages);
 
