@@ -187,3 +187,6 @@ modules.xml
 *.ipr
 
 # End of https://www.gitignore.io/api/node,webstorm+iml
+
+# Ignore the local settings file.
+settings.ts
