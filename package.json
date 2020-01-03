@@ -1,0 +1,36 @@
+{
+  "name": "awoo.io",
+  "version": "2.0.0",
+  "description": "A realtime Werewolf moderator and game manager for Discord.",
+  "main": "dist/index.js",
+  "repository": "https://github.com/ThePhar/awoo.git",
+  "author": "Zach Parks <zach@alliware.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "start": "yarn build && node dist/index.js",
+    "dev": "nodemon --exec ts-node src/index.ts --watch src",
+    "test": "jest --watch",
+    "coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.25",
+    "@types/node": "^13.1.2",
+    "@typescript-eslint/eslint-plugin": "^2.14.0",
+    "@typescript-eslint/parser": "^2.14.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "jest": "^24.9.0",
+    "nodemon": "^2.0.2",
+    "prettier": "^1.19.1",
+    "rimraf": "^3.0.0",
+    "ts-jest": "^24.2.0",
+    "ts-node": "^8.5.4",
+    "typescript": "^3.7.4"
+  },
+  "dependencies": {
+    "discord.js": "^11.5.1"
+  }
+}
