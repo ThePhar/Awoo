@@ -1,15 +1,15 @@
 import { ClientUser } from "discord.js";
 import Settings from "../settings";
 
-import Comm from "../enums/Command";
+import Command from "../enums/Command";
 import Player from "./Player";
 
 class ExecutableCommand {
-    readonly command: Comm;
+    readonly command: Command;
     readonly executor: ClientUser;
     readonly target?: Player;
 
-    private constructor(command: Comm, executor: ClientUser, target?: Player) {
+    private constructor(command: Command, executor: ClientUser, target?: Player) {
         this.command = command;
         this.executor = executor;
         this.target = target;
@@ -26,9 +26,9 @@ class ExecutableCommand {
         const commandString = stringArray.shift();
 
         // Find the command in the commands list.
-        for (const cmd in Comm) {
+        for (const cmd in Command) {
             if (cmd.toLowerCase() === commandString) {
-                command = cmd as Comm;
+                command = cmd as Command;
                 break;
             }
         }
