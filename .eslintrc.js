@@ -9,7 +9,5 @@ module.exports = {
         ecmaVersion: 2019,
         sourceType: "module",
     },
-    rules: {
-        "@typescript-eslint/interface-name-prefix": "off",
-    },
+    rules: {},
 };
