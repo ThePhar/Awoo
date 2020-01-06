@@ -9,8 +9,13 @@ export default class Player {
     isAlive = true;
     isReady = false;
 
+    // Player targeting values.
+    accusing: Player | null;
+
     constructor(client: ClientUser, role?: Role) {
         this.client = client;
         this.role = role || null;
+
+        this.accusing = null;
     }
 }

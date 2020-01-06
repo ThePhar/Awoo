@@ -1,6 +1,12 @@
-import { addPlayer, readyPlayer, removePlayer } from "../../actions/players";
+import { accusePlayer, addPlayer, readyPlayer, removePlayer } from "../../actions/players";
 import { createTestPlayer } from "../fixtures/player";
-import { ADD_PLAYER, READY_PLAYER, REMOVE_PLAYER } from "../../interfaces/players-actions";
+import {
+    ACCUSE_PLAYER,
+    ADD_PLAYER,
+    READY_PLAYER,
+    REMOVE_PLAYER,
+    PlayerTargetAction,
+} from "../../interfaces/players-actions";
 
 it("should return an action for playerAdd", () => {
     const action = addPlayer(createTestPlayer());
@@ -19,4 +25,14 @@ it("should return an action for playerReady", () => {
 
     expect(action.type).toBe(READY_PLAYER);
     expect(action.player).toStrictEqual(createTestPlayer());
+});
+it("should return an action for playerAccuse", () => {
+    const player = createTestPlayer({ id: "123" });
+    const accused = createTestPlayer({ id: "135" });
+
+    const action = accusePlayer(player, accused) as PlayerTargetAction;
+
+    expect(action.type).toBe(ACCUSE_PLAYER);
+    expect(action.player).toStrictEqual(player);
+    expect(action.target).toStrictEqual(accused);
 });

@@ -1,6 +1,13 @@
 import produce from "immer";
 import Player from "../structs/player";
-import { ADD_PLAYER, PlayersActions, READY_PLAYER, REMOVE_PLAYER } from "../interfaces/players-actions";
+import {
+    ACCUSE_PLAYER,
+    ADD_PLAYER,
+    PlayersActions,
+    PlayerTargetAction,
+    READY_PLAYER,
+    REMOVE_PLAYER,
+} from "../interfaces/players-actions";
 
 const initialState: Array<Player> = [];
 
@@ -20,6 +27,15 @@ export default function playersReducer(state: Array<Player> = initialState, acti
                     }
                 }
                 break;
+            case ACCUSE_PLAYER:
+                draft.forEach(player => {
+                    const a = action as PlayerTargetAction;
+
+                    if (player.client.id === action.player.client.id) {
+                        player.accusing = a.target;
+                    }
+                });
+                return;
         }
     });
 }
