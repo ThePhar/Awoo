@@ -1,14 +1,10 @@
 import Player from "../../structs/player";
-import { Client, ClientUser } from "discord.js";
+import { ClientUser } from "discord.js";
 import Villager from "../../roles/villager";
+import { createTestClient, createTestPlayer } from "../fixtures/player";
 
-let client: ClientUser;
-let player: Player;
-
-beforeEach(() => {
-    client = new ClientUser(new Client(), {});
-    player = new Player(client);
-});
+const player = createTestPlayer();
+const client = createTestClient();
 
 it("should include a discord user's client as a property", () => {
     expect(player.client).toBeInstanceOf(ClientUser);

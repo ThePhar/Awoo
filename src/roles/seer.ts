@@ -17,6 +17,6 @@ export default class Seer implements Role {
             .addField(s.fieldNames.teamAndWinConditions, rs.villager.winCondition)
             .addField(s.fieldNames.dayCommands, s.villager.day, true)
             .addField(s.fieldNames.nightCommands, s.seer.night, true)
-            .setFooter("Tip: This is a placeholder template and is subject to change at a later date.");
+            .setFooter("Tip: This is a placeholder template and is subject to change at a later date."); // TODO: Replace with help text
     }
 }
