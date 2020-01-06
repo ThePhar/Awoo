@@ -1,7 +1,8 @@
 import { createStore } from "redux";
 import PlayersReducer from "../../reducers/players";
-import { addPlayer, removePlayer } from "../../actions/players";
+import { addPlayer, readyPlayer, removePlayer } from "../../actions/players";
 import { createTestPlayer } from "../fixtures/player";
+import Player from "../../structs/player";
 
 let store: ReturnType<typeof createStore>;
 beforeEach(() => {
@@ -28,4 +29,13 @@ it("should on action REMOVE_PLAYER, remove a player from the state", () => {
     store.dispatch(removePlayer(player2));
 
     expect(store.getState()).toStrictEqual([player1, player3]);
+});
+it("should set ready state to true for players on action READY_PLAYER", () => {
+    const player = createTestPlayer();
+
+    store.dispatch(addPlayer(player));
+    store.dispatch(readyPlayer(player));
+
+    const state = store.getState() as Array<Player>;
+    expect(state[0].isReady).toBe(true);
 });
