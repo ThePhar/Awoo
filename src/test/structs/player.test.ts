@@ -12,7 +12,9 @@ it("should include a discord user's client as a property", () => {
 it("should include basic game properties", () => {
     expect(player.isAlive).not.toBeUndefined();
     expect(player.isReady).not.toBeUndefined();
+    expect(player.hasVoted).not.toBeUndefined();
     expect(player.accusing).not.toBeUndefined();
+    expect(player.target).not.toBeUndefined();
 });
 it("should have a null role on instantiation", () => {
     expect(player.role).toBeNull();
