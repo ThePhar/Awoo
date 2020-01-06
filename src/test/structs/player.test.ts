@@ -27,3 +27,16 @@ it("should allow to pass in an optional role during instantiating", () => {
     const predetermined = new Player(client, new Villager());
     expect(predetermined.role).toBeInstanceOf(Villager);
 });
+it("should reset a player's choices to their defaults when calling resetChoices", () => {
+    const player = createTestPlayer();
+
+    player.hasVoted = true;
+    player.accusing = createTestPlayer();
+    player.target = createTestPlayer();
+
+    player.resetChoices();
+
+    expect(player.hasVoted).toBe(false);
+    expect(player.accusing).toBeNull();
+    expect(player.target).toBeNull();
+});

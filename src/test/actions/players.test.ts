@@ -23,25 +23,25 @@ import {
     RESET_PLAYER_CHOICES,
 } from "../../interfaces/players-actions";
 
-it("should return an action for playerAdd", () => {
+it("should return an action for adding a player", () => {
     const action = addPlayer(createTestPlayer());
 
     expect(action.type).toBe(ADD_PLAYER);
     expect(action.player).toStrictEqual(createTestPlayer());
 });
-it("should return an action for playerRemove", () => {
+it("should return an action for removing a player", () => {
     const action = removePlayer(createTestPlayer());
 
     expect(action.type).toBe(REMOVE_PLAYER);
     expect(action.player).toStrictEqual(createTestPlayer());
 });
-it("should return an action for playerReady", () => {
+it("should return an action for marking a player as ready", () => {
     const action = readyPlayer(createTestPlayer());
 
     expect(action.type).toBe(READY_PLAYER);
     expect(action.player).toStrictEqual(createTestPlayer());
 });
-it("should return an action for playerAccuse", () => {
+it("should return an action for accusing a player", () => {
     const player = createTestPlayer({ id: "123" });
     const accused = createTestPlayer({ id: "135" });
 
@@ -51,7 +51,7 @@ it("should return an action for playerAccuse", () => {
     expect(action.player).toStrictEqual(player);
     expect(action.target).toStrictEqual(accused);
 });
-it("should return an action for playerEliminate", () => {
+it("should return an action for eliminating a player", () => {
     const player = createTestPlayer();
 
     const action = eliminatePlayer(player);
@@ -59,7 +59,7 @@ it("should return an action for playerEliminate", () => {
     expect(action.type).toBe(ELIMINATE_PLAYER);
     expect(action.player).toStrictEqual(player);
 });
-it("should return an action for playerTarget", () => {
+it("should return an action for targeting a player via night action", () => {
     const player = createTestPlayer({ id: "123" });
     const target = createTestPlayer({ id: "135" });
 
@@ -69,7 +69,7 @@ it("should return an action for playerTarget", () => {
     expect(action.player).toStrictEqual(player);
     expect(action.target).toStrictEqual(target);
 });
-it("should return an action for playerClearTarget", () => {
+it("should return an action for clearing a player's target", () => {
     const player = createTestPlayer();
 
     const action = playerClearTarget(player);
@@ -77,7 +77,7 @@ it("should return an action for playerClearTarget", () => {
     expect(action.type).toBe(CLEAR_TARGET_PLAYER);
     expect(action.player).toStrictEqual(player);
 });
-it("should return an action for playerVote", () => {
+it("should return an action for voting", () => {
     const player = createTestPlayer();
 
     const action = playerVote(player);
@@ -85,7 +85,7 @@ it("should return an action for playerVote", () => {
     expect(action.type).toBe(VOTE_PLAYER);
     expect(action.player).toStrictEqual(player);
 });
-it("should return an action for resetPlayerChoices", () => {
+it("should return an action for resetting all player choices", () => {
     const player = createTestPlayer();
 
     const action = resetPlayerChoices(player);
@@ -93,3 +93,4 @@ it("should return an action for resetPlayerChoices", () => {
     expect(action.type).toBe(RESET_PLAYER_CHOICES);
     expect(action.player);
 });
+it.todo("should return an action for assigning a role to a player");
