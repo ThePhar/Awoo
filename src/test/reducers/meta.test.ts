@@ -68,3 +68,10 @@ it("when CLEAR_ELIMINATION_QUEUE is fired, set elimination queue to empty array"
 
     expect(state.awaitingElimination.length).toBe(0);
 });
+
+it("should save the last ACTION fired by game.dispatch to lastAction", () => {
+    store.dispatch(startDayPhase());
+
+    const state = store.getState() as Meta;
+    expect(state.lastActionFired).toStrictEqual(startDayPhase());
+});

@@ -41,5 +41,8 @@ export default function metaReducer(state: Meta = new Meta(), action: MetaAction
                 draft.awaitingElimination = [];
                 break;
         }
+
+        // Save last action to lastAction.
+        draft.lastActionFired = action;
     });
 }
