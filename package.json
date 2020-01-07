@@ -1,6 +1,6 @@
 {
   "name": "awoo.io",
-  "version": "2.0.0",
+  "version": "0.2.0",
   "description": "A realtime Werewolf moderator and game manager for Discord.",
   "main": "dist/index.js",
   "repository": "https://github.com/ThePhar/awoo.git",
