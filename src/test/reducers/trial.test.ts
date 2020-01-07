@@ -1,6 +1,6 @@
 import { createStore } from "redux";
 import Trial from "../../structs/trial";
-import { trialReducer } from "../../reducers/trial";
+import trialReducer from "../../reducers/trial";
 import {
     acquitVote,
     endTrialAcquittal,

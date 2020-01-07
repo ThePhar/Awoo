@@ -11,7 +11,7 @@ import {
 } from "../interfaces/trial-actions";
 import produce from "immer";
 
-export function trialReducer(state: Trial = new Trial(), action: TrialActions): Trial {
+export default function trialReducer(state: Trial = new Trial(), action: TrialActions): Trial {
     return produce(state, draft => {
         switch (action.type) {
             case RESET_TRIAL_STATE:
