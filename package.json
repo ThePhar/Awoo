@@ -13,7 +13,8 @@
     "dev": "nodemon --exec ts-node src/index.ts --watch src",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch --passWithNoTests",
-    "coverage": "jest --coverage --passWithNoTests"
+    "coverage": "jest --coverage",
+    "coveralls": "yarn coverage && cat ./coverage/lcov.info | coveralls"
   },
   "devDependencies": {
     "@types/dedent": "^0.7.0",
@@ -22,6 +23,7 @@
     "@types/redux": "^3.6.0",
     "@typescript-eslint/eslint-plugin": "^2.14.0",
     "@typescript-eslint/parser": "^2.14.0",
+    "coveralls": "^3.0.9",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-prettier": "^3.1.2",
