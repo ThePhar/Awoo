@@ -5,8 +5,8 @@ import {
     LINK_DISCUSSION_CHANNEL,
     LINK_NOTIFICATION_CHANNEL,
     MetaActions,
-    MetaChannelActions,
-    MetaEliminationQueueActions,
+    MetaChannelAction,
+    MetaEliminationQueueAction,
     START_DAY_PHASE,
     START_NIGHT_PHASE,
 } from "../interfaces/meta-actions";
@@ -17,11 +17,11 @@ export default function metaReducer(state: Meta = new Meta(), action: MetaAction
     return produce(state, draft => {
         switch (action.type) {
             case LINK_NOTIFICATION_CHANNEL:
-                draft.notificationChannel = (action as MetaChannelActions).channel;
+                draft.notificationChannel = (action as MetaChannelAction).channel;
                 break;
 
             case LINK_DISCUSSION_CHANNEL:
-                draft.discussionChannel = (action as MetaChannelActions).channel;
+                draft.discussionChannel = (action as MetaChannelAction).channel;
                 break;
 
             case START_DAY_PHASE:
@@ -34,7 +34,7 @@ export default function metaReducer(state: Meta = new Meta(), action: MetaAction
                 break;
 
             case ADD_PLAYER_TO_ELIMINATION_QUEUE:
-                draft.awaitingElimination.push((action as MetaEliminationQueueActions).elimination);
+                draft.awaitingElimination.push((action as MetaEliminationQueueAction).elimination);
                 break;
 
             case CLEAR_ELIMINATION_QUEUE:

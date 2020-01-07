@@ -9,8 +9,10 @@ import {
     CLEAR_TARGET_PLAYER,
     VOTE_PLAYER,
     RESET_PLAYER_CHOICES,
+    ASSIGN_PLAYER_ROLE,
 } from "../interfaces/players-actions";
 import Player from "../structs/player";
+import Role from "../interfaces/role";
 
 export function addPlayer(player: Player): PlayersActions {
     return {
@@ -66,5 +68,12 @@ export function resetPlayerChoices(player: Player): PlayersActions {
     return {
         type: RESET_PLAYER_CHOICES,
         player,
+    };
+}
+export function assignPlayerRole(player: Player, role: Role): PlayersActions {
+    return {
+        type: ASSIGN_PLAYER_ROLE,
+        player,
+        role,
     };
 }

@@ -3,6 +3,7 @@ import playersReducer from "../../reducers/players";
 import {
     accusePlayer,
     addPlayer,
+    assignPlayerRole,
     eliminatePlayer,
     playerClearTarget,
     playerVote,
@@ -13,6 +14,7 @@ import {
 } from "../../actions/players";
 import { createTestPlayer } from "../fixtures/player";
 import Player from "../../structs/player";
+import Villager from "../../roles/villager";
 
 let store: ReturnType<typeof createStore>;
 beforeEach(() => {
@@ -125,5 +127,14 @@ describe("Action handlers", () => {
         expect(state[0].accusing).toBeNull();
         expect(state[0].target).toBeNull();
     });
-    it.todo("when ASSIGN_PLAYER_ROLE is fired, create a new role for player");
+    it("when ASSIGN_PLAYER_ROLE is fired, create a new role for player", () => {
+        const player = createTestPlayer();
+        const role = new Villager();
+
+        store.dispatch(addPlayer(player));
+        store.dispatch(assignPlayerRole(player, role));
+
+        const state = store.getState() as Array<Player>;
+        expect(state[0].role).toBe(role);
+    });
 });

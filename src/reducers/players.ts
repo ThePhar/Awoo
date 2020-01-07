@@ -3,15 +3,17 @@ import Player from "../structs/player";
 import {
     ACCUSE_PLAYER,
     ADD_PLAYER,
-    READY_PLAYER,
-    REMOVE_PLAYER,
+    ASSIGN_PLAYER_ROLE,
+    CLEAR_TARGET_PLAYER,
+    ELIMINATE_PLAYER,
+    PlayerRoleAction,
     PlayersActions,
     PlayerTargetAction,
-    ELIMINATE_PLAYER,
-    TARGET_PLAYER,
-    CLEAR_TARGET_PLAYER,
-    VOTE_PLAYER,
+    READY_PLAYER,
+    REMOVE_PLAYER,
     RESET_PLAYER_CHOICES,
+    TARGET_PLAYER,
+    VOTE_PLAYER,
 } from "../interfaces/players-actions";
 
 const initialState: Array<Player> = [];
@@ -52,6 +54,10 @@ export default function playersReducer(state: Array<Player> = initialState, acti
 
             case RESET_PLAYER_CHOICES:
                 action.player.resetChoices();
+                break;
+
+            case ASSIGN_PLAYER_ROLE:
+                action.player.role = (action as PlayerRoleAction).role;
                 break;
         }
     });

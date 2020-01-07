@@ -1,6 +1,7 @@
 import {
     accusePlayer,
     addPlayer,
+    assignPlayerRole,
     eliminatePlayer,
     playerClearTarget,
     playerVote,
@@ -21,7 +22,10 @@ import {
     CLEAR_TARGET_PLAYER,
     VOTE_PLAYER,
     RESET_PLAYER_CHOICES,
+    ASSIGN_PLAYER_ROLE,
+    PlayerRoleAction,
 } from "../../interfaces/players-actions";
+import Villager from "../../roles/villager";
 
 it("should return an action for adding a player", () => {
     const action = addPlayer(createTestPlayer());
@@ -93,4 +97,13 @@ it("should return an action for resetting all player choices", () => {
     expect(action.type).toBe(RESET_PLAYER_CHOICES);
     expect(action.player);
 });
-it.todo("should return an action for assigning a role to a player");
+it("should return an action for assigning a role to a player", () => {
+    const player = createTestPlayer();
+    const role = new Villager();
+
+    const action = assignPlayerRole(player, role) as PlayerRoleAction;
+
+    expect(action.type).toBe(ASSIGN_PLAYER_ROLE);
+    expect(action.player).toBe(player);
+    expect(action.role).toBe(role);
+});

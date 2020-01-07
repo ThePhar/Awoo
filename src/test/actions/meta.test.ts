@@ -12,8 +12,8 @@ import {
     CLEAR_ELIMINATION_QUEUE,
     LINK_DISCUSSION_CHANNEL,
     LINK_NOTIFICATION_CHANNEL,
-    MetaChannelActions,
-    MetaEliminationQueueActions,
+    MetaChannelAction,
+    MetaEliminationQueueAction,
     START_DAY_PHASE,
     START_NIGHT_PHASE,
 } from "../../interfaces/meta-actions";
@@ -26,13 +26,13 @@ const channel = createTestTextChannel();
 
 describe("Meta Actions Creator", () => {
     it("should return an action for linking text channel used for notifications", () => {
-        const action = linkNotificationChannel(channel) as MetaChannelActions;
+        const action = linkNotificationChannel(channel) as MetaChannelAction;
 
         expect(action.type).toBe(LINK_NOTIFICATION_CHANNEL);
         expect(action.channel).toBe(channel);
     });
     it("should return an action for linking text channel used for discussion", () => {
-        const action = linkDiscussionChannel(channel) as MetaChannelActions;
+        const action = linkDiscussionChannel(channel) as MetaChannelAction;
 
         expect(action.type).toBe(LINK_DISCUSSION_CHANNEL);
         expect(action.channel).toBe(channel);
@@ -49,7 +49,7 @@ describe("Meta Actions Creator", () => {
     });
     it("should return an action for adding a player to elimination queue", () => {
         const elimination = new Elimination(createTestPlayer(), new RichEmbed(), EliminationCause.Werewolf);
-        const action = addPlayerToEliminationQueue(elimination) as MetaEliminationQueueActions;
+        const action = addPlayerToEliminationQueue(elimination) as MetaEliminationQueueAction;
 
         expect(action.type).toBe(ADD_PLAYER_TO_ELIMINATION_QUEUE);
         expect(action.elimination).toBe(elimination);
