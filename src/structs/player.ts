@@ -1,8 +1,8 @@
-import { ClientUser } from "discord.js";
+import { User } from "discord.js";
 import Role from "../interfaces/role";
 
 export default class Player {
-    client: ClientUser;
+    client: User;
     role: Role | null;
 
     // Player state booleans.
@@ -14,7 +14,7 @@ export default class Player {
     accusing: Player | null;
     target: Player | null;
 
-    constructor(client: ClientUser, role?: Role) {
+    constructor(client: User, role?: Role) {
         this.client = client;
         this.role = role || null;
 

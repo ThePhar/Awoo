@@ -1,22 +1,26 @@
-import { ClientUser } from "discord.js";
+import { User, Message } from "discord.js";
 
 export default class Command {
     readonly type: string;
-    readonly executor: ClientUser;
+    readonly executor: User;
+    readonly message: Message;
     readonly args: Array<string>;
+    readonly isDM: boolean;
 
-    // TODO: Get prefix from settings file.
+    // TODO: Get prefix from settings file?
     static readonly prefix = "!";
 
-    constructor(command: string, executor: ClientUser, args: Array<string>) {
+    constructor(command: string, message: Message, args: Array<string>) {
         this.type = command;
-        this.executor = executor;
+        this.executor = message.author;
+        this.message = message;
         this.args = args;
+        this.isDM = message.channel.type === "dm";
     }
 
-    static parse(string: string, executor: ClientUser): Command | undefined {
+    static parse(message: Message): Command | undefined {
         // Remove the command prefix from the string.
-        let content = string.toLowerCase().replace(Command.prefix, "");
+        let content = message.content.toLowerCase().replace(Command.prefix, "");
         // Remove extra whitespace as well.
         content = content.replace(/\s+/g, " ").trim();
 
@@ -25,16 +29,18 @@ export default class Command {
         const command = args.shift(); // First value is a command, not an argument.
 
         if (command) {
-            return new Command(command, executor, args);
+            return new Command(command, message, args);
         }
     }
 
-    static getCode(command: Command): string {
+    static getCode(command: string, args: Array<string>): string {
         // Take a command like: { type: 'test', args: ['hello', 'there'], ... }
         // and return a string like: `!test <hello> <there>`
-        let s = `\`${Command.prefix}${command.type}`;
-        for (const arg of command.args) {
-            s += ` <${arg}>`;
+        let s = `\`${Command.prefix}${command}`;
+        if (args) {
+            for (const arg of args) {
+                s += ` <${arg}>`;
+            }
         }
         s += `\``;
 

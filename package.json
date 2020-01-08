@@ -21,6 +21,7 @@
     "@types/jest": "^24.0.25",
     "@types/node": "^13.1.2",
     "@types/redux": "^3.6.0",
+    "@types/sprintf-js": "^1.1.2",
     "@typescript-eslint/eslint-plugin": "^2.14.0",
     "@typescript-eslint/parser": "^2.14.0",
     "coveralls": "^3.0.9",
@@ -39,6 +40,7 @@
     "dedent": "^0.7.0",
     "discord.js": "^11.5.1",
     "immer": "^5.1.0",
-    "redux": "^4.0.5"
+    "redux": "^4.0.5",
+    "sprintf-js": "^1.1.2"
   }
 }
