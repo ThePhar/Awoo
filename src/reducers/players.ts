@@ -13,7 +13,6 @@ import {
     REMOVE_PLAYER,
     RESET_PLAYER_CHOICES,
     TARGET_PLAYER,
-    VOTE_PLAYER,
 } from "../interfaces/players-actions";
 
 const initialState: Array<Player> = [];
@@ -46,10 +45,6 @@ export default function playersReducer(state: Array<Player> = initialState, acti
 
             case CLEAR_TARGET_PLAYER:
                 action.player.target = null;
-                break;
-
-            case VOTE_PLAYER:
-                action.player.hasVoted = true;
                 break;
 
             case RESET_PLAYER_CHOICES:

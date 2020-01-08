@@ -2,9 +2,8 @@ enum RecognisedCommands {
     Join = "join", // Complete
     Leave = "leave", // Complete
     Rules = "rules",
-    Accuse = "accuse",
-    Kill = "kill",
-    Inspect = "inspect",
+    Accuse = "accuse", // Complete
+    Target = "target",
 }
 
 export default RecognisedCommands;

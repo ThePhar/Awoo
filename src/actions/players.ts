@@ -7,7 +7,6 @@ import {
     ELIMINATE_PLAYER,
     TARGET_PLAYER,
     CLEAR_TARGET_PLAYER,
-    VOTE_PLAYER,
     RESET_PLAYER_CHOICES,
     ASSIGN_PLAYER_ROLE,
 } from "../interfaces/players-actions";
@@ -55,12 +54,6 @@ export function targetPlayer(player: Player, target: Player): PlayersActions {
 export function playerClearTarget(player: Player): PlayersActions {
     return {
         type: CLEAR_TARGET_PLAYER,
-        player,
-    };
-}
-export function playerVote(player: Player): PlayersActions {
-    return {
-        type: VOTE_PLAYER,
         player,
     };
 }

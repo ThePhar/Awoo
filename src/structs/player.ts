@@ -8,7 +8,6 @@ export default class Player {
     // Player state booleans.
     isAlive = true;
     isReady = false;
-    hasVoted = false;
 
     // Player targeting values.
     accusing: Player | null;
@@ -23,7 +22,6 @@ export default class Player {
     }
 
     resetChoices(): void {
-        this.hasVoted = false;
         this.accusing = null;
         this.target = null;
     }
