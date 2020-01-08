@@ -2,7 +2,7 @@ import { Client, TextChannel } from "discord.js";
 import { initializeGame } from "./store/game";
 import CommandHandler from "./structs/command-handler";
 import Command from "./structs/command";
-import { linkDiscussionChannel } from "./actions/meta";
+import { linkDiscussionChannel, startDayPhase, startNightPhase } from "./actions/meta";
 
 const client = new Client();
 client.login("NjYxNzY0NTc4OTI0OTUzNjMx.XhQZ_Q.7LACMZontKRWtl_zuEw6DO6KpaE");
@@ -25,6 +25,14 @@ client.on("ready", async () => {
 
 client.on("message", message => {
     if (message.author.bot) return;
+    // TODO: Add check for right channel.
+
+    if (message.content === "#!day") {
+        game.dispatch(startDayPhase());
+    }
+    if (message.content === "#!night") {
+        game.dispatch(startNightPhase());
+    }
 
     // Check for commands.
     if (message.content.startsWith(Command.prefix)) {
