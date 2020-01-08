@@ -112,7 +112,7 @@ export default class Seer implements Role, NightActive {
             .setDescription(rs.seer.nightActionDescription)
             .setColor(Colors.VillagerBlue)
             .setThumbnail(rs.seer.imageUrl)
-            .addField(s.fieldNames.availableTargets, villagers.length > 0 ? villagers : "**None**")
+            .addField(s.fieldNames.villagers, villagers.length > 0 ? villagers : "**None**")
             .setFooter("Tip: This is a placeholder template and is subject to change at a later date."); // TODO: Change help placeholder
     }
 }

@@ -7,6 +7,7 @@ export default {
         nightCommands: `Night Commands`,
         werewolves: "Werewolves",
         availableTargets: "Available Targets",
+        villagers: "Villagers",
     },
     // TODO: Replace these later.
     villager: {

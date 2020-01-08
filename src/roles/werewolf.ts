@@ -70,7 +70,7 @@ export default class Werewolf implements Role, NightActive {
                 }
                 // Player is changing their target... to the same target.
                 else if (this.player.target && target.client.id === this.player.target.client.id) {
-                    this.player.client.send(`You are already targeting ${this.player.target}.`);
+                    this.player.client.send(`You are already targeting ${this.player.target.client}.`);
                     return;
                 }
                 // All is good!

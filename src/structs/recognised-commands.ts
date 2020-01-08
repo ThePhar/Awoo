@@ -3,7 +3,7 @@ enum RecognisedCommands {
     Leave = "leave", // Complete
     Rules = "rules",
     Accuse = "accuse", // Complete
-    Target = "target",
+    Target = "target", // Complete
 }
 
 export default RecognisedCommands;
