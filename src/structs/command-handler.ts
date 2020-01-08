@@ -1,6 +1,6 @@
 import RecognisedCommands from "./recognised-commands";
 import Command from "./command";
-import { initializeGame } from "../store/game";
+import { GameStore } from "../store/game";
 import { GameState } from "../test/store/game.test";
 import Phases from "./phases";
 import { sprintf } from "sprintf-js";
@@ -8,8 +8,7 @@ import Player from "./player";
 import { accusePlayer, addPlayer, removePlayer } from "../actions/players";
 import { RichEmbed } from "discord.js";
 import { findPlayer, findPlayerByName } from "../selectors/find-players";
-
-type GameStore = ReturnType<typeof initializeGame>;
+import NightActive from "../interfaces/night-active-role";
 
 export default class CommandHandler {
     static execute(command: Command, game: GameStore): void {
@@ -22,6 +21,11 @@ export default class CommandHandler {
                 break;
             case RecognisedCommands.Accuse:
                 CommandHandler.processAccuseCommand(command, game);
+                break;
+
+            // Night commands.
+            case RecognisedCommands.Target:
+                CommandHandler.processNightCommand(command, game);
                 break;
         }
     }
@@ -54,7 +58,7 @@ export default class CommandHandler {
         }
 
         // Create a player object for this user.
-        const player = new Player(command.executor);
+        const player = new Player(command.executor, game);
 
         // Check if player already exists.
         if (findPlayer(player.client.id, state.players)) {
@@ -192,5 +196,43 @@ export default class CommandHandler {
             );
             return;
         }
+    }
+    private static async processNightCommand(command: Command, game: GameStore): Promise<void> {
+        const state = game.getState() as GameState;
+
+        // Do not accept accuse commands via DM.
+        if (!command.isDM) {
+            await command.message.delete();
+            command.executor.send(
+                sprintf(
+                    'Sorry %s, I can\'t process night commands in public. Please send the %s command in this DM channel for "security reasons".',
+                    command.executor.toString(),
+                    Command.getCode(command.type, command.args),
+                ),
+            );
+            return;
+        }
+
+        // Do not allow this command outside of Day Phase.
+        if (state.meta.phase !== Phases.Night) {
+            return;
+        }
+
+        // Find the player for this user.
+        const player = findPlayer(command.executor.id, state.players);
+        if (!player || !player.isAlive) {
+            return;
+        }
+
+        // Only process the night role if the player is night active.
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        if ((player.role as NightActive).nightAction) {
+            const role = player.role as NightActive;
+
+            role.nightAction(command);
+        }
+
+        // Call the night action of the player to handle the night action.
     }
 }

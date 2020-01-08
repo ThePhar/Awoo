@@ -6,6 +6,7 @@ export default {
         dayCommands: `Day Commands`,
         nightCommands: `Night Commands`,
         werewolves: "Werewolves",
+        availableTargets: "Available Targets",
     },
     // TODO: Replace these later.
     villager: {
@@ -17,9 +18,9 @@ export default {
         night: `*You have no night actions, Sweet dreams~!*`,
     },
     werewolf: {
-        night: "▹ `!kill <name>`",
+        night: "▹ `!target <name>`",
     },
     seer: {
-        night: "▹ `!inspect <name>`",
+        night: "▹ `!target <name>`",
     },
 };
