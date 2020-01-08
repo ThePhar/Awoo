@@ -1,13 +1,15 @@
-import Role from "../interfaces/role";
+import randomItem from "random-item";
 import { RichEmbed } from "discord.js";
+import Role from "../interfaces/role";
 import Colors from "../structs/colors";
-import rs from "../strings/role-strings";
-import s from "../strings";
 import Player from "../structs/player";
+import FieldStrings from "../strings/fields";
+import RoleStrings from "../strings/roles";
+import Tips from "../strings/tips";
 
 export default class Villager implements Role {
-    name = "Villager";
-    appearance = "villager";
+    name = RoleStrings.villager.name;
+    appearance = RoleStrings.villager.appearance;
     player: Player;
 
     constructor(player: Player) {
@@ -17,12 +19,12 @@ export default class Villager implements Role {
     embed(): RichEmbed {
         return new RichEmbed()
             .setTitle(`You are a ${this.name}`)
-            .setDescription(rs.villager.description)
+            .setDescription(RoleStrings.villager.description)
             .setColor(Colors.VillagerBlue)
-            .setThumbnail(rs.villager.imageUrl)
-            .addField(s.fieldNames.teamAndWinConditions, rs.villager.winCondition)
-            .addField(s.fieldNames.dayCommands, s.villager.day, true)
-            .addField(s.fieldNames.nightCommands, s.villager.night, true)
-            .setFooter("Tip: This is a placeholder template and is subject to change at a later date.");
+            .setThumbnail(RoleStrings.villager.thumbnailUrl)
+            .addField(FieldStrings.title.winCondition, RoleStrings.villager.winCondition)
+            .addField(FieldStrings.title.dayCommands, RoleStrings.villager.dayCommands, true)
+            .addField(FieldStrings.title.nightCommands, RoleStrings.villager.nightCommands, true)
+            .setFooter(randomItem(Tips));
     }
 }

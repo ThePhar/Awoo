@@ -1,5 +1,6 @@
 import Role from "../interfaces/role";
 import { RichEmbed } from "discord.js";
+import randomItem from "random-item";
 import rs from "../strings/role-strings";
 import Colors from "../structs/colors";
 import s from "../strings";
@@ -15,6 +16,9 @@ import {
     findPlayerByName,
 } from "../selectors/find-players";
 import { targetPlayer } from "../actions/players";
+import Tips from "../strings/tips";
+import RoleStrings from "../strings/roles";
+import FieldStrings from "../strings/fields";
 
 export default class Werewolf implements Role, NightActiveRole {
     name = "Werewolf";
@@ -30,14 +34,26 @@ export default class Werewolf implements Role, NightActiveRole {
 
         return new RichEmbed()
             .setTitle(`You are a ${this.name}`)
-            .setDescription(rs.werewolf.description)
+            .setDescription(RoleStrings.werewolf.description)
             .setColor(Colors.WerewolfRed)
-            .setThumbnail(rs.werewolf.imageUrl)
-            .addField(s.fieldNames.teamAndWinConditions, rs.werewolf.winCondition)
-            .addField(s.fieldNames.dayCommands, s.villager.day, true)
-            .addField(s.fieldNames.nightCommands, s.werewolf.night, true)
-            .addField(s.fieldNames.werewolves, findAllWerewolves(gameState.players)) // TODO: Implement werewolves selector.
-            .setFooter("Tip: This is a placeholder template and is subject to change at a later date."); // TODO: Change help placeholder
+            .setThumbnail(RoleStrings.werewolf.thumbnailUrl)
+            .addField(FieldStrings.title.winCondition, RoleStrings.werewolf.winCondition)
+            .addField(FieldStrings.title.dayCommands, RoleStrings.villager.dayCommands, true)
+            .addField(FieldStrings.title.nightCommands, RoleStrings.werewolf.nightCommands, true)
+            .addField(FieldStrings.title.werewolves, findAllWerewolves(gameState.players))
+            .setFooter(randomItem(Tips));
+    }
+    nightEmbed(): RichEmbed {
+        const gameState = this.player.game.getState() as GameState;
+        const villagers = findAllAliveVillagers(gameState.players);
+
+        return new RichEmbed()
+            .setTitle(`On The Dinner Menu`)
+            .setDescription(RoleStrings.werewolf.nightDescription)
+            .setColor(Colors.WerewolfRed)
+            .setThumbnail(RoleStrings.werewolf.thumbnailUrl)
+            .addField(FieldStrings.title.availableTargets, villagers.length > 0 ? villagers : FieldStrings.none)
+            .setFooter(randomItem(Tips));
     }
 
     nightAction(command: Command): void {
@@ -53,24 +69,24 @@ export default class Werewolf implements Role, NightActiveRole {
 
                 // No target found.
                 if (!target) {
-                    this.player.client.send(
-                        `Sorry ${this.player.client}, but I cannot find a player by the name of \`${playerName}\``,
+                    this.player.user.send(
+                        `Sorry ${this.player.user}, but I cannot find a player by the name of \`${playerName}\``,
                     );
                     return;
                 }
                 // Target is the player making the command.
-                else if (target.client.id === this.player.client.id) {
-                    this.player.client.send(`You cannot target yourself ${this.player.client}.`);
+                else if (target.id === this.player.id) {
+                    this.player.user.send(`You cannot target yourself ${this.player.user}.`);
                     return;
                 }
                 // Target is dead.
                 else if (!target.isAlive) {
-                    this.player.client.send(`You cannot target eliminated players ${this.player.client}.`);
+                    this.player.user.send(`You cannot target eliminated players ${this.player.user}.`);
                     return;
                 }
                 // Player is changing their target... to the same target.
-                else if (this.player.target && target.client.id === this.player.target.client.id) {
-                    this.player.client.send(`You are already targeting ${this.player.target.client}.`);
+                else if (this.player.target && target.id === this.player.target.id) {
+                    this.player.user.send(`You are already targeting ${this.player.target.user}.`);
                     return;
                 }
                 // All is good!
@@ -79,13 +95,13 @@ export default class Werewolf implements Role, NightActiveRole {
                     werewolves.forEach(werewolf => {
                         // Werewolf already targeted someone.
                         if (werewolf.target) {
-                            werewolf.client.send(
-                                `${werewolf.client} has changed their target from ${werewolf.target.client} to ${target.client}.`,
+                            werewolf.user.send(
+                                `${werewolf.user} has changed their target from ${werewolf.target.user} to ${target.user}.`,
                             );
                         }
                         // First target.
                         else {
-                            werewolf.client.send(`${werewolf.client} has targeted ${target.client}.`);
+                            werewolf.user.send(`${werewolf.user} has targeted ${target.user}.`);
                         }
                     });
 
@@ -93,24 +109,12 @@ export default class Werewolf implements Role, NightActiveRole {
                     return;
                 }
             } else {
-                this.player.client.send(
-                    `${this.player.client}, please enter a name to target a player. ` +
+                this.player.user.send(
+                    `${this.player.user}, please enter a name to target a player. ` +
                         `Example: ${Command.getCode(RecognisedCommands.Target, ["name/mention"])}.`,
                 );
                 return;
             }
         }
-    }
-    nightEmbed(): RichEmbed {
-        const gameState = this.player.game.getState() as GameState;
-        const villagers = findAllAliveVillagers(gameState.players);
-
-        return new RichEmbed()
-            .setTitle(`On The Dinner Menu`)
-            .setDescription(rs.werewolf.nightActionDescription)
-            .setColor(Colors.WerewolfRed)
-            .setThumbnail(rs.werewolf.imageUrl)
-            .addField(s.fieldNames.availableTargets, villagers.length > 0 ? villagers : "**None**")
-            .setFooter("Tip: This is a placeholder template and is subject to change at a later date."); // TODO: Change help placeholder
     }
 }
