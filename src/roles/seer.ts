@@ -96,8 +96,12 @@ export default class Seer implements Role, NightActiveRole {
 
                 // All is good!
                 else {
-                    // TODO: Write a nice embed for this.
-                    this.player.user.send(`${target.user} is a **${(target.role as Role).appearance}**.`);
+                    const embed = new RichEmbed()
+                        .setColor(Colors.VillagerBlue)
+                        .setDescription(`${target.user} is a **${(target.role as Role).appearance}**.`)
+                        .setFooter(randomItem(Tips));
+
+                    this.player.user.send(embed);
 
                     this.active = false;
                     this.inspected.push(target);

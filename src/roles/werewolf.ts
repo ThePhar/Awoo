@@ -12,7 +12,11 @@ import FieldStrings from "../strings/fields";
 import RoleStrings from "../strings/roles";
 import Tips from "../strings/tips";
 import * as Selector from "../selectors/find-players";
+import { findAllWerewolves } from "../selectors/find-players";
 import { START_DAY_PHASE } from "../interfaces/meta-actions";
+import getMostDuplicates from "../util/duplicate";
+import Elimination from "../structs/elimination";
+import EliminationCause from "../structs/elimination-cause";
 
 export default class Werewolf implements Role, NightActiveRole {
     name = RoleStrings.werewolf.name;
@@ -113,18 +117,21 @@ export default class Werewolf implements Role, NightActiveRole {
 
                 // All is good!
                 else {
-                    // TODO: Write a nice embed for this.
+                    const embed = new RichEmbed().setColor(Colors.WerewolfRed).setFooter(randomItem(Tips));
+
                     const werewolves = Selector.findAllAliveWerewolves(gameState.players);
                     werewolves.forEach(werewolf => {
                         // Werewolf already targeted someone.
                         if (werewolf.target) {
-                            werewolf.user.send(
+                            embed.setDescription(
                                 `${werewolf.user} has changed their target from ${werewolf.target.user} to ${target.user}.`,
                             );
+                            werewolf.user.send(embed);
                         }
                         // First target.
                         else {
-                            werewolf.user.send(`${werewolf.user} has targeted ${target.user}.`);
+                            embed.setDescription(`${werewolf.user} has targeted ${target.user}.`);
+                            werewolf.user.send(embed);
                         }
                     });
 
@@ -142,5 +149,42 @@ export default class Werewolf implements Role, NightActiveRole {
                 return;
             }
         }
+    }
+
+    static getElimination(state: GameState): Elimination | undefined {
+        const eliminate = Werewolf.getTarget(state.players);
+        if (eliminate) {
+            return new Elimination(eliminate, Werewolf.eliminationEmbed(eliminate), EliminationCause.Werewolf);
+        }
+    }
+
+    private static eliminationEmbed(player: Player): RichEmbed {
+        return (
+            new RichEmbed()
+                .setTitle(`${player.user} Has Been Torn To Shreds`)
+                .setDescription(
+                    `> “The sounds of howling drown out the screams of ${player.user} as they meet a gruesome fate.”\n\n${player.user} has been eliminated from the game. Rest in ~~pieces~~ peace.`,
+                )
+                .setColor(Colors.WerewolfRed)
+                // TODO: Create thumbnail. Maybe an image?
+                .setFooter(randomItem(Tips))
+        );
+    }
+    private static getTarget(players: Array<Player>): Player | undefined {
+        const targets = findAllWerewolves(players).filter(werewolf => {
+            if (!werewolf.target) {
+                return false;
+            }
+
+            return werewolf.target;
+        });
+
+        // Only select a player for elimination if there's clear winner.
+        const mostTargeted = getMostDuplicates(targets);
+        if (mostTargeted.length !== 1) {
+            return undefined;
+        }
+
+        return mostTargeted[0];
     }
 }

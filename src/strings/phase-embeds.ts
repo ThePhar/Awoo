@@ -8,11 +8,12 @@ import FieldStrings from "./fields";
 import {
     findAllAlivePlayers,
     findAllEliminatedPlayers,
-    findAllVillagerTeam, findAllWerewolfTeam,
-    findAllWerewolves
+    findAllVillagerTeam,
+    findAllWerewolfTeam,
 } from "../selectors/find-players";
 import Player from "../structs/player";
 import RoleStrings from "./roles";
+import { getDuplicateCounts } from "../util/duplicate";
 
 function roleFormat(players: Array<Player>): Array<string> {
     return players.map(player => {
@@ -37,7 +38,7 @@ export function firstNightEmbed(gameState: GameState): RichEmbed {
         .setColor(Colors.Night)
         .addField(FieldStrings.title.alivePlayers, gameState.players, true)
         .addField(FieldStrings.title.eliminatedPlayers, FieldStrings.none, true)
-        .addField(FieldStrings.title.activeRolesField, "TODO", true)
+        .addField(FieldStrings.title.activeRolesField, getDuplicateCounts(gameState.players), true)
         .setFooter(randomItem(Tips));
 }
 
@@ -51,7 +52,7 @@ export function dayEmbed(gameState: GameState): RichEmbed {
         .setColor(Colors.Day)
         .addField(FieldStrings.title.alivePlayers, alivePlayers.length > 0 ? alivePlayers : FieldStrings.none, true)
         .addField(FieldStrings.title.eliminatedPlayers, deadPlayers.length > 0 ? deadPlayers : FieldStrings.none, true)
-        .addField(FieldStrings.title.activeRolesField, "TODO", true)
+        .addField(FieldStrings.title.activeRolesField, getDuplicateCounts(gameState.players), true)
         .setFooter(randomItem(Tips));
 }
 
@@ -65,7 +66,7 @@ export function nightEmbed(gameState: GameState): RichEmbed {
         .setColor(Colors.Night)
         .addField(FieldStrings.title.alivePlayers, alivePlayers.length > 0 ? alivePlayers : FieldStrings.none, true)
         .addField(FieldStrings.title.eliminatedPlayers, deadPlayers.length > 0 ? deadPlayers : FieldStrings.none, true)
-        .addField(FieldStrings.title.activeRolesField, "TODO", true)
+        .addField(FieldStrings.title.activeRolesField, getDuplicateCounts(gameState.players), true)
         .setFooter(randomItem(Tips));
 }
 

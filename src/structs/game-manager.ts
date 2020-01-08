@@ -1,8 +1,8 @@
 import { GameState, GameStore } from "../store/game";
-import { Message } from "discord.js";
+import { Message, RichEmbed } from "discord.js";
 import { ADD_PLAYER, REMOVE_PLAYER } from "../interfaces/player-actions";
 import moment from "moment";
-import { findAllAliveVillagers, findAllAliveWerewolves } from "../selectors/find-players";
+import { findAllAlivePlayers, findAllAliveVillagers, findAllAliveWerewolves } from "../selectors/find-players";
 import { startDayPhase, startNightPhase } from "../actions/meta";
 import NightActiveRole from "../interfaces/night-active-role";
 import { Job, scheduleJob } from "node-schedule";
@@ -14,11 +14,17 @@ import {
     villagerVictoryEmbed,
     werewolfVictoryEmbed,
 } from "../strings/phase-embeds";
-import { clearAllAccusations } from "../actions/players";
+import { clearAllAccusations, eliminatePlayer } from "../actions/players";
 import Player from "./player";
 import shuffle from "../util/shuffle";
 import Seer from "../roles/seer";
 import Werewolf from "../roles/werewolf";
+import Elimination from "./elimination";
+import EliminationCause from "./elimination-cause";
+import Colors from "./colors";
+import randomItem from "random-item";
+import Tips from "../strings/tips";
+import getMostDuplicates from "../util/duplicate";
 
 export default class GameManager {
     game: GameStore;
@@ -110,7 +116,13 @@ export default class GameManager {
     async startDay(): Promise<void> {
         const state = this.game.getState() as GameState;
         // Check for eliminations.
-        // TODO
+        const eliminations = [];
+
+        const werewolfElimination = Werewolf.getElimination(state);
+        if (werewolfElimination) eliminations.push(werewolfElimination);
+
+        // Process eliminations.
+        this.processEliminations(eliminations);
 
         // Start the day phase.
         this.game.dispatch(startDayPhase());
@@ -127,9 +139,14 @@ export default class GameManager {
     }
     async startNight(): Promise<void> {
         const state = this.game.getState() as GameState;
-
         // Check for eliminations.
-        // TODO
+        const eliminations = [];
+
+        const lynchElimination = GameManager.getLynchElimination(state);
+        if (lynchElimination) eliminations.push(lynchElimination);
+
+        // Process eliminations.
+        this.processEliminations(eliminations);
 
         // Start the night phase.
         this.game.dispatch(startNightPhase());
@@ -152,7 +169,7 @@ export default class GameManager {
     }
 
     // TODO: Separate file???
-    checkWinConditions(): void {
+    private checkWinConditions(): void {
         const stopWatching = this.game.subscribe(() => {
             const state = this.game.getState() as GameState;
 
@@ -179,7 +196,7 @@ export default class GameManager {
     }
 
     // TODO: Separate file???
-    static assignRandomRoles(players: Array<Player>, type: GameModes = GameModes.Normal): void {
+    private static assignRandomRoles(players: Array<Player>, type: GameModes = GameModes.Normal): void {
         const shuffledPlayers = shuffle(players);
 
         switch (type) {
@@ -198,7 +215,7 @@ export default class GameManager {
         }
     }
 
-    static getNextMorningTime(custom?: moment.Moment): moment.Moment {
+    private static getNextMorningTime(custom?: moment.Moment): moment.Moment {
         if (custom) return custom;
 
         const morning = moment();
@@ -217,7 +234,7 @@ export default class GameManager {
 
         return morning;
     }
-    static getNextNightTime(custom?: moment.Moment): moment.Moment {
+    private static getNextNightTime(custom?: moment.Moment): moment.Moment {
         if (custom) return custom;
 
         const night = moment();
@@ -235,5 +252,50 @@ export default class GameManager {
         }
 
         return night;
+    }
+    private static getLynchElimination(state: GameState): Elimination | undefined {
+        const targets = findAllAlivePlayers(state.players).filter(player => {
+            if (!player.accusing) {
+                return false;
+            }
+
+            return player.accusing;
+        });
+
+        const mostTargeted = getMostDuplicates(targets);
+        if (mostTargeted.length !== 1) {
+            return undefined;
+        }
+
+        const eliminate = mostTargeted[0];
+
+        if (eliminate) {
+            return new Elimination(eliminate, GameManager.eliminationLynchEmbed(eliminate), EliminationCause.Lynching);
+        }
+    }
+    private static eliminationLynchEmbed(player: Player): RichEmbed {
+        return (
+            new RichEmbed()
+                .setTitle(`${player.user} Has Been Lynched`)
+                .setDescription(
+                    `> “Despite their pleas, the village has decided to lynch ${player.user}. They force him into the gallows, and with a swift pull of the lever, they are gone.”\n\n${player.user} has been lynched and eliminated from the game.`,
+                )
+                .setColor(Colors.WerewolfRed)
+                // TODO: Create thumbnail. Maybe an image?
+                .setFooter(randomItem(Tips))
+        );
+    }
+
+    private processEliminations(eliminations: Array<Elimination>): void {
+        const state = this.game.getState() as GameState;
+
+        if (eliminations.length !== 0) {
+            eliminations.forEach(elimination => {
+                if (state.meta.notificationChannel) {
+                    state.meta.notificationChannel.send(elimination.embed);
+                }
+                this.game.dispatch(eliminatePlayer(elimination.player));
+            });
+        }
     }
 }
