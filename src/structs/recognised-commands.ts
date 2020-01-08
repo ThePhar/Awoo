@@ -4,6 +4,7 @@ enum RecognisedCommands {
     Rules = "rules",
     Accuse = "accuse", // Complete
     Target = "target", // Complete
+    Role = "role",
 }
 
 export default RecognisedCommands;

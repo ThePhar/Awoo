@@ -6,7 +6,7 @@ import { linkDiscussionChannel, linkNotificationChannel } from "./actions/meta";
 import GameManager from "./structs/game-manager";
 
 const client = new Client();
-client.login("NjYxNzY0NTc4OTI0OTUzNjMx.XhQZ_Q.7LACMZontKRWtl_zuEw6DO6KpaE");
+client.login("NjYxNzY0NTc4OTI0OTUzNjMx.XhWVkQ.50COVJuMYfgezxA3PEjWmCdTrvA");
 
 let game: GameStore;
 
@@ -24,7 +24,6 @@ client.on("ready", async () => {
     });
 
     const gameManager = new GameManager(game);
-    await gameManager.startLobby();
 
     console.log("ready");
 });
