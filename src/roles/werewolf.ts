@@ -12,6 +12,7 @@ import FieldStrings from "../strings/fields";
 import RoleStrings from "../strings/roles";
 import Tips from "../strings/tips";
 import * as Selector from "../selectors/find-players";
+import { START_DAY_PHASE } from "../interfaces/meta-actions";
 
 export default class Werewolf implements Role, NightActiveRole {
     name = RoleStrings.werewolf.name;
@@ -20,6 +21,14 @@ export default class Werewolf implements Role, NightActiveRole {
 
     constructor(player: Player) {
         this.player = player;
+
+        this.player.game.subscribe(() => {
+            const state = this.player.game.getState() as GameState;
+
+            if (state.meta.lastActionFired.type === START_DAY_PHASE) {
+                this.player.target = null;
+            }
+        });
     }
 
     embed(): RichEmbed {
@@ -38,6 +47,19 @@ export default class Werewolf implements Role, NightActiveRole {
     }
     nightEmbed(): RichEmbed {
         const gameState = this.player.game.getState() as GameState;
+
+        // Send a special embed for the first night.
+        if (gameState.meta.day === 1) {
+            return new RichEmbed()
+                .setTitle("Not Hungry... Yet.")
+                .setDescription(
+                    "You are not allowed to eliminate players on the first night. Instead just learn who your werewolf companions are.",
+                )
+                .setColor(Colors.WerewolfRed)
+                .setThumbnail(RoleStrings.werewolf.thumbnailUrl)
+                .setFooter(randomItem(Tips));
+        }
+
         const villagers = Selector.findAllAliveVillagers(gameState.players);
 
         return new RichEmbed()
@@ -51,6 +73,9 @@ export default class Werewolf implements Role, NightActiveRole {
 
     nightAction(command: Command): void {
         const gameState = this.player.game.getState() as GameState;
+
+        // Do not allow eliminations on the first night.
+        if (gameState.meta.day === 1) return;
 
         // Find a target to kill.
         if (command.type === RecognisedCommands.Target) {

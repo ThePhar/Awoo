@@ -6,6 +6,11 @@ const FieldStrings = {
         nightCommands: "Available Night Commands",
         werewolves: "Werewolves",
         availableTargets: "Available Targets",
+        alivePlayers: "Alive Players",
+        eliminatedPlayers: "Eliminated Players",
+        activeRolesField: `Active Roles`,
+        winningTeam: "Winners",
+        losingTeam: "Losers",
     },
     none: "**None**"
 };

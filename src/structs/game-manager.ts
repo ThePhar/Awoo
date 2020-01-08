@@ -1,16 +1,24 @@
-import { GameStore } from "../store/game";
-import { GameState } from "../test/old/store/game.test";
-import { Message, RichEmbed } from "discord.js";
-import RecognisedCommands from "./recognised-commands";
-import Command from "./command";
-import Colors from "./colors";
+import { GameState, GameStore } from "../store/game";
+import { Message } from "discord.js";
 import { ADD_PLAYER, REMOVE_PLAYER } from "../interfaces/player-actions";
 import moment from "moment";
-import Phases from "./phases";
 import { findAllAliveVillagers, findAllAliveWerewolves } from "../selectors/find-players";
 import { startDayPhase, startNightPhase } from "../actions/meta";
 import NightActiveRole from "../interfaces/night-active-role";
 import { Job, scheduleJob } from "node-schedule";
+import {
+    dayEmbed,
+    firstNightEmbed,
+    lobbyEmbed,
+    nightEmbed,
+    villagerVictoryEmbed,
+    werewolfVictoryEmbed,
+} from "../strings/phase-embeds";
+import { clearAllAccusations } from "../actions/players";
+import Player from "./player";
+import shuffle from "../util/shuffle";
+import Seer from "../roles/seer";
+import Werewolf from "../roles/werewolf";
 
 export default class GameManager {
     game: GameStore;
@@ -21,7 +29,6 @@ export default class GameManager {
         this.game = game;
 
         this.startLobby();
-        this.game.subscribe(this.checkWinConditions);
     }
 
     async startLobby(): Promise<void> {
@@ -29,198 +36,171 @@ export default class GameManager {
 
         // Check to ensure notification channel is defined.
         if (!state.meta.notificationChannel) {
-            console.error("No notification channel specified, returning");
-            return;
+            // console.error("No notification channel specified, returning");
+            throw new Error("No notification channel specified");
         }
         // Check to ensure discussion channel is defined.
         if (!state.meta.discussionChannel) {
-            console.error("No discussion channel specified, returning");
-            return;
+            // console.error("No discussion channel specified, returning");
+            throw new Error("No discussion channel specified");
         }
 
-        // TODO: Write a separate file for this embed.
-        const embed = new RichEmbed()
-            .setTitle("New Werewolf Game - Waiting On Players")
-            .setDescription(
-                `Welcome to Awoo, an auto-moderated and real-time werewolf game for your Discord server, created by Zach Parks!\n\nIn order to begin a new game, we need a minimum of (6) players to join ${Command.getCode(
-                    RecognisedCommands.Join,
-                    [],
-                )} in ${state.meta.discussionChannel}. For rules on how to play werewolf, type ${Command.getCode(
-                    RecognisedCommands.Rules,
-                    [],
-                )} in ${state.meta.discussionChannel} or to me via DM.`,
-            )
-            .setColor(Colors.Informational)
-            .addField("Signed Up Players", "**None**")
-            .setFooter("TIP: PLACEHOLDER!");
+        // Keep track of the latest notification so we can update it on the fly!
+        this.latestNotification = await state.meta.notificationChannel.send(lobbyEmbed(state));
 
-        this.latestNotification = await state.meta.notificationChannel.send(embed);
-
+        // Now start watching for dispatched events.
         const stopLobby = this.game.subscribe(() => {
             const state = this.game.getState() as GameState;
 
+            // Only listen for ADD_PLAYER or REMOVE_PLAYER.
             if (state.meta.lastActionFired.type === ADD_PLAYER || state.meta.lastActionFired.type === REMOVE_PLAYER) {
-                const embed = new RichEmbed()
-                    .setTitle("New Werewolf Game - Waiting On Players")
-                    .setDescription(
-                        `Welcome to Awoo, an auto-moderated and real-time werewolf game for your Discord server, created by Zach Parks!\n\nIn order to begin a new game, we need a minimum of (6) players to join ${Command.getCode(
-                            RecognisedCommands.Join,
-                            [],
-                        )} in ${
-                            state.meta.discussionChannel
-                        }. For rules on how to play werewolf, type ${Command.getCode(
-                            RecognisedCommands.Rules,
-                            [],
-                        )} in ${state.meta.discussionChannel} or to me via DM.`,
-                    )
-                    .setColor(Colors.Informational)
-                    .addField("Signed Up Players", state.players.length > 0 ? state.players : "**None**")
-                    .setFooter("TIP: PLACEHOLDER!");
-
+                // Check if the latestNotification still exists and update it accordingly.
                 if (this.latestNotification) {
-                    (this.latestNotification as Message).edit(embed);
+                    (this.latestNotification as Message).edit(lobbyEmbed(state));
 
                     // Check if minimum players have joined.
+                    // TODO: Move this hardcoded 6 to a settings file.
                     if (state.players.length >= 6) {
+                        // If we already scheduled the game to start, don't reschedule.
                         if (this.schedule) return;
 
+                        // Schedule the next game.
                         const timeTilDusk = GameManager.getNextNightTime();
-                        this.schedule = scheduleJob(timeTilDusk.toDate(), this.startFirstNight);
+                        this.schedule = scheduleJob(timeTilDusk.toDate(), () => {
+                            stopLobby();
+                            this.startFirstNight();
+                        });
                     }
                 }
             }
         });
     }
     async startFirstNight(): Promise<void> {
-        // TODO: Handle role generation.
+        const state = this.game.getState() as GameState;
+        // Generate everyone's roles.
+        GameManager.assignRandomRoles(state.players);
+
+        // Send every player their role.
+        state.players.forEach(player => {
+            player.user.send(player.role.embed());
+        });
+
+        // Start the night phase.
         this.game.dispatch(startNightPhase());
 
-        const timeTilDawn = GameManager.getNextMorningTime();
+        // Start watching for win conditions.
+        this.game.subscribe(this.checkWinConditions);
 
-        const state = this.game.getState() as GameState;
         // Send every player with a night action their night action embeds.
         state.players.forEach(player => {
-            // @ts-ignore
             if ((player.role as NightActiveRole).nightAction && player.isAlive) {
-                player.client.send((player.role as NightActiveRole).nightEmbed());
+                player.user.send((player.role as NightActiveRole).nightEmbed());
             }
         });
 
         // Set next phase schedule.
+        const timeTilDawn = GameManager.getNextMorningTime();
         this.schedule = scheduleJob(timeTilDawn.toDate(), this.startDay);
 
         // Send notification.
         if (state.meta.notificationChannel) {
-            const embed = new RichEmbed()
-                .setTitle(`Night ${state.meta.day}`)
-                .setDescription(
-                    `> “It's a seemingly peaceful night in the village of Pharville.”\n\n` +
-                        `You have all been privately messaged your randomly assigned roles for this game along with any additional ` +
-                        `information that may be relevant to you. If you have not received a message, ` +
-                        `please ensure you have not blocked messages from this bot. You can get your role resent to you using ` +
-                        `${Command.getCode(RecognisedCommands.Role, [])}.`,
-                );
-
-            state.meta.notificationChannel.send(embed);
+            state.meta.notificationChannel.send(firstNightEmbed(state));
         }
     }
     async startDay(): Promise<void> {
-        this.game.dispatch(startDayPhase());
-
-        const timeTilDusk = GameManager.getNextNightTime();
-
         const state = this.game.getState() as GameState;
+        // Check for eliminations.
+        // TODO
 
-        this.schedule = scheduleJob(timeTilDusk.toDate(), () => {
-            // TODO: handle eliminations.
+        // Start the day phase.
+        this.game.dispatch(startDayPhase());
+        this.game.dispatch(clearAllAccusations());
 
-            this.startNight();
-        });
+        // Set next phase schedule.
+        const timeTilDusk = GameManager.getNextNightTime();
+        this.schedule = scheduleJob(timeTilDusk.toDate(), this.startNight);
 
         // Send notification.
         if (state.meta.notificationChannel) {
-            const embed = new RichEmbed()
-                .setTitle(`Night ${state.meta.day}`)
-                .setDescription(
-                    `> “The events of last night still linger in your minds. You must act quickly before it's too late.”\n\n` +
-                        `You have all awoken and are free to discuss any events you have learned from last night. When you are ready to ` +
-                        `accuse someone, use ${Command.getCode(RecognisedCommands.Accuse, [
-                            "name/mention",
-                        ])}. The player with the most accusations at the end of the day will be lynched and eliminated.\n\n` +
-                        `Regardless of whether a player has been lynched today, the night will begin ${timeTilDusk}.`,
-                );
-
-            state.meta.notificationChannel.send(embed);
+            state.meta.notificationChannel.send(dayEmbed(state));
         }
     }
     async startNight(): Promise<void> {
+        const state = this.game.getState() as GameState;
+
+        // Check for eliminations.
+        // TODO
+
+        // Start the night phase.
         this.game.dispatch(startNightPhase());
 
-        const timeTilDawn = GameManager.getNextMorningTime();
-
-        const state = this.game.getState() as GameState;
         // Send every player with a night action their night action embeds.
         state.players.forEach(player => {
-            // @ts-ignore
             if ((player.role as NightActiveRole).nightAction && player.isAlive) {
-                player.client.send((player.role as NightActiveRole).nightEmbed());
+                player.user.send((player.role as NightActiveRole).nightEmbed());
             }
         });
 
         // Set next phase schedule.
-        this.schedule = scheduleJob(timeTilDawn.toDate(), () => {
-            // TODO: Handle eliminations.
-
-            this.startDay();
-        });
+        const timeTilDawn = GameManager.getNextMorningTime();
+        this.schedule = scheduleJob(timeTilDawn.toDate(), this.startDay);
 
         // Send notification.
         if (state.meta.notificationChannel) {
-            const embed = new RichEmbed()
-                .setTitle(`Night ${state.meta.day}`)
-                .setDescription(
-                    `> “As the sun sets and darkness envelops the village, you all return to your residences for the night, ` +
-                        `hoping to see the sun again.”\n\n` +
-                        `During the night, you will be unable to speak in this channel, but if you have a night-active role, you will ` +
-                        `receive a DM on what night actions are available. Be sure to perform your night actions before dawn or you ` +
-                        `will forfeit any actions that may have given you an advantage.\n\n` +
-                        `The sun will rise ${timeTilDawn}.`,
-                );
-
-            state.meta.notificationChannel.send(embed);
+            state.meta.notificationChannel.send(nightEmbed(state));
         }
     }
 
-    checkWinConditions() {
+    // TODO: Separate file???
+    checkWinConditions(): void {
         const stopWatching = this.game.subscribe(() => {
             const state = this.game.getState() as GameState;
 
-            if (state.meta.phase !== Phases.WaitingForPlayers) {
-                const livingWerewolfTotal = findAllAliveWerewolves(state.players).length;
-                const livingVillagerTotal = findAllAliveVillagers(state.players).length;
+            const livingWerewolfTotal = findAllAliveWerewolves(state.players).length;
+            const livingVillagerTotal = findAllAliveVillagers(state.players).length;
 
-                // Check villager victory
-                if (livingWerewolfTotal === 0) {
-                    stopWatching();
+            // Check villager victory
+            if (livingWerewolfTotal === 0) {
+                stopWatching();
 
-                    // TODO: Write embed for this.
-                    if (state.meta.notificationChannel) {
-                        state.meta.notificationChannel.send("Villagers win!");
-                    }
+                if (state.meta.notificationChannel) {
+                    state.meta.notificationChannel.send(villagerVictoryEmbed(state));
                 }
-                // Check werewolf victory
-                else if (livingWerewolfTotal >= livingVillagerTotal) {
-                    stopWatching();
+            }
+            // Check werewolf victory
+            else if (livingWerewolfTotal >= livingVillagerTotal) {
+                stopWatching();
 
-                    if (state.meta.notificationChannel) {
-                        state.meta.notificationChannel.send("Werewolves win!");
-                    }
+                if (state.meta.notificationChannel) {
+                    state.meta.notificationChannel.send(werewolfVictoryEmbed(state));
                 }
             }
         });
     }
 
-    static getNextMorningTime(): moment.Moment {
+    // TODO: Separate file???
+    static assignRandomRoles(players: Array<Player>, type: GameModes = GameModes.Normal): void {
+        const shuffledPlayers = shuffle(players);
+
+        switch (type) {
+            case GameModes.Normal:
+                shuffledPlayers[0].role = new Seer(shuffledPlayers[0]);
+                shuffledPlayers[1].role = new Werewolf(shuffledPlayers[1]);
+
+                // 9 to 11 Players
+                if (players.length >= 9 && players.length <= 11) {
+                    shuffledPlayers[2].role = new Werewolf(shuffledPlayers[2]);
+                }
+                // 12+ Players
+                else if (players.length >= 12) {
+                    shuffledPlayers[3].role = new Werewolf(shuffledPlayers[3]);
+                }
+        }
+    }
+
+    static getNextMorningTime(custom?: moment.Moment): moment.Moment {
+        if (custom) return custom;
+
         const morning = moment();
 
         // Set the hours, minutes, seconds, milliseconds to a specific time.
@@ -237,7 +217,9 @@ export default class GameManager {
 
         return morning;
     }
-    static getNextNightTime(): moment.Moment {
+    static getNextNightTime(custom?: moment.Moment): moment.Moment {
+        if (custom) return custom;
+
         const night = moment();
 
         // Set the hours, minutes, seconds, milliseconds to a specific time.

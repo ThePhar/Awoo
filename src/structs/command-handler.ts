@@ -3,7 +3,6 @@ import Command from "./command";
 import { GameStore } from "../store/game";
 import { GameState } from "../test/old/store/game.test";
 import Phases from "./phases";
-import { sprintf } from "sprintf-js";
 import Player from "./player";
 import { accusePlayer, addPlayer, removePlayer } from "../actions/players";
 import { RichEmbed } from "discord.js";

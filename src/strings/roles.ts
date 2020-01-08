@@ -7,6 +7,7 @@ const RoleStrings = {
         name: "Villager",
         appearance: "villager",
         description: "You are an average villager. Find the werewolves and eliminate them.",
+        victoryDescription: "> “The last of the werewolves were completely eliminated along with those who allied with them. The first calm night in what feels like forever, has finally come.",
         thumbnailUrl: "https://media.discordapp.net/attachments/663423717753225227/663469766253608999/villager_t.png",
         winCondition: "You are on the **Villagers** team. You win if all the werewolves are eliminated.",
         nightCommands: "*You have no night actions. Sweet dreams~!*",
@@ -20,6 +21,7 @@ const RoleStrings = {
         appearance: "werewolf",
         description: "You are a werewolf and learn the identity of any other werewolves. Every night after the first, you may target a player to eliminate. You will also be notified when one of your fellow werewolves makes a target as well. The player with the most werewolves targeting them will be eliminated next morning. You are not allowed to target other werewolves.",
         nightDescription: `Target a player to eliminate from the list below using ${Command.getCode(RecognisedCommands.Target, ["name"])}. Remember, only the player with the most werewolves targeting them will be eliminated. If there's a tie, no one will be eliminated.`,
+        victoryDescription: "> “The villagers have been whittled down to the point where the werewolves no longer need to hide their identity and easily overpower the remaining villagers. All of your screams fall on deaf ears as the werewolves take complete control of the village.”",
         thumbnailUrl: "https://media.discordapp.net/attachments/663423717753225227/663484398188101694/werewolf_t.png",
         winCondition: "You are on the **Werewolves** team. You win if the number of living werewolves meet or exceed the number of living villagers.",
         nightCommands: [

@@ -24,9 +24,25 @@ export function findAllPlayersButMe(players: Array<Player>, ignore: Player): Arr
     });
 }
 
+export function findAllVillagerTeam(players: Array<Player>): Array<Player> {
+    return players.filter(player => {
+        if (!(player.role instanceof Werewolf)) {
+            return player;
+        }
+    });
+}
+
 export function findAllAliveVillagers(players: Array<Player>): Array<Player> {
     return players.filter(player => {
         if (player.isAlive && !(player.role instanceof Werewolf)) {
+            return player;
+        }
+    });
+}
+
+export function findAllWerewolfTeam(players: Array<Player>): Array<Player> {
+    return players.filter(player => {
+        if (player.role instanceof Werewolf) {
             return player;
         }
     });
@@ -43,6 +59,22 @@ export function findAllWerewolves(players: Array<Player>): Array<Player> {
 export function findAllAliveWerewolves(players: Array<Player>): Array<Player> {
     return players.filter(player => {
         if (player.isAlive && player.role instanceof Werewolf) {
+            return player;
+        }
+    });
+}
+
+export function findAllAlivePlayers(players: Array<Player>): Array<Player> {
+    return players.filter(player => {
+        if (player.isAlive) {
+            return player;
+        }
+    });
+}
+
+export function findAllEliminatedPlayers(players: Array<Player>): Array<Player> {
+    return players.filter(player => {
+        if (!player.isAlive) {
             return player;
         }
     });
