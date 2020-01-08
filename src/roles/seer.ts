@@ -1,19 +1,21 @@
-import Role from "../interfaces/role";
 import { RichEmbed } from "discord.js";
-import rs from "../strings/role-strings";
-import Colors from "../structs/colors";
-import s from "../strings";
+import randomItem from "random-item";
+import Role from "../interfaces/role";
 import NightActiveRole from "../interfaces/night-active-role";
-import Player from "../structs/player";
-import Command from "../structs/command";
-import { GameState } from "../test/old/store/game.test";
 import { START_DAY_PHASE } from "../interfaces/meta-actions";
+import { GameState } from "../store/game";
+import Colors from "../structs/colors";
+import Command from "../structs/command";
+import Player from "../structs/player";
 import RecognisedCommands from "../structs/recognised-commands";
+import RoleStrings from "../strings/roles";
+import FieldStrings from "../strings/fields";
+import Tips from "../strings/tips";
 import { findAllPlayersButMe, findPlayerByName } from "../selectors/find-players";
 
 export default class Seer implements Role, NightActiveRole {
-    name = "Seer";
-    appearance = "villager";
+    name = RoleStrings.seer.name;
+    appearance = RoleStrings.villager.appearance;
     player: Player;
 
     active = true;
@@ -35,20 +37,35 @@ export default class Seer implements Role, NightActiveRole {
     embed(): RichEmbed {
         return new RichEmbed()
             .setTitle(`You are a ${this.name}`)
-            .setDescription(rs.seer.description)
+            .setDescription(RoleStrings.seer.description)
             .setColor(Colors.VillagerBlue)
-            .setThumbnail(rs.seer.imageUrl)
-            .addField(s.fieldNames.teamAndWinConditions, rs.villager.winCondition)
-            .addField(s.fieldNames.dayCommands, s.villager.day, true)
-            .addField(s.fieldNames.nightCommands, s.seer.night, true)
-            .setFooter("Tip: This is a placeholder template and is subject to change at a later date."); // TODO: Replace with help text
+            .setThumbnail(RoleStrings.seer.thumbnailUrl)
+            .addField(FieldStrings.title.winCondition, RoleStrings.villager.winCondition)
+            .addField(FieldStrings.title.dayCommands, RoleStrings.villager.dayCommands, true)
+            .addField(FieldStrings.title.nightCommands, RoleStrings.seer.nightCommands, true)
+            .setFooter(randomItem(Tips));
+    }
+    nightEmbed(): RichEmbed {
+        const gameState = this.player.game.getState() as GameState;
+        const players = findAllPlayersButMe(gameState.players, this.player);
+
+        // Create a special list of players that includes their appearance if they've already been inspected.
+        const villagers = this.formatArray(players);
+
+        return new RichEmbed()
+            .setTitle(RoleStrings.seer.nightName)
+            .setDescription(RoleStrings.seer.nightDescription)
+            .setColor(Colors.VillagerBlue)
+            .setThumbnail(RoleStrings.seer.thumbnailUrl)
+            .addField(FieldStrings.title.availableTargets, villagers.length > 0 ? villagers : FieldStrings.none)
+            .setFooter(randomItem(Tips));
     }
 
     nightAction(command: Command): void {
         const gameState = this.player.game.getState() as GameState;
 
+        // Only allow this command if it's active.
         if (this.active && command.type === RecognisedCommands.Target) {
-            // Find the target for inspecting.
             if (command.args.length !== 0) {
                 const playerName = command.args.join(" ");
 
@@ -57,62 +74,55 @@ export default class Seer implements Role, NightActiveRole {
 
                 // No target found.
                 if (!target) {
-                    this.player.client.send(
-                        `Sorry ${this.player.client}, but I cannot find a player by the name of \`${playerName}\``,
+                    this.player.user.send(
+                        `Sorry ${this.player.user}, but I cannot find a player by the name of \`${playerName}\``,
                     );
                     return;
                 }
+
                 // Target is the player making the command.
-                else if (target.client.id === this.player.client.id) {
-                    this.player.client.send(`You cannot target yourself ${this.player.client}.`);
+                else if (target.id === this.player.id) {
+                    this.player.user.send(`You cannot target yourself ${this.player.user}.`);
                     return;
                 }
+
                 // Target has already been inspected.
-                else if (this.inspected.find(p => p.client.id === target.client.id)) {
-                    this.player.client.send(
-                        `You already inspected this player. ${target.client} is a **${
-                            (target.role as Role).appearance
-                        }**.`,
+                else if (this.inspected.find(p => p.id === target.id)) {
+                    this.player.user.send(
+                        `You already inspected this player. ${target.user} is a **${target.role.appearance}**.`,
                     );
                     return;
                 }
+
                 // All is good!
                 else {
                     // TODO: Write a nice embed for this.
-                    this.player.client.send(`${target.client} is a **${(target.role as Role).appearance}**.`);
+                    this.player.user.send(`${target.user} is a **${(target.role as Role).appearance}**.`);
 
                     this.active = false;
                     this.inspected.push(target);
                     return;
                 }
-            } else {
-                this.player.client.send(
-                    `${this.player.client}, please enter a name to target a player. ` +
-                        `Example: ${Command.getCode(RecognisedCommands.Target, ["name/mention"])}.`,
+            }
+
+            // The user inputted no target.
+            else {
+                this.player.user.send(
+                    `${this.player.user}, please enter a name to target a player. ` +
+                        `Example: ${Command.getCode(RecognisedCommands.Target, ["name"])}.`,
                 );
                 return;
             }
         }
     }
-    nightEmbed(): RichEmbed {
-        const gameState = this.player.game.getState() as GameState;
-        const players = findAllPlayersButMe(gameState.players, this.player);
 
-        // Create a special list of players that includes their appearance if they've already been inspected.
-        const villagers: Array<string> = players.map(player => {
-            if (this.inspected.find(p => p.client.id === player.client.id)) {
-                return player.toString() + ` (**${(player.role as Role).appearance}**)`;
+    private formatArray(players: Array<Player>): Array<string> {
+        return players.map(player => {
+            if (this.inspected.find(p => p.id === player.id)) {
+                return player.toString() + ` (**${player.role.appearance}**)`;
             } else {
                 return player.toString() + ` (**?**)`;
             }
         });
-
-        return new RichEmbed()
-            .setTitle(`Look Into The Crystal Ball`)
-            .setDescription(rs.seer.nightActionDescription)
-            .setColor(Colors.VillagerBlue)
-            .setThumbnail(rs.seer.imageUrl)
-            .addField(s.fieldNames.villagers, villagers.length > 0 ? villagers : "**None**")
-            .setFooter("Tip: This is a placeholder template and is subject to change at a later date."); // TODO: Change help placeholder
     }
 }

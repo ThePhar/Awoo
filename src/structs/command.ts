@@ -1,18 +1,17 @@
-import { User, Message } from "discord.js";
+import { Message, GuildMember } from "discord.js";
 
 export default class Command {
     readonly type: string;
-    readonly executor: User;
+    readonly executor: GuildMember;
     readonly message: Message;
     readonly args: Array<string>;
     readonly isDM: boolean;
 
-    // TODO: Get prefix from settings file?
     static readonly prefix = "!";
 
     constructor(command: string, message: Message, args: Array<string>) {
         this.type = command;
-        this.executor = message.author;
+        this.executor = message.member;
         this.message = message;
         this.args = args;
         this.isDM = message.channel.type === "dm";

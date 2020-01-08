@@ -7,7 +7,7 @@ import Colors from "./colors";
 import { ADD_PLAYER, REMOVE_PLAYER } from "../interfaces/player-actions";
 import moment from "moment";
 import Phases from "./phases";
-import { findAllAliveVillagers, findAllLivingWerewolves } from "../selectors/find-players";
+import { findAllAliveVillagers, findAllAliveWerewolves } from "../selectors/find-players";
 import { startDayPhase, startNightPhase } from "../actions/meta";
 import NightActiveRole from "../interfaces/night-active-role";
 import { Job, scheduleJob } from "node-schedule";
@@ -196,7 +196,7 @@ export default class GameManager {
             const state = this.game.getState() as GameState;
 
             if (state.meta.phase !== Phases.WaitingForPlayers) {
-                const livingWerewolfTotal = findAllLivingWerewolves(state.players).length;
+                const livingWerewolfTotal = findAllAliveWerewolves(state.players).length;
                 const livingVillagerTotal = findAllAliveVillagers(state.players).length;
 
                 // Check villager victory

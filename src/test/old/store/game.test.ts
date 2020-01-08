@@ -6,7 +6,6 @@ import { initializeGame } from "../../../store/game";
 export interface GameState {
     meta: Meta;
     players: Array<Player>;
-    trial: Trial;
 }
 
 it("should return a created game state store on initialization", () => {

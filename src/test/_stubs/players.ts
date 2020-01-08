@@ -4,8 +4,8 @@ import Player from "../../structs/player";
 import Werewolf from "../../roles/werewolf";
 import { createStubGuildMember } from "./clients";
 
-export function createStubPlayer(id?: string): Player {
-    return new Player(createStubGuildMember(id), {} as GameStore);
+export function createStubPlayer(id?: string, name?: string): Player {
+    return new Player(createStubGuildMember(id, name), {} as GameStore);
 }
 export function createStubPlayerWithWerewolves(id?: string): Player {
     const player = createStubPlayer("7001");

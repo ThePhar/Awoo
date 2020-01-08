@@ -16,6 +16,7 @@ const RoleStrings = {
     },
     werewolf: {
         name: "Werewolf",
+        nightName: "On The Dinner Menu",
         appearance: "werewolf",
         description: "You are a werewolf and learn the identity of any other werewolves. Every night after the first, you may target a player to eliminate. You will also be notified when one of your fellow werewolves makes a target as well. The player with the most werewolves targeting them will be eliminated next morning. You are not allowed to target other werewolves.",
         nightDescription: `Target a player to eliminate from the list below using ${Command.getCode(RecognisedCommands.Target, ["name"])}. Remember, only the player with the most werewolves targeting them will be eliminated. If there's a tie, no one will be eliminated.`,
@@ -27,6 +28,7 @@ const RoleStrings = {
     },
     seer: {
         name: "Seer",
+        nightName: "Look Into The Crystal Ball",
         description: "You are a seer and have the special ability to, once per night, inspect a player to learn if they are a werewolf. Your existence is a threat to the werewolves, so take care not to reveal yourself too carelessly.",
         nightDescription: `It's time to peer into the true nature of one of your fellow villagers. Target a player from the list below using ${Command.getCode(RecognisedCommands.Target, ["name"])} to learn if they are a werewolf.`,
         thumbnailUrl: "https://media.discordapp.net/attachments/662393786638532609/663489597925490758/seer.png",

@@ -4,6 +4,7 @@ import Werewolf from "../roles/werewolf";
 export function findPlayer(id: string, players: Array<Player>): Player | undefined {
     return players.find(player => player.id === id);
 }
+
 export function findPlayerByName(name: string, players: Array<Player>): Player | undefined {
     // We need to remove the ! because for some reason, client.toString doesn't call with it???
     name = name.replace("!", "");
@@ -14,6 +15,7 @@ export function findPlayerByName(name: string, players: Array<Player>): Player |
         }
     });
 }
+
 export function findAllPlayersButMe(players: Array<Player>, ignore: Player): Array<Player> {
     return players.filter(player => {
         if (player.id !== ignore.id) {
@@ -21,6 +23,7 @@ export function findAllPlayersButMe(players: Array<Player>, ignore: Player): Arr
         }
     });
 }
+
 export function findAllAliveVillagers(players: Array<Player>): Array<Player> {
     return players.filter(player => {
         if (player.isAlive && !(player.role instanceof Werewolf)) {
@@ -28,6 +31,7 @@ export function findAllAliveVillagers(players: Array<Player>): Array<Player> {
         }
     });
 }
+
 export function findAllWerewolves(players: Array<Player>): Array<Player> {
     return players.filter(player => {
         if (player.role instanceof Werewolf) {
@@ -35,7 +39,8 @@ export function findAllWerewolves(players: Array<Player>): Array<Player> {
         }
     });
 }
-export function findAllLivingWerewolves(players: Array<Player>): Array<Player> {
+
+export function findAllAliveWerewolves(players: Array<Player>): Array<Player> {
     return players.filter(player => {
         if (player.isAlive && player.role instanceof Werewolf) {
             return player;

@@ -3,7 +3,6 @@ import Role from "./role";
 
 export const ADD_PLAYER = "ADD_PLAYER";
 export const REMOVE_PLAYER = "REMOVE_PLAYER";
-export const READY_PLAYER = "READY_PLAYER";
 export const ACCUSE_PLAYER = "ACCUSE_PLAYER";
 export const ELIMINATE_PLAYER = "ELIMINATE_PLAYER";
 export const TARGET_PLAYER = "TARGET_PLAYER";

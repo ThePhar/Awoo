@@ -1,9 +1,14 @@
 import { GuildMember } from "discord.js";
 
-export function createStubGuildMember(id?: string): GuildMember {
+export function createStubGuildMember(id?: string, name?: string): GuildMember {
+    let n = "Test";
+    if (name) {
+        n = name;
+    }
+
     return ({
         id,
-        user: { tag: `Test#4444` },
+        user: { tag: `${n}#4444` },
         toString() {
             return `<@!${id}>`;
         },

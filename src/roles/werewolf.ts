@@ -1,28 +1,21 @@
-import Role from "../interfaces/role";
 import { RichEmbed } from "discord.js";
 import randomItem from "random-item";
-import rs from "../strings/role-strings";
-import Colors from "../structs/colors";
-import s from "../strings";
+import Role from "../interfaces/role";
 import NightActiveRole from "../interfaces/night-active-role";
-import { GameState } from "../test/old/store/game.test";
+import { GameState } from "../store/game";
+import Colors from "../structs/colors";
 import Command from "../structs/command";
 import Player from "../structs/player";
 import RecognisedCommands from "../structs/recognised-commands";
-import {
-    findAllAliveVillagers,
-    findAllLivingWerewolves,
-    findAllWerewolves,
-    findPlayerByName,
-} from "../selectors/find-players";
 import { targetPlayer } from "../actions/players";
-import Tips from "../strings/tips";
-import RoleStrings from "../strings/roles";
 import FieldStrings from "../strings/fields";
+import RoleStrings from "../strings/roles";
+import Tips from "../strings/tips";
+import * as Selector from "../selectors/find-players";
 
 export default class Werewolf implements Role, NightActiveRole {
-    name = "Werewolf";
-    appearance = "werewolf";
+    name = RoleStrings.werewolf.name;
+    appearance = RoleStrings.werewolf.appearance;
     player: Player;
 
     constructor(player: Player) {
@@ -40,15 +33,15 @@ export default class Werewolf implements Role, NightActiveRole {
             .addField(FieldStrings.title.winCondition, RoleStrings.werewolf.winCondition)
             .addField(FieldStrings.title.dayCommands, RoleStrings.villager.dayCommands, true)
             .addField(FieldStrings.title.nightCommands, RoleStrings.werewolf.nightCommands, true)
-            .addField(FieldStrings.title.werewolves, findAllWerewolves(gameState.players))
+            .addField(FieldStrings.title.werewolves, Selector.findAllWerewolves(gameState.players))
             .setFooter(randomItem(Tips));
     }
     nightEmbed(): RichEmbed {
         const gameState = this.player.game.getState() as GameState;
-        const villagers = findAllAliveVillagers(gameState.players);
+        const villagers = Selector.findAllAliveVillagers(gameState.players);
 
         return new RichEmbed()
-            .setTitle(`On The Dinner Menu`)
+            .setTitle(RoleStrings.werewolf.nightName)
             .setDescription(RoleStrings.werewolf.nightDescription)
             .setColor(Colors.WerewolfRed)
             .setThumbnail(RoleStrings.werewolf.thumbnailUrl)
@@ -59,13 +52,13 @@ export default class Werewolf implements Role, NightActiveRole {
     nightAction(command: Command): void {
         const gameState = this.player.game.getState() as GameState;
 
+        // Find a target to kill.
         if (command.type === RecognisedCommands.Target) {
-            // Find the target for the killing.
             if (command.args.length !== 0) {
                 const playerName = command.args.join(" ");
 
                 // Find the target
-                const target = findPlayerByName(playerName, gameState.players);
+                const target = Selector.findPlayerByName(playerName, gameState.players);
 
                 // No target found.
                 if (!target) {
@@ -74,24 +67,29 @@ export default class Werewolf implements Role, NightActiveRole {
                     );
                     return;
                 }
+
                 // Target is the player making the command.
                 else if (target.id === this.player.id) {
                     this.player.user.send(`You cannot target yourself ${this.player.user}.`);
                     return;
                 }
+
                 // Target is dead.
                 else if (!target.isAlive) {
                     this.player.user.send(`You cannot target eliminated players ${this.player.user}.`);
                     return;
                 }
+
                 // Player is changing their target... to the same target.
                 else if (this.player.target && target.id === this.player.target.id) {
                     this.player.user.send(`You are already targeting ${this.player.target.user}.`);
                     return;
                 }
+
                 // All is good!
                 else {
-                    const werewolves = findAllLivingWerewolves(gameState.players);
+                    // TODO: Write a nice embed for this.
+                    const werewolves = Selector.findAllAliveWerewolves(gameState.players);
                     werewolves.forEach(werewolf => {
                         // Werewolf already targeted someone.
                         if (werewolf.target) {
@@ -108,10 +106,13 @@ export default class Werewolf implements Role, NightActiveRole {
                     this.player.game.dispatch(targetPlayer(this.player, target));
                     return;
                 }
-            } else {
+            }
+
+            // The user inputted no target.
+            else {
                 this.player.user.send(
                     `${this.player.user}, please enter a name to target a player. ` +
-                        `Example: ${Command.getCode(RecognisedCommands.Target, ["name/mention"])}.`,
+                        `Example: ${Command.getCode(RecognisedCommands.Target, ["name"])}.`,
                 );
                 return;
             }
