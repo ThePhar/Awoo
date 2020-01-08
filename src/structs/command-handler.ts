@@ -1,14 +1,14 @@
 import RecognisedCommands from "./recognised-commands";
 import Command from "./command";
 import { GameStore } from "../store/game";
-import { GameState } from "../test/store/game.test";
+import { GameState } from "../test/old/store/game.test";
 import Phases from "./phases";
 import { sprintf } from "sprintf-js";
 import Player from "./player";
 import { accusePlayer, addPlayer, removePlayer } from "../actions/players";
 import { RichEmbed } from "discord.js";
 import { findPlayer, findPlayerByName } from "../selectors/find-players";
-import NightActive from "../interfaces/night-active-role";
+import NightActiveRole from "../interfaces/night-active-role";
 
 export default class CommandHandler {
     static execute(command: Command, game: GameStore): void {
@@ -227,8 +227,8 @@ export default class CommandHandler {
         // Only process the night role if the player is night active.
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
         // @ts-ignore
-        if ((player.role as NightActive).nightAction) {
-            const role = player.role as NightActive;
+        if ((player.role as NightActiveRole).nightAction) {
+            const role = player.role as NightActiveRole;
 
             role.nightAction(command);
         }

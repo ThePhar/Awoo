@@ -1,5 +1,5 @@
-import Werewolf from "../../roles/werewolf";
-import Colors from "../../structs/colors";
+import Werewolf from "../../../roles/werewolf";
+import Colors from "../../../structs/colors";
 
 const role = new Werewolf();
 

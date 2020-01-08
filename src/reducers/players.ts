@@ -1,58 +1,40 @@
 import produce from "immer";
+import * as ActionType from "../interfaces/player-actions";
 import Player from "../structs/player";
-import {
-    ACCUSE_PLAYER,
-    ADD_PLAYER,
-    ASSIGN_PLAYER_ROLE,
-    CLEAR_TARGET_PLAYER,
-    ELIMINATE_PLAYER,
-    PlayerRoleAction,
-    PlayersActions,
-    PlayerTargetAction,
-    READY_PLAYER,
-    REMOVE_PLAYER,
-    RESET_PLAYER_CHOICES,
-    TARGET_PLAYER,
-} from "../interfaces/players-actions";
 
-const initialState: Array<Player> = [];
+type Actions = ActionType.PlayersAction | ActionType.PlayerActions;
 
-export default function playersReducer(state: Array<Player> = initialState, action: PlayersActions): Array<Player> {
+export default function playersReducer(state: Array<Player> = [], action: Actions): Array<Player> {
     return produce(state, draft => {
-        switch (action.type) {
-            case ADD_PLAYER:
-                draft.push(action.player);
+        /* All players actions */
+        if (action.type === ActionType.CLEAR_ALL_ACCUSATIONS) {
+            draft.forEach(player => (player.accusing = null));
+            return;
+        }
+
+        /* Single player actions */
+        const playerAction = action as ActionType.PlayerAction;
+
+        switch (playerAction.type) {
+            case ActionType.ADD_PLAYER:
+                draft.push(playerAction.player);
                 break;
-
-            case REMOVE_PLAYER:
-                return draft.filter(player => player.client.id !== action.player.client.id) as Array<Player>;
-
-            case READY_PLAYER:
-                action.player.isReady = true;
+            case ActionType.REMOVE_PLAYER:
+                return draft.filter(player => player.id !== playerAction.player.id) as Array<Player>;
+            case ActionType.ACCUSE_PLAYER:
+                playerAction.player.accusing = (action as ActionType.PlayerTargetAction).target;
                 break;
-
-            case ACCUSE_PLAYER:
-                action.player.accusing = (action as PlayerTargetAction).target;
+            case ActionType.ELIMINATE_PLAYER:
+                playerAction.player.isAlive = false;
                 break;
-
-            case ELIMINATE_PLAYER:
-                action.player.isAlive = false;
+            case ActionType.TARGET_PLAYER:
+                playerAction.player.target = (action as ActionType.PlayerTargetAction).target;
                 break;
-
-            case TARGET_PLAYER:
-                action.player.target = (action as PlayerTargetAction).target;
+            case ActionType.PLAYER_CLEAR_TARGET:
+                playerAction.player.target = null;
                 break;
-
-            case CLEAR_TARGET_PLAYER:
-                action.player.target = null;
-                break;
-
-            case RESET_PLAYER_CHOICES:
-                action.player.resetChoices();
-                break;
-
-            case ASSIGN_PLAYER_ROLE:
-                action.player.role = (action as PlayerRoleAction).role;
+            case ActionType.ASSIGN_PLAYER_ROLE:
+                playerAction.player.role = (action as ActionType.PlayerRoleAction).role;
                 break;
         }
     });

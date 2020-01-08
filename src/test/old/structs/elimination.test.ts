@@ -1,7 +1,7 @@
 import { createTestPlayer } from "../fixtures/player";
 import { RichEmbed } from "discord.js";
-import EliminationCause from "../../structs/elimination-cause";
-import Elimination from "../../structs/elimination";
+import EliminationCause from "../../../structs/elimination-cause";
+import Elimination from "../../../structs/elimination";
 
 it("should instantiate an elimination object on call", () => {
     const player = createTestPlayer();

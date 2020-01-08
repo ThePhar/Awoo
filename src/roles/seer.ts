@@ -3,15 +3,15 @@ import { RichEmbed } from "discord.js";
 import rs from "../strings/role-strings";
 import Colors from "../structs/colors";
 import s from "../strings";
-import NightActive from "../interfaces/night-active-role";
+import NightActiveRole from "../interfaces/night-active-role";
 import Player from "../structs/player";
 import Command from "../structs/command";
-import { GameState } from "../test/store/game.test";
+import { GameState } from "../test/old/store/game.test";
 import { START_DAY_PHASE } from "../interfaces/meta-actions";
 import RecognisedCommands from "../structs/recognised-commands";
 import { findAllPlayersButMe, findPlayerByName } from "../selectors/find-players";
 
-export default class Seer implements Role, NightActive {
+export default class Seer implements Role, NightActiveRole {
     name = "Seer";
     appearance = "villager";
     player: Player;

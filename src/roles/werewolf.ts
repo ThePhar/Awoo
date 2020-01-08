@@ -3,8 +3,8 @@ import { RichEmbed } from "discord.js";
 import rs from "../strings/role-strings";
 import Colors from "../structs/colors";
 import s from "../strings";
-import NightActive from "../interfaces/night-active-role";
-import { GameState } from "../test/store/game.test";
+import NightActiveRole from "../interfaces/night-active-role";
+import { GameState } from "../test/old/store/game.test";
 import Command from "../structs/command";
 import Player from "../structs/player";
 import RecognisedCommands from "../structs/recognised-commands";
@@ -16,7 +16,7 @@ import {
 } from "../selectors/find-players";
 import { targetPlayer } from "../actions/players";
 
-export default class Werewolf implements Role, NightActive {
+export default class Werewolf implements Role, NightActiveRole {
     name = "Werewolf";
     appearance = "werewolf";
     player: Player;

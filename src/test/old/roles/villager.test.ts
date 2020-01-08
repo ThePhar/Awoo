@@ -1,5 +1,5 @@
-import Villager from "../../roles/villager";
-import Colors from "../../structs/colors";
+import Villager from "../../../roles/villager";
+import Colors from "../../../structs/colors";
 
 const role = new Villager();
 

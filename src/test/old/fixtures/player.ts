@@ -1,5 +1,5 @@
 import { Client, ClientUser } from "discord.js";
-import Player from "../../structs/player";
+import Player from "../../../structs/player";
 
 export function createTestClient(data = {}): ClientUser {
     return new ClientUser(new Client(), data);

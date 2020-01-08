@@ -1,109 +1,60 @@
-import {
-    accusePlayer,
-    addPlayer,
-    assignPlayerRole,
-    eliminatePlayer,
-    playerClearTarget,
-    playerVote,
-    readyPlayer,
-    removePlayer,
-    resetPlayerChoices,
-    targetPlayer,
-} from "../../actions/players";
-import { createTestPlayer } from "../fixtures/player";
-import {
-    ACCUSE_PLAYER,
-    ADD_PLAYER,
-    ELIMINATE_PLAYER,
-    READY_PLAYER,
-    REMOVE_PLAYER,
-    PlayerTargetAction,
-    TARGET_PLAYER,
-    CLEAR_TARGET_PLAYER,
-    VOTE_PLAYER,
-    RESET_PLAYER_CHOICES,
-    ASSIGN_PLAYER_ROLE,
-    PlayerRoleAction,
-} from "../../interfaces/players-actions";
-import Villager from "../../roles/villager";
+import * as ActionCreator from "../../actions/players";
+import * as ActionType from "../../interfaces/player-actions";
+import Role from "../../interfaces/role";
+import { createStubPlayer } from "../_stubs/players";
 
-it("should return an action for adding a player", () => {
-    const action = addPlayer(createTestPlayer());
+/* Test Fixtures */
+const stubPlayer = createStubPlayer();
+const stubTarget = createStubPlayer();
 
-    expect(action.type).toBe(ADD_PLAYER);
-    expect(action.player).toStrictEqual(createTestPlayer());
+it("should return an action object for addPlayer", () => {
+    const action = ActionCreator.addPlayer(stubPlayer) as ActionType.PlayerAction;
+
+    expect(action.type).toBe(ActionType.ADD_PLAYER);
+    expect(action.player).toBe(stubPlayer);
 });
-it("should return an action for removing a player", () => {
-    const action = removePlayer(createTestPlayer());
+it("should return an action object for removePlayer", () => {
+    const action = ActionCreator.removePlayer(stubPlayer) as ActionType.PlayerAction;
 
-    expect(action.type).toBe(REMOVE_PLAYER);
-    expect(action.player).toStrictEqual(createTestPlayer());
+    expect(action.type).toBe(ActionType.REMOVE_PLAYER);
+    expect(action.player).toBe(stubPlayer);
 });
-it("should return an action for marking a player as ready", () => {
-    const action = readyPlayer(createTestPlayer());
+it("should return an action object for accusePlayer", () => {
+    const action = ActionCreator.accusePlayer(stubPlayer, stubTarget) as ActionType.PlayerTargetAction;
 
-    expect(action.type).toBe(READY_PLAYER);
-    expect(action.player).toStrictEqual(createTestPlayer());
+    expect(action.type).toBe(ActionType.ACCUSE_PLAYER);
+    expect(action.player).toBe(stubPlayer);
+    expect(action.target).toBe(stubTarget);
 });
-it("should return an action for accusing a player", () => {
-    const player = createTestPlayer({ id: "123" });
-    const accused = createTestPlayer({ id: "135" });
+it("should return an action object for eliminatePlayer", () => {
+    const action = ActionCreator.eliminatePlayer(stubPlayer) as ActionType.PlayerAction;
 
-    const action = accusePlayer(player, accused) as PlayerTargetAction;
-
-    expect(action.type).toBe(ACCUSE_PLAYER);
-    expect(action.player).toStrictEqual(player);
-    expect(action.target).toStrictEqual(accused);
+    expect(action.type).toBe(ActionType.ELIMINATE_PLAYER);
+    expect(action.player).toBe(stubPlayer);
 });
-it("should return an action for eliminating a player", () => {
-    const player = createTestPlayer();
+it("should return an action object for targetPlayer", () => {
+    const action = ActionCreator.targetPlayer(stubPlayer, stubTarget) as ActionType.PlayerTargetAction;
 
-    const action = eliminatePlayer(player);
-
-    expect(action.type).toBe(ELIMINATE_PLAYER);
-    expect(action.player).toStrictEqual(player);
+    expect(action.type).toBe(ActionType.TARGET_PLAYER);
+    expect(action.player).toBe(stubPlayer);
+    expect(action.target).toBe(stubTarget);
 });
-it("should return an action for targeting a player via night action", () => {
-    const player = createTestPlayer({ id: "123" });
-    const target = createTestPlayer({ id: "135" });
+it("should return an action object for playerClearTarget", () => {
+    const action = ActionCreator.playerClearTarget(stubPlayer) as ActionType.PlayerAction;
 
-    const action = targetPlayer(player, target) as PlayerTargetAction;
-
-    expect(action.type).toBe(TARGET_PLAYER);
-    expect(action.player).toStrictEqual(player);
-    expect(action.target).toStrictEqual(target);
+    expect(action.type).toBe(ActionType.PLAYER_CLEAR_TARGET);
+    expect(action.player).toBe(stubPlayer);
 });
-it("should return an action for clearing a player's target", () => {
-    const player = createTestPlayer();
+it("should return an action object for clearAllAccusations", () => {
+    const action = ActionCreator.clearAllAccusations();
 
-    const action = playerClearTarget(player);
-
-    expect(action.type).toBe(CLEAR_TARGET_PLAYER);
-    expect(action.player).toStrictEqual(player);
+    expect(action.type).toBe(ActionType.CLEAR_ALL_ACCUSATIONS);
 });
-it("should return an action for voting", () => {
-    const player = createTestPlayer();
+it("should return an action object for assignPlayerRole", () => {
+    const stubRole = {} as Role;
+    const action = ActionCreator.assignPlayerRole(stubPlayer, stubRole) as ActionType.PlayerRoleAction;
 
-    const action = playerVote(player);
-
-    expect(action.type).toBe(VOTE_PLAYER);
-    expect(action.player).toStrictEqual(player);
-});
-it("should return an action for resetting all player choices", () => {
-    const player = createTestPlayer();
-
-    const action = resetPlayerChoices(player);
-
-    expect(action.type).toBe(RESET_PLAYER_CHOICES);
-    expect(action.player);
-});
-it("should return an action for assigning a role to a player", () => {
-    const player = createTestPlayer();
-    const role = new Villager();
-
-    const action = assignPlayerRole(player, role) as PlayerRoleAction;
-
-    expect(action.type).toBe(ASSIGN_PLAYER_ROLE);
-    expect(action.player).toBe(player);
-    expect(action.role).toBe(role);
+    expect(action.type).toBe(ActionType.ASSIGN_PLAYER_ROLE);
+    expect(action.player).toBe(stubPlayer);
+    expect(action.role).toBe(stubRole);
 });

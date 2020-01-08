@@ -1,140 +1,73 @@
 import { createStore } from "redux";
-import playersReducer from "../../reducers/players";
-import {
-    accusePlayer,
-    addPlayer,
-    assignPlayerRole,
-    eliminatePlayer,
-    playerClearTarget,
-    playerVote,
-    readyPlayer,
-    removePlayer,
-    resetPlayerChoices,
-    targetPlayer,
-} from "../../actions/players";
-import { createTestPlayer } from "../fixtures/player";
 import Player from "../../structs/player";
-import Villager from "../../roles/villager";
+import * as ActionCreator from "../../actions/players";
+import playersReducer from "../../reducers/players";
+import { createStubPlayer } from "../_stubs/players";
+import { createStubRole } from "../_stubs/roles";
+
+/* Test Fixtures */
+const stubPlayer = createStubPlayer("1001");
+const stubTarget = createStubPlayer("1002");
 
 let store: ReturnType<typeof createStore>;
 beforeEach(() => {
     store = createStore(playersReducer);
+
+    store.dispatch(ActionCreator.addPlayer(stubPlayer));
+    store.dispatch(ActionCreator.addPlayer(stubTarget));
 });
 
-it("should create an empty Player Array on store creation", () => {
-    expect(store.getState()).toBeInstanceOf(Array);
+it("should on ADD_PLAYER, push the player to the state", () => {
+    store.dispatch(ActionCreator.addPlayer(stubPlayer));
+
+    const state = store.getState() as Array<Player>;
+    expect(state.length).toBe(3);
+    expect(state[2]).toBe(stubPlayer);
 });
+it("should on REMOVE_PLAYER, find and remove the player from the state", () => {
+    store.dispatch(ActionCreator.removePlayer(stubPlayer));
 
-describe("Action handlers", () => {
-    it("when ADD_PLAYER is fired, add a player to the state", () => {
-        store.dispatch(addPlayer(createTestPlayer()));
+    const state = store.getState() as Array<Player>;
+    expect(state.length).toBe(1);
+});
+it("should on ACCUSE_PLAYER, set player's accusing field to accused player", () => {
+    store.dispatch(ActionCreator.accusePlayer(stubPlayer, stubTarget));
 
-        expect(store.getState()).toStrictEqual([createTestPlayer()]);
-    });
-    it("when REMOVE_PLAYER is fired, remove a player from the state", () => {
-        const player1 = createTestPlayer({ id: "123" });
-        const player2 = createTestPlayer({ id: "124" });
-        const player3 = createTestPlayer({ id: "125" });
+    const state = store.getState() as Array<Player>;
+    expect(state[0].accusing).toBe(stubTarget);
+});
+it("should on ELIMINATE_PLAYER, set player's isAlive property to false", () => {
+    store.dispatch(ActionCreator.eliminatePlayer(stubPlayer));
 
-        store.dispatch(addPlayer(player1));
-        store.dispatch(addPlayer(player2));
-        store.dispatch(addPlayer(player3));
+    const state = store.getState() as Array<Player>;
+    expect(state[0].isAlive).toBe(false);
+});
+it("should on TARGET_PLAYER, set player's target field to targeted player", () => {
+    store.dispatch(ActionCreator.targetPlayer(stubPlayer, stubTarget));
 
-        store.dispatch(removePlayer(player2));
+    const state = store.getState() as Array<Player>;
+    expect(state[0].target).toBe(stubTarget);
+});
+it("should on PLAYER_CLEAR_TARGET, set player's target field to null", () => {
+    store.dispatch(ActionCreator.targetPlayer(stubPlayer, stubTarget));
+    store.dispatch(ActionCreator.playerClearTarget(stubPlayer));
 
-        expect(store.getState()).toStrictEqual([player1, player3]);
-    });
-    it("when READY_PLAYER is fired, set player's ready state to true", () => {
-        const player1 = createTestPlayer({ id: "123" });
-        const player2 = createTestPlayer({ id: "123" });
+    const state = store.getState() as Array<Player>;
+    expect(state[0].target).toBeNull();
+});
+it("should on CLEAR_ALL_ACCUSATIONS, set all player's accusing fields to null", () => {
+    store.dispatch(ActionCreator.accusePlayer(stubPlayer, stubTarget));
+    store.dispatch(ActionCreator.accusePlayer(stubTarget, stubPlayer));
+    store.dispatch(ActionCreator.clearAllAccusations());
 
-        store.dispatch(addPlayer(player1));
-        store.dispatch(addPlayer(player2));
-        store.dispatch(readyPlayer(player1));
+    const state = store.getState() as Array<Player>;
+    expect(state[0].accusing).toBeNull();
+    expect(state[1].accusing).toBeNull();
+});
+it("should on ASSIGN_PLAYER_ROLE, set the player's role field", () => {
+    const stubRole = createStubRole();
+    store.dispatch(ActionCreator.assignPlayerRole(stubPlayer, stubRole));
 
-        const state = store.getState() as Array<Player>;
-        expect(state[0].isReady).toBe(true);
-        expect(state[1].isReady).toBe(false);
-    });
-    it("when ACCUSE_PLAYER is fired, set accused to targeted player", () => {
-        const player = createTestPlayer({ id: "123" });
-        const accused = createTestPlayer({ id: "135" });
-
-        store.dispatch(addPlayer(player));
-        store.dispatch(addPlayer(accused));
-        store.dispatch(accusePlayer(player, accused));
-
-        const state = store.getState() as Array<Player>;
-        expect(state[0].accusing).toStrictEqual(accused);
-        expect(state[1].accusing).toBeNull();
-    });
-    it("when ELIMINATE_PLAYER is fired, set the alive state of a player to false", () => {
-        const player = createTestPlayer();
-
-        store.dispatch(addPlayer(player));
-        store.dispatch(eliminatePlayer(player));
-
-        const state = store.getState() as Array<Player>;
-        expect(state[0].isAlive).toBe(false);
-    });
-    it("when VOTE_PLAYER is fired, set the voted state of a player true", () => {
-        const player = createTestPlayer();
-
-        store.dispatch(addPlayer(player));
-        store.dispatch(playerVote(player));
-
-        const state = store.getState() as Array<Player>;
-        expect(state[0].hasVoted).toBe(true);
-    });
-    it("when TARGET_PLAYER is fired, set the target to targeted player", () => {
-        const player = createTestPlayer({ id: "123" });
-        const target = createTestPlayer({ id: "135" });
-
-        store.dispatch(addPlayer(player));
-        store.dispatch(addPlayer(target));
-        store.dispatch(targetPlayer(player, target));
-
-        const state = store.getState() as Array<Player>;
-        expect(state[0].target).toStrictEqual(target);
-        expect(state[1].target).toBeNull();
-    });
-    it("when CLEAR_TARGET_PLAYER is fired, clear the target of the player", () => {
-        const player = createTestPlayer({ id: "123" });
-        const target = createTestPlayer({ id: "135" });
-
-        store.dispatch(addPlayer(player));
-        store.dispatch(addPlayer(target));
-        store.dispatch(targetPlayer(player, target));
-        store.dispatch(playerClearTarget(player));
-
-        const state = store.getState() as Array<Player>;
-        expect(state[0].target).toBeNull();
-    });
-    it("when RESET_PLAYER_CHOICES is fired, set all choice variables to defaults", () => {
-        const player = createTestPlayer();
-        const target = createTestPlayer();
-
-        store.dispatch(addPlayer(player));
-
-        store.dispatch(playerVote(player));
-        store.dispatch(targetPlayer(player, target));
-        store.dispatch(accusePlayer(player, target));
-
-        store.dispatch(resetPlayerChoices(player));
-
-        const state = store.getState() as Array<Player>;
-        expect(state[0].hasVoted).toBe(false);
-        expect(state[0].accusing).toBeNull();
-        expect(state[0].target).toBeNull();
-    });
-    it("when ASSIGN_PLAYER_ROLE is fired, create a new role for player", () => {
-        const player = createTestPlayer();
-        const role = new Villager();
-
-        store.dispatch(addPlayer(player));
-        store.dispatch(assignPlayerRole(player, role));
-
-        const state = store.getState() as Array<Player>;
-        expect(state[0].role).toBe(role);
-    });
+    const state = store.getState() as Array<Player>;
+    expect(state[0].role).toBe(stubRole);
 });

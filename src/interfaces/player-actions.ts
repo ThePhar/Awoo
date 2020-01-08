@@ -7,9 +7,13 @@ export const READY_PLAYER = "READY_PLAYER";
 export const ACCUSE_PLAYER = "ACCUSE_PLAYER";
 export const ELIMINATE_PLAYER = "ELIMINATE_PLAYER";
 export const TARGET_PLAYER = "TARGET_PLAYER";
-export const CLEAR_TARGET_PLAYER = "CLEAR_TARGET_PLAYER";
-export const RESET_PLAYER_CHOICES = "RESET_PLAYER_CHOICES";
+export const PLAYER_CLEAR_TARGET = "PLAYER_CLEAR_TARGET";
+export const CLEAR_ALL_ACCUSATIONS = "CLEAR_ALL_ACCUSATIONS";
 export const ASSIGN_PLAYER_ROLE = "ASSIGN_PLAYER_ROLE";
+
+export interface PlayersAction {
+    type: string;
+}
 
 export interface PlayerAction {
     type: string;
@@ -26,4 +30,4 @@ export interface PlayerRoleAction {
     role: Role;
 }
 
-export type PlayersActions = PlayerAction | PlayerTargetAction | PlayerRoleAction;
+export type PlayerActions = PlayerAction | PlayerTargetAction | PlayerRoleAction;

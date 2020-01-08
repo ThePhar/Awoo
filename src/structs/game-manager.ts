@@ -1,15 +1,15 @@
 import { GameStore } from "../store/game";
-import { GameState } from "../test/store/game.test";
+import { GameState } from "../test/old/store/game.test";
 import { Message, RichEmbed } from "discord.js";
 import RecognisedCommands from "./recognised-commands";
 import Command from "./command";
 import Colors from "./colors";
-import { ADD_PLAYER, REMOVE_PLAYER } from "../interfaces/players-actions";
+import { ADD_PLAYER, REMOVE_PLAYER } from "../interfaces/player-actions";
 import moment from "moment";
 import Phases from "./phases";
 import { findAllAliveVillagers, findAllLivingWerewolves } from "../selectors/find-players";
 import { startDayPhase, startNightPhase } from "../actions/meta";
-import NightActive from "../interfaces/night-active-role";
+import NightActiveRole from "../interfaces/night-active-role";
 import { Job, scheduleJob } from "node-schedule";
 
 export default class GameManager {
@@ -101,8 +101,8 @@ export default class GameManager {
         // Send every player with a night action their night action embeds.
         state.players.forEach(player => {
             // @ts-ignore
-            if ((player.role as NightActive).nightAction && player.isAlive) {
-                player.client.send((player.role as NightActive).nightEmbed());
+            if ((player.role as NightActiveRole).nightAction && player.isAlive) {
+                player.client.send((player.role as NightActiveRole).nightEmbed());
             }
         });
 
@@ -162,8 +162,8 @@ export default class GameManager {
         // Send every player with a night action their night action embeds.
         state.players.forEach(player => {
             // @ts-ignore
-            if ((player.role as NightActive).nightAction && player.isAlive) {
-                player.client.send((player.role as NightActive).nightEmbed());
+            if ((player.role as NightActiveRole).nightAction && player.isAlive) {
+                player.client.send((player.role as NightActiveRole).nightEmbed());
             }
         });
 

@@ -1,24 +1,20 @@
-import { User } from "discord.js";
-import Role from "../interfaces/role";
-import NightActive from "../interfaces/night-active-role";
+import { GuildMember } from "discord.js";
 import { GameStore } from "../store/game";
+import Role from "../interfaces/role";
+import NightActiveRole from "../interfaces/night-active-role";
+
+type RoleNullableType = Role | NightActiveRole | null;
 
 export default class Player {
-    // TODO: Use tag instead of name.
-    client: User;
-    role: Role | NightActive | null;
+    user: GuildMember;
+    role: RoleNullableType;
     game: GameStore;
-
-    // Player state booleans.
     isAlive = true;
-    isReady = false;
-
-    // Player targeting values.
     accusing: Player | null;
     target: Player | null;
 
-    constructor(client: User, game: GameStore, role?: Role) {
-        this.client = client;
+    constructor(user: GuildMember, game: GameStore, role?: Role) {
+        this.user = user;
         this.role = role || null;
         this.game = game;
 
@@ -27,11 +23,13 @@ export default class Player {
     }
 
     toString(): string {
-        return `${this.client.toString()} :: \`${this.client.username}\``;
+        return `${this.user} :: \`${this.name}\``;
     }
 
-    resetChoices(): void {
-        this.accusing = null;
-        this.target = null;
+    get id(): string {
+        return this.user.id;
+    }
+    get name(): string {
+        return this.user.user.tag;
     }
 }

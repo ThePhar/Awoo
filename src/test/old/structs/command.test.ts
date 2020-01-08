@@ -1,4 +1,4 @@
-import Command from "../../structs/command";
+import Command from "../../../structs/command";
 import { createTestGuildMessage } from "../fixtures/message";
 
 const prefix = Command.prefix;

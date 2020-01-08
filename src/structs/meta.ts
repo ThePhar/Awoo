@@ -2,7 +2,7 @@ import { TextChannel } from "discord.js";
 import Phases from "./phases";
 import Elimination from "./elimination";
 import { MetaActions } from "../interfaces/meta-actions";
-import { PlayersActions } from "../interfaces/players-actions";
+import { PlayerActions } from "../interfaces/player-actions";
 
 export default class Meta {
     notificationChannel: TextChannel | null = null;
@@ -10,5 +10,5 @@ export default class Meta {
     phase = Phases.WaitingForPlayers;
     day = 0;
     awaitingElimination: Array<Elimination> = [];
-    lastActionFired: MetaActions | PlayersActions = { type: "AWOO_INIT" };
+    lastActionFired: MetaActions | PlayerActions = { type: "AWOO_INIT" };
 }

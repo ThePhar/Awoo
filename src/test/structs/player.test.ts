@@ -1,42 +1,33 @@
 import Player from "../../structs/player";
-import { ClientUser } from "discord.js";
-import Villager from "../../roles/villager";
-import { createTestClient, createTestPlayer } from "../fixtures/player";
+import { createStubGuildMember } from "../_stubs/clients";
+import { createStubRole } from "../_stubs/roles";
+import { createStubGameStore } from "../_stubs/stores";
 
-const player = createTestPlayer();
-const client = createTestClient();
+/* Test Fixtures */
+const stubGuildMember = createStubGuildMember("1234");
+const stubGameStore = createStubGameStore();
 
-it("should include a discord user's client as a property", () => {
-    expect(player.client).toBeInstanceOf(ClientUser);
-});
-it("should include basic game properties", () => {
-    expect(player.isAlive).not.toBeUndefined();
-    expect(player.isReady).not.toBeUndefined();
-    expect(player.hasVoted).not.toBeUndefined();
-    expect(player.accusing).not.toBeUndefined();
-    expect(player.target).not.toBeUndefined();
-});
-it("should have a null role on instantiation", () => {
+const player = new Player(stubGuildMember, stubGameStore);
+
+it("should generate a player object with the following default settings", () => {
+    expect(player.user).toBe(stubGuildMember);
     expect(player.role).toBeNull();
-});
-it("should have a determined role when assigned", () => {
-    player.role = new Villager();
-    expect(player.role).toBeInstanceOf(Villager);
-});
-it("should allow to pass in an optional role during instantiating", () => {
-    const predetermined = new Player(client, new Villager());
-    expect(predetermined.role).toBeInstanceOf(Villager);
-});
-it("should reset a player's choices to their defaults when calling resetChoices", () => {
-    const player = createTestPlayer();
+    expect(player.game).toBe(stubGameStore);
 
-    player.hasVoted = true;
-    player.accusing = createTestPlayer();
-    player.target = createTestPlayer();
-
-    player.resetChoices();
-
-    expect(player.hasVoted).toBe(false);
+    expect(player.isAlive).toBe(true);
     expect(player.accusing).toBeNull();
     expect(player.target).toBeNull();
+});
+it("should generate a player object with a predefined role", () => {
+    const stubRole = createStubRole();
+    const playerWithPredefinedRole = new Player(stubGuildMember, stubGameStore, stubRole);
+
+    expect(playerWithPredefinedRole.role).toBe(stubRole);
+});
+it("should return a string with the mention and tag of the user when toString is called", () => {
+    expect(player.toString()).toBe(`<@!1234> :: \`Test#4444\``);
+});
+it("should have an id and tag property that alias to respective client props", () => {
+    expect(player.id).toBe(stubGuildMember.id);
+    expect(player.name).toBe(stubGuildMember.user.tag);
 });

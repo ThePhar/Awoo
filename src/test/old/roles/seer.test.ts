@@ -1,5 +1,5 @@
-import Seer from "../../roles/seer";
-import Colors from "../../structs/colors";
+import Seer from "../../../roles/seer";
+import Colors from "../../../structs/colors";
 
 const role = new Seer();
 

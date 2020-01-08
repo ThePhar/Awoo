@@ -1,7 +1,7 @@
-import Meta from "../../structs/meta";
-import Player from "../../structs/player";
-import Trial from "../../structs/trial";
-import { initializeGame } from "../../store/game";
+import Meta from "../../../structs/meta";
+import Player from "../../../structs/player";
+import Trial from "../../../structs/trial";
+import { initializeGame } from "../../../store/game";
 
 export interface GameState {
     meta: Meta;
