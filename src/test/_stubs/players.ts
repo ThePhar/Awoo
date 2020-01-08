@@ -5,17 +5,13 @@ import Werewolf from "../../roles/werewolf";
 import { createStubGuildMember } from "./clients";
 
 export function createStubPlayer(id?: string): Player {
-    return new Player(createStubGuildMember(id), {
-        getState() {
-            return { players: [] };
-        },
-    } as GameStore);
+    return new Player(createStubGuildMember(id), {} as GameStore);
 }
 export function createStubPlayerWithWerewolves(id?: string): Player {
     const player = createStubPlayer("7001");
     player.role = new Werewolf(player);
 
-    const player2 = createStubPlayer("7002");
+    const player2 = createStubPlayer(id);
     player2.game.getState = (): object => ({ players: [player] });
 
     return player2;
