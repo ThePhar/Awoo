@@ -26,7 +26,10 @@ export function lobbyEmbed(gameState: GameState): RichEmbed {
         .setTitle(PhaseStrings.lobby.title)
         .setDescription(PhaseStrings.lobby.description)
         .setColor(Colors.Informational)
-        .addField(PhaseStrings.lobby.signedUpField, gameState.players)
+        .addField(
+            PhaseStrings.lobby.signedUpField,
+            gameState.players.length > 0 ? gameState.players : FieldStrings.none,
+        )
         .setFooter(randomItem(Tips));
 }
 

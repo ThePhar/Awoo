@@ -10,7 +10,8 @@ export function findPlayerByName(name: string, players: Array<Player>): Player |
     name = name.replace("!", "");
 
     return players.find(player => {
-        if (player.name.toLowerCase() === name || player.user.toString() === name) {
+        console.log(player.user.toString());
+        if (player.name.toLowerCase() === name || player.user.toString().replace("!", "") === name) {
             return player;
         }
     });

@@ -4,18 +4,26 @@ import CommandHandler from "./structs/command-handler";
 import Command from "./structs/command";
 import { linkDiscussionChannel, linkNotificationChannel } from "./actions/meta";
 import GameManager from "./structs/game-manager";
+import { ROLE_ID } from "./reducers/meta";
 
 const client = new Client();
-client.login("NjYxNzY0NTc4OTI0OTUzNjMx.XhWVkQ.50COVJuMYfgezxA3PEjWmCdTrvA");
+client.login("NjYxMDIwNDEzMDUyMDU5Njg5.XhZtaQ.8-w8ypTJG3Xd3N1xoByI8qIlb5w");
 
-const DISCUSSION_CHANNEL_ID = "429907716165730308";
-const NOTIFICATION_CHANNEL_ID = "663423717753225227";
+const DISCUSSION_CHANNEL_ID = "661018922039902218";
+const NOTIFICATION_CHANNEL_ID = "664620246346498079";
 
 let game: GameStore;
 
 client.on("ready", async () => {
     const channel = await client.channels.get(DISCUSSION_CHANNEL_ID);
     const channel2 = await client.channels.get(NOTIFICATION_CHANNEL_ID);
+
+    const role = (channel as TextChannel).guild.roles.forEach(role => {
+        if (role.id === ROLE_ID)
+            role.members.forEach(member => {
+                member.removeRole(ROLE_ID);
+            });
+    });
 
     // Setup the game state.
     game = initializeGame();

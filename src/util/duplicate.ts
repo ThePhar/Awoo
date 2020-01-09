@@ -1,16 +1,16 @@
 import Player from "../structs/player";
 
-export default function getMostDuplicates<T>(array: Array<T>): Array<T> {
+export default function getMostDuplicates(array: Array<Player>): Array<Player> {
     interface Hash {
-        [details: string]: { count: number; value: T };
+        [details: string]: { count: number; value: Player };
     }
 
     const length = array.length;
     const objectCounter: Hash = {};
-    let newArray: Array<[string, { count: number; value: T }]> = [];
+    let newArray: Array<[string, { count: number; value: Player }]> = [];
 
     for (let i = 0; i < length; i++) {
-        const currentMemberOfArrayKey = JSON.stringify(array[i]);
+        const currentMemberOfArrayKey = array[i].id;
 
         //I check if the property currentMemberOfArrayKey of the object is undefined,
         //which is the default value of unset properties

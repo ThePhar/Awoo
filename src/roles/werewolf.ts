@@ -171,13 +171,9 @@ export default class Werewolf implements Role, NightActiveRole {
         );
     }
     private static getTarget(players: Array<Player>): Player | undefined {
-        const targets = findAllWerewolves(players).filter(werewolf => {
-            if (!werewolf.target) {
-                return false;
-            }
-
-            return werewolf.target;
-        });
+        const targets = findAllWerewolves(players)
+            .filter(werewolf => werewolf.target)
+            .map(werewolf => werewolf.target as Player);
 
         // Only select a player for elimination if there's clear winner.
         const mostTargeted = getMostDuplicates(targets);

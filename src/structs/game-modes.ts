@@ -18,3 +18,5 @@ enum GameModes {
     UnspeakableActions,
     Ultimate,
 }
+
+export default GameModes;

@@ -50,8 +50,8 @@ export default class CommandHandler {
         if (command.isDM) {
             const cmdString = Command.getCode(command.type, command.args);
 
-            command.executor.send(
-                `Sorry ${command.executor}, I can't add players via DM. ` +
+            command.message.author.send(
+                `Sorry ${command.message.author}, I can't add players via DM. ` +
                     `Please send the ${cmdString} command in the game channel of the server you wish to join.`,
             );
             return;
@@ -104,8 +104,8 @@ export default class CommandHandler {
         if (command.isDM) {
             const cmd = Command.getCode(command.type, command.args);
 
-            command.executor.send(
-                `Sorry ${command.executor}, I can't remove players via DM. Please send the ${cmd} command in the game channel of the server you wish to leave.`,
+            command.message.author.send(
+                `Sorry ${command.message.author}, I can't remove players via DM. Please send the ${cmd} command in the game channel of the server you wish to leave.`,
             );
             return;
         }
@@ -142,8 +142,8 @@ export default class CommandHandler {
         if (command.isDM) {
             const cmd = Command.getCode(command.type, command.args);
 
-            command.executor.send(
-                `Sorry ${command.executor}, I can't accuse players via DM. Please send the ${cmd} command in the game channel of the server you wish to accuse in.`,
+            command.message.author.send(
+                `Sorry ${command.message.author}, I can't accuse players via DM. Please send the ${cmd} command in the game channel of the server you wish to accuse in.`,
             );
             return;
         }
@@ -218,27 +218,29 @@ export default class CommandHandler {
     private static async processNightCommand(command: Command, game: GameStore): Promise<void> {
         const state = game.getState() as GameState;
 
+        const user = command.message.author;
+
         // Only process night commands via DM.
         if (!command.isDM) {
             await command.message.delete();
             const cmd = Command.getCode(command.type, command.args);
 
-            command.executor.send(
-                `Sorry ${command.executor}, I can't process night commands in public. Please send the ${cmd} command in this DM channel for "security reasons."`,
+            user.send(
+                `Sorry ${user}, I can't process night commands in public. Please send the ${cmd} command in this DM channel for "security reasons."`,
             );
             return;
         }
 
         // Do not allow this command outside of Day Phase.
         if (state.meta.phase !== Phases.Night) {
-            command.executor.send(`Sorry ${command.executor}, I can only process that command at night.`);
+            user.send(`Sorry ${user}, I can only process that command at night.`);
             return;
         }
 
         // Find the player for this user.
-        const player = findPlayer(command.executor.id, state.players);
+        const player = findPlayer(user.id, state.players);
         if (!player || !player.isAlive) {
-            command.executor.send(`Sorry ${command.executor}, only living players can send that command.`);
+            user.send(`Sorry ${user}, only living players can send that command.`);
             return;
         }
 
@@ -248,7 +250,7 @@ export default class CommandHandler {
 
             role.nightAction(command);
         } else {
-            command.executor.send(`Sorry ${command.executor}, you don't have any night actions.`);
+            user.send(`Sorry ${user}, you don't have any night actions.`);
             return;
         }
     }

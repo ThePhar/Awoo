@@ -1,5 +1,5 @@
 import { GameState, GameStore } from "../store/game";
-import { Message, RichEmbed } from "discord.js";
+import { Game, Message, RichEmbed } from "discord.js";
 import { ADD_PLAYER, REMOVE_PLAYER } from "../interfaces/player-actions";
 import moment from "moment";
 import { findAllAlivePlayers, findAllAliveVillagers, findAllAliveWerewolves } from "../selectors/find-players";
@@ -25,20 +25,22 @@ import Colors from "./colors";
 import randomItem from "random-item";
 import Tips from "../strings/tips";
 import getMostDuplicates from "../util/duplicate";
+import GameModes from "./game-modes";
 
 export default class GameManager {
     game: GameStore;
     latestNotification?: Message | Array<Message>;
+    latestDiscussion?: Message | Array<Message>;
     schedule?: Job;
 
     constructor(game: GameStore) {
         this.game = game;
 
-        this.startLobby();
+        GameManager.startLobby(this);
     }
 
-    async startLobby(): Promise<void> {
-        const state = this.game.getState() as GameState;
+    static async startLobby(gm: GameManager): Promise<void> {
+        const state = gm.game.getState() as GameState;
 
         // Check to ensure notification channel is defined.
         if (!state.meta.notificationChannel) {
@@ -52,37 +54,44 @@ export default class GameManager {
         }
 
         // Keep track of the latest notification so we can update it on the fly!
-        this.latestNotification = await state.meta.notificationChannel.send(lobbyEmbed(state));
+        gm.latestNotification = await state.meta.notificationChannel.send(lobbyEmbed(state));
+        gm.latestDiscussion = await state.meta.discussionChannel.send(lobbyEmbed(state));
 
         // Now start watching for dispatched events.
-        const stopLobby = this.game.subscribe(() => {
-            const state = this.game.getState() as GameState;
+        const stopLobby = gm.game.subscribe(() => {
+            const state = gm.game.getState() as GameState;
 
             // Only listen for ADD_PLAYER or REMOVE_PLAYER.
             if (state.meta.lastActionFired.type === ADD_PLAYER || state.meta.lastActionFired.type === REMOVE_PLAYER) {
                 // Check if the latestNotification still exists and update it accordingly.
-                if (this.latestNotification) {
-                    (this.latestNotification as Message).edit(lobbyEmbed(state));
+                if (gm.latestNotification && gm.latestDiscussion) {
+                    (gm.latestNotification as Message).edit(lobbyEmbed(state));
+                    (gm.latestDiscussion as Message).edit(lobbyEmbed(state));
 
                     // Check if minimum players have joined.
                     // TODO: Move this hardcoded 6 to a settings file.
-                    if (state.players.length >= 6) {
+                    if (state.players.length >= 4) {
                         // If we already scheduled the game to start, don't reschedule.
-                        if (this.schedule) return;
+                        if (gm.schedule) return;
 
                         // Schedule the next game.
-                        const timeTilDusk = GameManager.getNextNightTime();
-                        this.schedule = scheduleJob(timeTilDusk.toDate(), () => {
+                        const timeTilDusk = GameManager.getNextNightTime(moment().add("5", "seconds"));
+                        gm.schedule = scheduleJob(timeTilDusk.toDate(), () => {
                             stopLobby();
-                            this.startFirstNight();
+                            GameManager.startFirstNight(gm);
                         });
+                    } else if (state.players.length < 4) {
+                        if (gm.schedule) {
+                            gm.schedule.cancel();
+                            gm.schedule = undefined;
+                        }
                     }
                 }
             }
         });
     }
-    async startFirstNight(): Promise<void> {
-        const state = this.game.getState() as GameState;
+    static async startFirstNight(gm: GameManager): Promise<void> {
+        const state = gm.game.getState() as GameState;
         // Generate everyone's roles.
         GameManager.assignRandomRoles(state.players);
 
@@ -92,11 +101,11 @@ export default class GameManager {
         });
 
         // Start the night phase.
-        this.game.dispatch(startGame());
-        this.game.dispatch(startNightPhase());
+        gm.game.dispatch(startGame());
+        gm.game.dispatch(startNightPhase());
 
         // Start watching for win conditions.
-        this.game.subscribe(this.checkWinConditions);
+        gm.game.subscribe(() => GameManager.checkWinConditions(gm));
 
         // Send every player with a night action their night action embeds.
         state.players.forEach(player => {
@@ -106,16 +115,19 @@ export default class GameManager {
         });
 
         // Set next phase schedule.
-        const timeTilDawn = GameManager.getNextMorningTime();
-        this.schedule = scheduleJob(timeTilDawn.toDate(), this.startDay);
+        const timeTilDawn = GameManager.getNextMorningTime(moment().add("1", "seconds"));
+        gm.schedule = scheduleJob(timeTilDawn.toDate(), () => GameManager.startDay(gm));
 
         // Send notification.
         if (state.meta.notificationChannel) {
             state.meta.notificationChannel.send(firstNightEmbed(state));
         }
+        if (state.meta.discussionChannel) {
+            state.meta.discussionChannel.send(firstNightEmbed(state));
+        }
     }
-    async startDay(): Promise<void> {
-        const state = this.game.getState() as GameState;
+    static async startDay(gm: GameManager): Promise<void> {
+        const state = gm.game.getState() as GameState;
         // Check for eliminations.
         const eliminations = [];
 
@@ -123,23 +135,28 @@ export default class GameManager {
         if (werewolfElimination) eliminations.push(werewolfElimination);
 
         // Process eliminations.
-        this.processEliminations(eliminations);
+        GameManager.processEliminations(eliminations, gm);
 
         // Start the day phase.
-        this.game.dispatch(startDayPhase());
-        this.game.dispatch(clearAllAccusations());
+        gm.game.dispatch(startDayPhase());
+        gm.game.dispatch(clearAllAccusations());
 
         // Set next phase schedule.
-        const timeTilDusk = GameManager.getNextNightTime();
-        this.schedule = scheduleJob(timeTilDusk.toDate(), this.startNight);
+        const timeTilDusk = GameManager.getNextNightTime(moment().add("1", "minutes"));
+        gm.schedule = scheduleJob(timeTilDusk.toDate(), () => {
+            GameManager.startNight(gm);
+        });
 
         // Send notification.
         if (state.meta.notificationChannel) {
             state.meta.notificationChannel.send(dayEmbed(state));
         }
+        if (state.meta.discussionChannel) {
+            state.meta.discussionChannel.send(dayEmbed(state));
+        }
     }
-    async startNight(): Promise<void> {
-        const state = this.game.getState() as GameState;
+    static async startNight(gm: GameManager): Promise<void> {
+        const state = gm.game.getState() as GameState;
         // Check for eliminations.
         const eliminations = [];
 
@@ -147,10 +164,10 @@ export default class GameManager {
         if (lynchElimination) eliminations.push(lynchElimination);
 
         // Process eliminations.
-        this.processEliminations(eliminations);
+        GameManager.processEliminations(eliminations, gm);
 
         // Start the night phase.
-        this.game.dispatch(startNightPhase());
+        gm.game.dispatch(startNightPhase());
 
         // Send every player with a night action their night action embeds.
         state.players.forEach(player => {
@@ -160,19 +177,24 @@ export default class GameManager {
         });
 
         // Set next phase schedule.
-        const timeTilDawn = GameManager.getNextMorningTime();
-        this.schedule = scheduleJob(timeTilDawn.toDate(), this.startDay);
+        const timeTilDawn = GameManager.getNextMorningTime(moment().add("1", "minutes"));
+        gm.schedule = scheduleJob(timeTilDawn.toDate(), () => {
+            GameManager.startDay(gm);
+        });
 
         // Send notification.
         if (state.meta.notificationChannel) {
             state.meta.notificationChannel.send(nightEmbed(state));
         }
+        if (state.meta.discussionChannel) {
+            state.meta.discussionChannel.send(nightEmbed(state));
+        }
     }
 
     // TODO: Separate file???
-    private checkWinConditions(): void {
-        const stopWatching = this.game.subscribe(() => {
-            const state = this.game.getState() as GameState;
+    private static checkWinConditions(gm: GameManager): void {
+        const stopWatching = gm.game.subscribe(() => {
+            const state = gm.game.getState() as GameState;
 
             const livingWerewolfTotal = findAllAliveWerewolves(state.players).length;
             const livingVillagerTotal = findAllAliveVillagers(state.players).length;
@@ -180,19 +202,25 @@ export default class GameManager {
             // Check villager victory
             if (livingWerewolfTotal === 0) {
                 stopWatching();
-                this.game.dispatch(endGame());
+                gm.game.dispatch(endGame());
 
                 if (state.meta.notificationChannel) {
                     state.meta.notificationChannel.send(villagerVictoryEmbed(state));
+                }
+                if (state.meta.discussionChannel) {
+                    state.meta.discussionChannel.send(villagerVictoryEmbed(state));
                 }
             }
             // Check werewolf victory
             else if (livingWerewolfTotal >= livingVillagerTotal) {
                 stopWatching();
-                this.game.dispatch(endGame());
+                gm.game.dispatch(endGame());
 
                 if (state.meta.notificationChannel) {
                     state.meta.notificationChannel.send(werewolfVictoryEmbed(state));
+                }
+                if (state.meta.discussionChannel) {
+                    state.meta.discussionChannel.send(werewolfVictoryEmbed(state));
                 }
             }
         });
@@ -257,13 +285,9 @@ export default class GameManager {
         return night;
     }
     private static getLynchElimination(state: GameState): Elimination | undefined {
-        const targets = findAllAlivePlayers(state.players).filter(player => {
-            if (!player.accusing) {
-                return false;
-            }
-
-            return player.accusing;
-        });
+        const targets = findAllAlivePlayers(state.players)
+            .filter(player => player.accusing)
+            .map(player => player.accusing as Player);
 
         const mostTargeted = getMostDuplicates(targets);
         if (mostTargeted.length !== 1) {
@@ -289,15 +313,15 @@ export default class GameManager {
         );
     }
 
-    private processEliminations(eliminations: Array<Elimination>): void {
-        const state = this.game.getState() as GameState;
+    private static processEliminations(eliminations: Array<Elimination>, gm: GameManager): void {
+        const state = gm.game.getState() as GameState;
 
         if (eliminations.length !== 0) {
             eliminations.forEach(elimination => {
                 if (state.meta.notificationChannel) {
                     state.meta.notificationChannel.send(elimination.embed);
                 }
-                this.game.dispatch(eliminatePlayer(elimination.player));
+                gm.game.dispatch(eliminatePlayer(elimination.player));
             });
         }
     }
