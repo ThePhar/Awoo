@@ -10,7 +10,7 @@ const DISABLE_MESSAGES = {
 const ENABLE_MESSAGES = {
     SEND_MESSAGES: true,
 };
-const ROLE_ID = "664507783856783405";
+export const ROLE_ID = "662067288337416205";
 
 export default function metaReducer(state: Meta = new Meta(), action: ActionType.MetaActions): Meta {
     return produce(state, draft => {

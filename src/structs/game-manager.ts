@@ -3,7 +3,7 @@ import { Message, RichEmbed } from "discord.js";
 import { ADD_PLAYER, REMOVE_PLAYER } from "../interfaces/player-actions";
 import moment from "moment";
 import { findAllAlivePlayers, findAllAliveVillagers, findAllAliveWerewolves } from "../selectors/find-players";
-import { startDayPhase, startNightPhase } from "../actions/meta";
+import { endGame, startDayPhase, startGame, startNightPhase } from "../actions/meta";
 import NightActiveRole from "../interfaces/night-active-role";
 import { Job, scheduleJob } from "node-schedule";
 import {
@@ -92,6 +92,7 @@ export default class GameManager {
         });
 
         // Start the night phase.
+        this.game.dispatch(startGame());
         this.game.dispatch(startNightPhase());
 
         // Start watching for win conditions.
@@ -179,6 +180,7 @@ export default class GameManager {
             // Check villager victory
             if (livingWerewolfTotal === 0) {
                 stopWatching();
+                this.game.dispatch(endGame());
 
                 if (state.meta.notificationChannel) {
                     state.meta.notificationChannel.send(villagerVictoryEmbed(state));
@@ -187,6 +189,7 @@ export default class GameManager {
             // Check werewolf victory
             else if (livingWerewolfTotal >= livingVillagerTotal) {
                 stopWatching();
+                this.game.dispatch(endGame());
 
                 if (state.meta.notificationChannel) {
                     state.meta.notificationChannel.send(werewolfVictoryEmbed(state));
