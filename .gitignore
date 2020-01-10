@@ -190,3 +190,6 @@ modules.xml
 
 # Ignore the local settings file.
 settings.ts
+
+# Ignore vim swap files.
+*.swp
