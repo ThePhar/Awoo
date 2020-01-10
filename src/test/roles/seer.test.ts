@@ -86,7 +86,15 @@ describe("Night Action", () => {
             "You have already inspected Villager before. They are a villager.",
         );
     });
+    it("should not inspect a player if multiple targets are found.", () => {
+        const command = new Command("target", ["e"]);
+        role.nightAction(command);
 
+        expect(role.active).toBe(true);
+        expect(role.player.send).toHaveBeenLastCalledWith(
+            "Sorry, I found multiple players under that name. Please be more specific.",
+        );
+    });
     it("should throw an error if no role is specified on the target", () => {
         werewolfPlayer.role = undefined;
 

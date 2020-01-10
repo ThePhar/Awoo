@@ -107,6 +107,15 @@ describe("Night Action", () => {
 
         expect(role.player.send).toHaveBeenLastCalledWith("You are already targeting Dummy.");
     });
+    it("should not change a target if multiple targets are found", () => {
+        const command = new Command("target", ["Were"]);
+        role.nightAction(command);
+
+        expect(role.target).toBeUndefined();
+        expect(role.player.send).toHaveBeenLastCalledWith(
+            "Sorry, I found multiple players under that name. Please be more specific.",
+        );
+    });
 
     it("should set target on command (target) and notify all werewolves.", () => {
         const command = new Command("target", ["Dummy"]);

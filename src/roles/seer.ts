@@ -36,8 +36,16 @@ export default class Seer implements Role {
             }
 
             // Find a suitable target.
-            // TODO: Write if multiple targets found.
-            const [target] = game.getPlayers(targetNameOrId);
+            const targets = game.getPlayers(targetNameOrId);
+
+            // Multiple targets found.
+            if (targets.length > 1) {
+                this.player.send("Sorry, I found multiple players under that name. Please be more specific.");
+                return;
+            }
+
+            // Get the first target.
+            const target = targets[0];
 
             // No target found.
             if (!target) {
