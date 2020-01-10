@@ -1,10 +1,10 @@
 enum RecognisedCommands {
-    Join = "join", // Complete
-    Leave = "leave", // Complete
+    Join = "join",
+    Leave = "leave",
     Rules = "rules",
-    Accuse = "accuse", // Complete
-    Target = "target", // Complete
-    Role = "role", // Complete
+    Accuse = "accuse",
+    Target = "target",
+    Role = "role",
 }
 
 export default RecognisedCommands;

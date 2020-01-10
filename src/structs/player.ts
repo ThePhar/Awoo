@@ -1,36 +1,38 @@
-import { GuildMember } from "discord.js";
-import { GameStore } from "../store/game";
+import PlayerData from "../interfaces/player-data";
 import Role from "../interfaces/role";
-import NightActiveRole from "../interfaces/night-active-role";
-import Villager from "../roles/villager";
-
-type RoleType = Role | NightActiveRole;
+import Game from "./game";
 
 export default class Player {
-    user: GuildMember;
-    role: RoleType;
-    game: GameStore;
-    isAlive = true;
-    accusing: Player | null;
-    target: Player | null;
+    name: string;
+    id: string;
+    game: Game;
+    alive: boolean;
+    role?: Role;
+    accusing?: Player;
 
-    constructor(user: GuildMember, game: GameStore, role?: Role) {
-        this.user = user;
-        this.role = role || new Villager(this);
-        this.game = game;
+    send: Function;
 
-        this.accusing = null;
-        this.target = null;
+    constructor(data: PlayerData) {
+        this.name = data.name;
+        this.id = data.id;
+        this.game = data.game;
+        this.role = data.role;
+
+        // Assign implementation specific functions.
+        this.send = data.send;
+
+        // Generate default values if not already specified.
+        this.alive = data.alive === undefined ? true : data.alive;
     }
 
-    toString(): string {
-        return `${this.user} :: \`${this.name}\``;
+    sendRole(): void {
+        if (this.role) {
+            this.send(this.role.getRoleMessage());
+        }
     }
-
-    get id(): string {
-        return this.user.id;
-    }
-    get name(): string {
-        return this.user.user.tag;
+    sendNightRole(): void {
+        if (this.role && this.role.getNightRoleMessage) {
+            this.send(this.role.getNightRoleMessage());
+        }
     }
 }

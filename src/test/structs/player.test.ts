@@ -1,33 +1,57 @@
 import Player from "../../structs/player";
-import { createStubGuildMember } from "../_stubs/clients";
-import { createStubRole } from "../_stubs/roles";
-import { createStubGameStore } from "../_stubs/stores";
+import Game from "../../structs/game";
+import Role from "../../interfaces/role";
+import { generatePlayer } from "../fixtures/generate";
 
-/* Test Fixtures */
-const stubGuildMember = createStubGuildMember("1234");
-const stubGameStore = createStubGameStore();
-
-const player = new Player(stubGuildMember, stubGameStore);
-
-it("should generate a player object with the following default settings", () => {
-    expect(player.user).toBe(stubGuildMember);
-    expect(player.role).toBeNull();
-    expect(player.game).toBe(stubGameStore);
-
-    expect(player.isAlive).toBe(true);
-    expect(player.accusing).toBeNull();
-    expect(player.target).toBeNull();
+let player: Player;
+beforeEach(() => {
+    player = generatePlayer("1234");
 });
-it("should generate a player object with a predefined role", () => {
-    const stubRole = createStubRole();
-    const playerWithPredefinedRole = new Player(stubGuildMember, stubGameStore, stubRole);
 
-    expect(playerWithPredefinedRole.role).toBe(stubRole);
+it("should have default value for player on instantiation", () => {
+    expect(player.alive).toBe(true);
+    expect(player.role).toBeUndefined();
 });
-it("should return a string with the mention and tag of the user when toString is called", () => {
-    expect(player.toString()).toBe(`<@!1234> :: \`Test#4444\``);
+it("should set predefined values for player if defined during instantiation", () => {
+    player = new Player({
+        id: "12345",
+        name: "Tester",
+        game: {} as Game,
+        send: (): number => 0,
+        alive: false,
+        role: {} as Role,
+    });
+
+    expect(player.alive).toBe(false);
+    expect(player.role).not.toBeUndefined();
 });
-it("should have an id and tag property that alias to respective client props", () => {
-    expect(player.id).toBe(stubGuildMember.id);
-    expect(player.name).toBe(stubGuildMember.user.tag);
+
+it("should not send role if role is not defined", () => {
+    player.sendRole();
+
+    expect(player.send).not.toBeCalled();
+});
+it("should send role if role is defined", () => {
+    player.role = { getRoleMessage: () => 0 } as Role;
+    player.sendRole();
+
+    expect(player.send).toBeCalled();
+});
+
+it("should not send night role information if role is not defined", () => {
+    player.sendNightRole();
+
+    expect(player.send).not.toBeCalled();
+});
+it("should not send night role information if role is defined, but not night-active", () => {
+    player.role = {} as Role;
+    player.sendNightRole();
+
+    expect(player.send).not.toBeCalled();
+});
+it("should send night role information if role is defined with a night-active role", () => {
+    player.role = { getNightRoleMessage: () => 0 } as Role;
+    player.sendNightRole();
+
+    expect(player.send).toBeCalled();
 });

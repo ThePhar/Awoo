@@ -1,17 +1,16 @@
-import { RichEmbed } from "discord.js";
-import Colors from "../../structs/colors";
 import Villager from "../../roles/villager";
-import RoleStrings from "../../strings/roles";
-import { createStubPlayer } from "../_stubs/players";
+import { generatePlayer } from "../fixtures/generate";
 
-const role = new Villager(createStubPlayer());
+let role: Villager;
+beforeEach(() => {
+    const player = generatePlayer("12345");
 
-it("should generate a role RichEmbed when embed is called with the appropriate strings.", () => {
-    const embed = role.embed();
+    player.role = new Villager(player, jest.fn());
+    role = player.role;
+});
 
-    expect(embed).toBeInstanceOf(RichEmbed);
-    expect(embed.title).toBe("You are a Villager");
-    expect(embed.description).toBe(RoleStrings.villager.description);
-    expect(embed.color).toBe(Colors.VillagerBlue);
-    expect(embed.thumbnail).toMatchObject({ url: RoleStrings.villager.thumbnailUrl });
+it("should return call getRoleMessage when player calls sendRole", () => {
+    role.player.sendRole();
+
+    expect(role.getRoleMessage).toBeCalled();
 });
