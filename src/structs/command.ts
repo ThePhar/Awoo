@@ -12,7 +12,7 @@ export default class Command {
     static parse(string: string): Command | undefined {
         // Check for the prefix.
         if (string.startsWith(Command.prefix)) {
-            const splitString = string.split(" ");
+            const splitString = string.toLowerCase().split(" ");
             let command = splitString.shift() as string;
 
             command = command.replace(Command.prefix, "");

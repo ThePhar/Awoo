@@ -19,4 +19,15 @@ describe("parse", () => {
 
         expect(command).toBeUndefined();
     });
+    it("should return undefined if sending an empty string", () => {
+        const command = Command.parse("");
+
+        expect(command).toBeUndefined();
+    });
+    it("command and args should be case insensitive", () => {
+        const command = Command.parse("!TeSt nAmEs") as Command;
+
+        expect(command.type).toBe("test");
+        expect(command.args[0]).toBe("names");
+    });
 });
