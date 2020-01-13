@@ -11,8 +11,17 @@ export default class Villager implements Role {
     player: Player;
     getRoleMessage: () => unknown;
 
+    resetChoices(): void {
+        this.player.accusing = undefined;
+    }
+
     constructor(player: Player, getRoleMessage: () => unknown) {
         this.player = player;
         this.getRoleMessage = getRoleMessage;
+    }
+
+    actionHandler(): void {
+        // Villagers have no special actions.
+        return;
     }
 }

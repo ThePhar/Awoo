@@ -1,5 +1,7 @@
+import RecognisedCommands from "./recognised-commands";
+
 export default class Command {
-    readonly type: string;
+    readonly type: string | RecognisedCommands;
     readonly args: Array<string>;
 
     static readonly prefix = "!";

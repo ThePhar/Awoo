@@ -39,19 +39,19 @@ it("should send role if role is defined", () => {
 });
 
 it("should not send night role information if role is not defined", () => {
-    player.sendNightRole();
+    player.sendNightActions();
 
     expect(player.send).not.toBeCalled();
 });
 it("should not send night role information if role is defined, but not night-active", () => {
     player.role = {} as Role;
-    player.sendNightRole();
+    player.sendNightActions();
 
     expect(player.send).not.toBeCalled();
 });
 it("should send night role information if role is defined with a night-active role", () => {
     player.role = { getNightRoleMessage: () => 0 } as Role;
-    player.sendNightRole();
+    player.sendNightActions();
 
     expect(player.send).toBeCalled();
 });

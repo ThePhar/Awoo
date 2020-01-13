@@ -3,6 +3,7 @@ import Command from "../structs/command";
 import Player from "../structs/player";
 import RecognisedCommands from "../structs/recognised-commands";
 import Teams from "../structs/teams";
+import Phases from "../structs/phases";
 
 export default class Seer implements Role {
     name = "Seer";
@@ -12,20 +13,36 @@ export default class Seer implements Role {
 
     player: Player;
     getRoleMessage: () => unknown;
-    getNightRoleMessage: () => unknown;
+    getNightActionMessage: () => unknown;
 
     active = true;
     inspected: Array<Player> = [];
 
-    constructor(player: Player, getRoleMessage: () => unknown, getNightRoleMessage: () => unknown) {
+    constructor(player: Player, getRoleMessage: () => unknown, getNightActionMessage: () => unknown) {
         this.player = player;
         this.getRoleMessage = getRoleMessage;
-        this.getNightRoleMessage = getNightRoleMessage;
+        this.getNightActionMessage = getNightActionMessage;
     }
 
-    nightAction(command: Command): void {
+    resetChoices(): void {
+        this.player.accusing = undefined;
+        this.active = true;
+    }
+
+    actionHandler(command: Command): void {
         const game = this.player.game;
         const targetNameOrId = command.args.join(" ");
+
+        // Do not process actions from dead players or outside of the night phase.
+        if (!this.player.alive || game.phase !== Phases.Night) {
+            return;
+        }
+
+        // Player is only allowed to inspect 1 player per night.
+        if (!this.active) {
+            this.player.send("You have already inspected someone tonight. Please try again tomorrow night.");
+            return;
+        }
 
         // Target a player for inspection.
         if (command.type === RecognisedCommands.Target) {

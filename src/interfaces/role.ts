@@ -11,7 +11,9 @@ export default interface Role {
     player: Player;
 
     getRoleMessage: () => unknown;
-    getNightRoleMessage?: () => unknown;
+    getNightActionMessage?: () => unknown;
 
-    nightAction?: (command: Command) => void;
+    actionHandler: (command: Command) => void;
+
+    resetChoices: () => void;
 }

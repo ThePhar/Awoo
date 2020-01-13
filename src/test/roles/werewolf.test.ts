@@ -38,7 +38,7 @@ it("should return call getRoleMessage when player calls sendRole", () => {
     expect(role.getRoleMessage).toBeCalled();
 });
 it("should return call getNightRoleMessage when player calls getNightRoleMessage", () => {
-    role.player.sendNightRole();
+    role.player.sendNightActions();
 
     expect(role.getNightRoleMessage).toBeCalled();
 });
