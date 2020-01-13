@@ -1,225 +1,89 @@
-import Game from "./structs/game";
-import { generatePlayer } from "./test/fixtures/generate";
-import Werewolf from "./roles/werewolf";
-import Seer from "./roles/seer";
-import Villager from "./roles/villager";
-import Player from "./structs/player";
+import { Client, Message, TextChannel } from "discord.js";
 import Command from "./structs/command";
-import Bodyguard from "./roles/bodyguard";
-import Mayor from "./roles/mayor";
-import Tanner from "./roles/tanner";
-import Hunter from "./roles/hunter";
-import Sorceress from "./roles/sorceress";
-import Witch from "./roles/witch";
+import Game from "./structs/game";
+import RecognisedCommands from "./structs/recognised-commands";
+import Player from "./structs/player";
+import Villager from "./roles/villager";
+import { lobby } from "./embeds/game-events";
 
-function privateMessage(player: Player, string: string): void {
-    if (string !== undefined) {
-        console.log(`Awoo to ${player.name}:: ${string}`);
-    }
-}
-function publicMessage(string: string): void {
-    console.log(`Awoo:: ${string}`);
-}
+const client = new Client();
+client.login("NjYxMDIwNDEzMDUyMDU5Njg5.XhzDBA.hukkqm7l0GMaIJt6lMEeAt08Gro");
 
-// Clear the console.
-console.clear();
+const notificationChannel = "664620246346498079";
+const discussionChannel = "661018922039902218";
+const playersRole = "662067288337416205";
 
-// Generate game
-const game = new Game({
-    id: "12345",
-    send: publicMessage,
-    sendNotification: publicMessage,
+let game: Game;
+let lobbyMessage: Message;
+
+client.on("ready", async () => {
+    const nChannel = (await client.channels.get(notificationChannel)) as TextChannel;
+    const dChannel = (await client.channels.get(discussionChannel)) as TextChannel;
+
+    game = new Game({
+        id: "1",
+        send: dChannel.send,
+        sendNotification: (content: unknown): Promise<Message | Message[]> => {
+            dChannel.send(content);
+            return nChannel.send(content);
+        },
+    });
+
+    lobbyMessage = await game.sendNotification(lobby(game.players));
 });
 
-// Generate players
-const player0 = generatePlayer("0", "DaMonsterMonster", game, (message: string) => privateMessage(player0, message));
-const player1 = generatePlayer("1", "Phar", game, (message: string) => privateMessage(player1, message));
-const player2 = generatePlayer("2", "cainsith", game, (message: string) => privateMessage(player2, message));
-const player3 = generatePlayer("3", "StealthFoxy", game, (message: string) => privateMessage(player3, message));
-const player4 = generatePlayer("4", "Sinsorium", game, (message: string) => privateMessage(player4, message));
-const player5 = generatePlayer("5", "TheCanadian", game, (message: string) => privateMessage(player5, message));
-const player6 = generatePlayer("6", "Noire", game, (message: string) => privateMessage(player6, message));
-const player7 = generatePlayer("7", "Werewolf Gene", game, (message: string) => privateMessage(player7, message));
-const player8 = generatePlayer("8", "Allie223", game, (message: string) => privateMessage(player8, message));
-const player9 = generatePlayer("9", "Peat", game, (message: string) => privateMessage(player9, message));
+client.on("message", message => {
+    if (message.author.bot) return;
+    if (!game) return;
+    if (message.channel.id !== discussionChannel && message.channel.type !== "dm") return;
 
-// Assign roles.
-{
-    player0.role = new Werewolf(
-        player0,
-        () => "You are a werewolf.",
-        () => {
-            if (game.day !== 1) return "You can target players to eliminate.";
-        },
-    );
-    player1.role = new Werewolf(
-        player1,
-        () => "You are a werewolf.",
-        () => {
-            if (game.day !== 1) return "You can target players to eliminate.";
-        },
-    );
-    player2.role = new Seer(
-        player2,
-        () => "You are a seer.",
-        () => "You can target players to inspect.",
-    );
-    player3.role = new Tanner(player3, () => "You are a tanner.");
-    player4.role = new Hunter(
-        player4,
-        () => "You are a hunter.",
-        () => "You may target a player to eliminate if you die.",
-    );
-    player5.role = new Villager(player5, () => "You are a villager.");
-    player6.role = new Bodyguard(
-        player6,
-        () => "You are a bodyguard.",
-        () => "You can target players to protect from elimination.",
-    );
-    player7.role = new Mayor(player7, () => "You are a mayor.");
-    player8.role = new Witch(
-        player8,
-        () => "You are a witch.",
-        () =>
-            "You may target a player to kill once per game or choose to save someone being lynched by werewolves once per game.",
-    );
-    player9.role = new Sorceress(
-        player9,
-        () => "You are a sorceress.",
-        () => "You can target a player to check for a seer",
-    );
-}
+    if (message.content === "#!startDay") {
+        game.startDay();
+    } else if (message.content === "#!startNight") {
+        game.startNight();
+    } else if (message.content === "#!startFirstNight") {
+        game.startFirstNight();
+    } else if (message.content === "#!assign") {
+        const player = game.players[0] as Player;
+        player.role = new Villager(player, () => "You are a villager.");
+    }
 
-// Add players to game.
-game.addPlayer(player0);
-game.addPlayer(player1);
-game.addPlayer(player2);
-game.addPlayer(player3);
-game.addPlayer(player4);
-game.addPlayer(player5);
-game.addPlayer(player6);
-game.addPlayer(player7);
-game.addPlayer(player8);
-game.addPlayer(player9);
+    if (message.channel.id === discussionChannel) {
+        if (message.content.startsWith(Command.prefix)) {
+            const command = Command.parse(message.content);
+            const player = game.getPlayers(message.author.id)[0];
 
-console.log("\n========= NIGHT ONE =========\n");
-// Start game.
-game.startFirstNight();
+            if (player && command && command.type === RecognisedCommands.Leave && !game.active) {
+                game.removePlayer(player);
+            }
 
-// Seer inspects a villager.
-(player2.role as Seer).actionHandler(new Command("target", ["TheCanadian"]));
-// They attempt to inspect another player, but it doesn't work.
-(player2.role as Seer).actionHandler(new Command("target", ["Phar"]));
+            if (player && command) {
+                player.accuse(command);
+            } else if (!player && command && command.type === RecognisedCommands.Join) {
+                game.addPlayer(
+                    new Player({
+                        send: (content: unknown): void => {
+                            message.author.send(content);
+                        },
+                        game: game,
+                        name: message.author.tag,
+                        id: message.author.id,
+                    }),
+                );
+                lobbyMessage.edit(lobby(game.players));
+            }
+        }
+    } else {
+        if (message.content.startsWith(Command.prefix)) {
+            const command = Command.parse(message.content);
+            const player = game.getPlayers(message.author.id)[0];
 
-// Werewolf attempts to target someone on the first night and fails.
-(player1.role as Werewolf).actionHandler(new Command("target", ["TheCanadian"]));
+            if (player && player.role && command) {
+                player.role.actionHandler(command);
+            }
+        }
+    }
 
-player9.role.actionHandler(new Command("target", ["TheCanadian"]));
-
-console.log("\n========= DAY ONE =========\n");
-// *************** Day 1 ******************
-game.startDay();
-
-// Players start accusing people of being a werewolf.
-player0.accuse(new Command("accuse", ["Canadian"]));
-player1.accuse(new Command("accuse", ["Canadian"]));
-player2.accuse(new Command("accuse", ["Canadian"]));
-player3.accuse(new Command("accuse", ["Phar"]));
-player4.accuse(new Command("accuse", ["Canadian"]));
-player5.accuse(new Command("accuse", ["StealthFoxy"]));
-
-console.log("\n========= NIGHT TWO =========\n");
-// *************** Night 2 ******************
-game.startNight();
-
-// Player 5 should be lynched.
-console.log(player5.alive);
-
-// Seer inspects the same villager from last night.
-(player2.role as Seer).actionHandler(new Command("target", ["TheCanadian"]));
-// They attempt to inspect another player, but it works because they already inspected the previous one.
-(player2.role as Seer).actionHandler(new Command("target", ["Stealth"]));
-
-// Werewolves target someone.
-(player1.role as Werewolf).actionHandler(new Command("target", ["Sin"]));
-(player0.role as Werewolf).actionHandler(new Command("target", ["Sinsorium"]));
-
-player4.role.actionHandler(new Command("target", ["Phar"]));
-
-player9.role.actionHandler(new Command("target", ["cainsith"]));
-
-console.log("\n========= DAY TWO =========\n");
-// *************** Day 2 ******************
-game.startDay();
-
-// Players start accusing people of being a werewolf, but tie.
-player0.accuse(new Command("accuse", ["cainsith"]));
-player1.accuse(new Command("accuse", ["cainsith"]));
-player2.accuse(new Command("accuse", ["Phar"]));
-player7.accuse(new Command("accuse", ["Phar"]));
-
-// Player 4 and 5 is dead and doesn't count their accusation.
-player4.accuse(new Command("accuse", ["Canadian"]));
-player5.accuse(new Command("accuse", ["Canadian"]));
-
-console.log("\n========= NIGHT THREE =========\n");
-// *************** Night 3 ******************
-game.startNight();
-
-// No body should be lynched.
-(player2.role as Seer).actionHandler(new Command("target", ["Cain"]));
-(player2.role as Seer).actionHandler(new Command("target", ["phar"]));
-
-// Werewolves target someone.
-(player1.role as Werewolf).actionHandler(new Command("target", ["peat"]));
-
-// Bodyguard target someone.
-(player6.role as Bodyguard).actionHandler(new Command("target", ["peat"]));
-
-player8.role.actionHandler(new Command("kill", ["Peat"]));
-
-console.log("\n========= DAY THREE =========\n");
-// *************** Day 3 ******************
-game.startDay();
-
-// Players start accusing people of being a werewolf.
-player0.accuse(new Command("accuse", ["gene"]));
-player1.accuse(new Command("accuse", ["gene"]));
-player2.accuse(new Command("accuse", ["werewolf"]));
-player3.accuse(new Command("accuse", ["gene"]));
-
-// Player can't target themselves!
-player1.accuse(new Command("accuse", ["cainsith"]));
-
-console.log("\n========= NIGHT FOUR =========\n");
-// *************** Night 4 ******************
-game.startNight();
-
-(player2.role as Seer).actionHandler(new Command("target", ["noire"]));
-
-// Werewolves target someone.
-(player0.role as Werewolf).actionHandler(new Command("target", ["allie"]));
-(player1.role as Werewolf).actionHandler(new Command("target", ["Allie"]));
-
-player8.role.actionHandler(new Command("kill", ["cainsith"]));
-player8.role.actionHandler(new Command("save", []));
-
-console.log("\n========= DAY FOUR =========\n");
-// *************** Day 3 ******************
-game.startDay();
-
-// Players start accusing people of being a werewolf.
-player0.accuse(new Command("accuse", ["stealth"]));
-player2.accuse(new Command("accuse", ["stealth"]));
-player3.accuse(new Command("accuse", ["stealth"]));
-player6.accuse(new Command("accuse", ["stealth"]));
-player7.accuse(new Command("accuse", ["stealth"]));
-
-// Player can't accuse since their dead!
-player1.accuse(new Command("accuse", ["cainsith"]));
-
-console.log("\n========= NIGHT FIVE =========\n");
-// *************** Night 5 ******************
-game.startNight();
-
-// Should be over now.
+    console.log("\n\n\n");
+    console.log(game);
+});
