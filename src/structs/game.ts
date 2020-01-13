@@ -4,6 +4,7 @@ import GameData from "../interfaces/game-data";
 import Werewolf from "../roles/werewolf";
 import Bodyguard from "../roles/bodyguard";
 import Tanner from "../roles/tanner";
+import Hunter from "../roles/hunter";
 
 export default class Game {
     id: string;
@@ -89,6 +90,19 @@ export default class Game {
             this.sendNotification(`${werewolfTarget.name} has been eliminated by werewolves.`);
         }
 
+        // Hunter
+        this.players.forEach(player => {
+            if (player.role && player.role instanceof Hunter && !player.alive && !player.role.shot) {
+                player.role.shot = true;
+
+                if (player.role.target && player.role.target.alive) {
+                    player.role.target.alive = false;
+                    this.sendNotification(`${player.role.target.name} was shot by ${player.name} as they were killed.`);
+                    return false;
+                }
+            }
+        });
+
         return this.checkForVictory();
     }
     processDayEliminations(): boolean {
@@ -98,6 +112,21 @@ export default class Game {
             lynchedPlayer.alive = false;
             this.sendNotification(`${lynchedPlayer.name} has been eliminated by lynching.`);
         }
+
+        // Hunter
+        this.players.forEach(player => {
+            if (player.role && player.role instanceof Hunter && !player.alive && !player.role.shot) {
+                player.role.shot = true;
+
+                if (player.role.target && player.role.target.alive) {
+                    player.role.target.alive = false;
+                    this.sendNotification(
+                        `${player.role.target.name} was shot by ${player.name} as they were lynched.`,
+                    );
+                    return false;
+                }
+            }
+        });
 
         return this.checkForVictory();
     }

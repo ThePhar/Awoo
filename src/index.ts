@@ -8,6 +8,7 @@ import Command from "./structs/command";
 import Bodyguard from "./roles/bodyguard";
 import Mayor from "./roles/mayor";
 import Tanner from "./roles/tanner";
+import Hunter from "./roles/hunter";
 
 function privateMessage(player: Player, string: string): void {
     if (string !== undefined) {
@@ -62,7 +63,11 @@ const player9 = generatePlayer("9", "Peat", game, (message: string) => privateMe
         () => "You can target players to inspect.",
     );
     player3.role = new Tanner(player3, () => "You are a tanner.");
-    player4.role = new Villager(player4, () => "You are a villager.");
+    player4.role = new Hunter(
+        player4,
+        () => "You are a hunter.",
+        () => "You may target a player to eliminate if you die.",
+    );
     player5.role = new Villager(player5, () => "You are a villager.");
     player6.role = new Bodyguard(
         player6,
@@ -125,6 +130,8 @@ console.log(player5.alive);
 // Werewolves target someone.
 (player1.role as Werewolf).actionHandler(new Command("target", ["Sin"]));
 (player0.role as Werewolf).actionHandler(new Command("target", ["Sinsorium"]));
+
+player4.role.actionHandler(new Command("target", ["Phar"]));
 
 console.log("\n========= DAY TWO =========\n");
 // *************** Day 2 ******************
