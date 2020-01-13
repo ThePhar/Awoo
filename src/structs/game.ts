@@ -6,6 +6,7 @@ import Bodyguard from "../roles/bodyguard";
 import Tanner from "../roles/tanner";
 import Hunter from "../roles/hunter";
 import Sorceress from "../roles/sorceress";
+import Witch from "../roles/witch";
 
 export default class Game {
     id: string;
@@ -86,10 +87,34 @@ export default class Game {
                 this.sendNotification("Someone was protected by the bodyguard from elimination.");
                 return false;
             }
+            // Check if witch protected someone.
+            else if (
+                this.players.some(player => {
+                    if (player.role instanceof Witch && player.role.saving) {
+                        player.role.saving = false;
+                        return true;
+                    }
+                })
+            ) {
+                this.sendNotification("Someone was protected by the witch from elimination.");
+                return false;
+            }
 
             werewolfTarget.alive = false;
             this.sendNotification(`${werewolfTarget.name} has been eliminated by werewolves.`);
         }
+
+        // Witch
+        this.players.forEach(player => {
+            if (player.role && player.role instanceof Witch && player.role.killing) {
+                if (player.role.killing.alive) {
+                    this.sendNotification(`${player.role.killing.name} has been poisoned by a witch.`);
+                    player.role.killing.alive = false;
+                    player.role.killing = undefined;
+                    return false;
+                }
+            }
+        });
 
         // Hunter
         this.players.forEach(player => {

@@ -10,6 +10,7 @@ import Mayor from "./roles/mayor";
 import Tanner from "./roles/tanner";
 import Hunter from "./roles/hunter";
 import Sorceress from "./roles/sorceress";
+import Witch from "./roles/witch";
 
 function privateMessage(player: Player, string: string): void {
     if (string !== undefined) {
@@ -76,7 +77,12 @@ const player9 = generatePlayer("9", "Peat", game, (message: string) => privateMe
         () => "You can target players to protect from elimination.",
     );
     player7.role = new Mayor(player7, () => "You are a mayor.");
-    player8.role = new Villager(player8, () => "You are a villager.");
+    player8.role = new Witch(
+        player8,
+        () => "You are a witch.",
+        () =>
+            "You may target a player to kill once per game or choose to save someone being lynched by werewolves once per game.",
+    );
     player9.role = new Sorceress(
         player9,
         () => "You are a sorceress.",
@@ -170,6 +176,8 @@ game.startNight();
 // Bodyguard target someone.
 (player6.role as Bodyguard).actionHandler(new Command("target", ["peat"]));
 
+player8.role.actionHandler(new Command("kill", ["Peat"]));
+
 console.log("\n========= DAY THREE =========\n");
 // *************** Day 3 ******************
 game.startDay();
@@ -192,6 +200,9 @@ game.startNight();
 // Werewolves target someone.
 (player0.role as Werewolf).actionHandler(new Command("target", ["allie"]));
 (player1.role as Werewolf).actionHandler(new Command("target", ["Allie"]));
+
+player8.role.actionHandler(new Command("kill", ["cainsith"]));
+player8.role.actionHandler(new Command("save", []));
 
 console.log("\n========= DAY FOUR =========\n");
 // *************** Day 3 ******************
