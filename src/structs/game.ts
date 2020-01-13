@@ -5,6 +5,7 @@ import Werewolf from "../roles/werewolf";
 import Bodyguard from "../roles/bodyguard";
 import Tanner from "../roles/tanner";
 import Hunter from "../roles/hunter";
+import Sorceress from "../roles/sorceress";
 
 export default class Game {
     id: string;
@@ -134,7 +135,12 @@ export default class Game {
     // Victory processing.
     checkForVictory(): boolean {
         const aliveVillagers = this.players.filter(player => {
-            return player.alive && player.role && !(player.role instanceof Werewolf);
+            if (player.alive && player.role) {
+                // Do not count the sorceress.
+                if (player.role instanceof Sorceress) return false;
+
+                return !(player.role instanceof Werewolf);
+            }
         });
         const aliveWerewolves = this.players.filter(player => {
             return player.alive && player.role && player.role instanceof Werewolf;

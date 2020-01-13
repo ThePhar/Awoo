@@ -9,6 +9,7 @@ import Bodyguard from "./roles/bodyguard";
 import Mayor from "./roles/mayor";
 import Tanner from "./roles/tanner";
 import Hunter from "./roles/hunter";
+import Sorceress from "./roles/sorceress";
 
 function privateMessage(player: Player, string: string): void {
     if (string !== undefined) {
@@ -76,7 +77,11 @@ const player9 = generatePlayer("9", "Peat", game, (message: string) => privateMe
     );
     player7.role = new Mayor(player7, () => "You are a mayor.");
     player8.role = new Villager(player8, () => "You are a villager.");
-    player9.role = new Villager(player9, () => "You are a villager.");
+    player9.role = new Sorceress(
+        player9,
+        () => "You are a sorceress.",
+        () => "You can target a player to check for a seer",
+    );
 }
 
 // Add players to game.
@@ -102,6 +107,8 @@ game.startFirstNight();
 
 // Werewolf attempts to target someone on the first night and fails.
 (player1.role as Werewolf).actionHandler(new Command("target", ["TheCanadian"]));
+
+player9.role.actionHandler(new Command("target", ["TheCanadian"]));
 
 console.log("\n========= DAY ONE =========\n");
 // *************** Day 1 ******************
@@ -132,6 +139,8 @@ console.log(player5.alive);
 (player0.role as Werewolf).actionHandler(new Command("target", ["Sinsorium"]));
 
 player4.role.actionHandler(new Command("target", ["Phar"]));
+
+player9.role.actionHandler(new Command("target", ["cainsith"]));
 
 console.log("\n========= DAY TWO =========\n");
 // *************** Day 2 ******************
