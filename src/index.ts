@@ -5,6 +5,9 @@ import Seer from "./roles/seer";
 import Villager from "./roles/villager";
 import Player from "./structs/player";
 import Command from "./structs/command";
+import Bodyguard from "./roles/bodyguard";
+import Lycan from "./roles/lycan";
+import Mayor from "./roles/mayor";
 
 function privateMessage(player: Player, string: string): void {
     if (string !== undefined) {
@@ -58,11 +61,15 @@ const player9 = generatePlayer("9", "Peat", game, (message: string) => privateMe
         () => "You are a seer.",
         () => "You can target players to inspect.",
     );
-    player3.role = new Villager(player3, () => "You are a villager.");
+    player3.role = new Lycan(player3, () => "You are a lycan.");
     player4.role = new Villager(player4, () => "You are a villager.");
     player5.role = new Villager(player5, () => "You are a villager.");
-    player6.role = new Villager(player6, () => "You are a villager.");
-    player7.role = new Villager(player7, () => "You are a villager.");
+    player6.role = new Bodyguard(
+        player6,
+        () => "You are a bodyguard.",
+        () => "You can target players to protect from elimination.",
+    );
+    player7.role = new Mayor(player7, () => "You are a mayor.");
     player8.role = new Villager(player8, () => "You are a villager.");
     player9.role = new Villager(player9, () => "You are a villager.");
 }
@@ -127,7 +134,7 @@ game.startDay();
 player0.accuse(new Command("accuse", ["cainsith"]));
 player1.accuse(new Command("accuse", ["cainsith"]));
 player2.accuse(new Command("accuse", ["Phar"]));
-player3.accuse(new Command("accuse", ["Phar"]));
+player7.accuse(new Command("accuse", ["Phar"]));
 
 // Player 4 and 5 is dead and doesn't count their accusation.
 player4.accuse(new Command("accuse", ["Canadian"]));
@@ -143,6 +150,9 @@ game.startNight();
 
 // Werewolves target someone.
 (player1.role as Werewolf).actionHandler(new Command("target", ["peat"]));
+
+// Bodyguard target someone.
+(player6.role as Bodyguard).actionHandler(new Command("target", ["peat"]));
 
 console.log("\n========= DAY THREE =========\n");
 // *************** Day 3 ******************

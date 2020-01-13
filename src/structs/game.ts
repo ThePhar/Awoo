@@ -2,6 +2,7 @@ import Player from "./player";
 import Phases from "./phases";
 import GameData from "../interfaces/game-data";
 import Werewolf from "../roles/werewolf";
+import Bodyguard from "../roles/bodyguard";
 
 export default class Game {
     id: string;
@@ -71,6 +72,18 @@ export default class Game {
         // Werewolves
         const werewolfTarget = Werewolf.getWerewolfElimination(this.players);
         if (werewolfTarget) {
+            // Check if a bodyguard is protecting this player.
+            if (
+                this.players.some(player => {
+                    if (player.alive && player.role && player.role instanceof Bodyguard && player.role.protecting) {
+                        return player.role.protecting.id === werewolfTarget.id;
+                    }
+                })
+            ) {
+                this.sendNotification("Someone was protected by the bodyguard from elimination.");
+                return false;
+            }
+
             werewolfTarget.alive = false;
             this.sendNotification(`${werewolfTarget.name} has been eliminated by werewolves.`);
         }

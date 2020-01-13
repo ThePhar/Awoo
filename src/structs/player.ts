@@ -5,6 +5,7 @@ import getMostDuplicates from "../util/duplicate";
 import Phases from "./phases";
 import RecognisedCommands from "./recognised-commands";
 import Command from "./command";
+import Mayor from "../roles/mayor";
 
 export default class Player {
     name: string;
@@ -95,15 +96,21 @@ export default class Player {
 
     static getLynchElimination(players: Array<Player>): Player | undefined {
         // Find the accused player of each villager.
-        const accusedPlayers = players
-            .map(player => {
-                return player.accusing;
-            })
-            .filter(accused => accused !== undefined) as Array<Player>;
+        const mayorVotes: Array<Player | undefined> = [];
+        let accusedPlayers = players.map(player => {
+            // Count the mayor twice.
+            if (player.role && player.role instanceof Mayor && player.accusing) {
+                mayorVotes.push(player.accusing);
+            }
+            return player.accusing;
+        });
+
+        accusedPlayers = accusedPlayers.concat(mayorVotes);
+        accusedPlayers = accusedPlayers.filter(accused => accused !== undefined) as Array<Player>;
 
         // Find which accused player was targeted the most.
         if (accusedPlayers.length > 0) {
-            const most = getMostDuplicates(accusedPlayers);
+            const most = getMostDuplicates(accusedPlayers as Array<Player>);
 
             // If only 1 accused had the most, return that player. Otherwise, do not return a player.
             if (most.length === 1) {
