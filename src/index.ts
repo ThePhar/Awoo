@@ -6,8 +6,8 @@ import Villager from "./roles/villager";
 import Player from "./structs/player";
 import Command from "./structs/command";
 import Bodyguard from "./roles/bodyguard";
-import Lycan from "./roles/lycan";
 import Mayor from "./roles/mayor";
+import Tanner from "./roles/tanner";
 
 function privateMessage(player: Player, string: string): void {
     if (string !== undefined) {
@@ -61,7 +61,7 @@ const player9 = generatePlayer("9", "Peat", game, (message: string) => privateMe
         () => "You are a seer.",
         () => "You can target players to inspect.",
     );
-    player3.role = new Lycan(player3, () => "You are a lycan.");
+    player3.role = new Tanner(player3, () => "You are a tanner.");
     player4.role = new Villager(player4, () => "You are a villager.");
     player5.role = new Villager(player5, () => "You are a villager.");
     player6.role = new Bodyguard(

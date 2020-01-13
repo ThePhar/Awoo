@@ -3,6 +3,7 @@ import Phases from "./phases";
 import GameData from "../interfaces/game-data";
 import Werewolf from "../roles/werewolf";
 import Bodyguard from "../roles/bodyguard";
+import Tanner from "../roles/tanner";
 
 export default class Game {
     id: string;
@@ -109,6 +110,19 @@ export default class Game {
         const aliveWerewolves = this.players.filter(player => {
             return player.alive && player.role && player.role instanceof Werewolf;
         });
+
+        // TANNER VICTORY
+        const tannerWin = this.players.some(player => {
+            if (player.role && player.role instanceof Tanner) {
+                if (!player.alive) {
+                    this.sendNotification("Tanner wins!");
+                    return true;
+                }
+            }
+        });
+        if (tannerWin) {
+            return true;
+        }
 
         // WEREWOLF VICTORY
         if (aliveWerewolves.length >= aliveVillagers.length) {
