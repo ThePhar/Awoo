@@ -35,6 +35,11 @@ export default class Witch implements Role {
         const game = this.player.game;
         const targetNameOrId = command.args.join(" ");
 
+        // Do not allow these during the first night!
+        if (game.day === 1) {
+            return;
+        }
+
         // Do not process actions from dead players or outside of the night phase.
         if (!this.player.alive || game.phase !== Phases.Night) {
             return;

@@ -7,6 +7,17 @@ import Tanner from "../roles/tanner";
 import Hunter from "../roles/hunter";
 import Sorceress from "../roles/sorceress";
 import Witch from "../roles/witch";
+import {
+    day,
+    hunterElimination,
+    lynchElimination,
+    night,
+    tannerVictory,
+    villagerVictory,
+    werewolfElimination,
+    werewolvesVictory,
+    witchElimination,
+} from "../embeds/game-events";
 
 export default class Game {
     id: string;
@@ -41,34 +52,37 @@ export default class Game {
         this.sendAllPlayerNightActions();
 
         // Send a notification to the channel.
-        this.sendNotification("Starting first night.");
+        // this.sendNotification("Starting first night.");
+        this.sendNotification(night(this));
     }
     startDay(): void {
         this.phase = Phases.Day;
 
         const win = this.processNightEliminations();
-        if (win) {
-            return;
-        }
+        // if (win) {
+        //     return;
+        // }
 
         // Send a notification to the channel.
-        this.sendNotification("Starting day phase.");
+        // this.sendNotification("Starting day phase.");
+        this.sendNotification(day(this));
     }
     startNight(): void {
         this.day += 1;
         this.phase = Phases.Night;
 
         const win = this.processDayEliminations();
-        if (win) {
-            return;
-        }
+        // if (win) {
+        //     return;
+        // }
 
         // Send all players their night actions.
         this.resetAllPlayerChoices();
         this.sendAllPlayerNightActions();
 
         // Send a notification to the channel.
-        this.sendNotification("Starting night phase.");
+        // this.sendNotification("Starting night phase.");
+        this.sendNotification(night(this));
     }
 
     // Elimination processing.
@@ -84,7 +98,6 @@ export default class Game {
                     }
                 })
             ) {
-                this.sendNotification("Someone was protected by the bodyguard from elimination.");
                 return false;
             }
             // Check if witch protected someone.
@@ -96,19 +109,20 @@ export default class Game {
                     }
                 })
             ) {
-                this.sendNotification("Someone was protected by the witch from elimination.");
                 return false;
             }
 
             werewolfTarget.alive = false;
-            this.sendNotification(`${werewolfTarget.name} has been eliminated by werewolves.`);
+            // this.sendNotification(`${werewolfTarget.name} has been eliminated by werewolves.`);
+            this.sendNotification(werewolfElimination(werewolfTarget));
         }
 
         // Witch
         this.players.forEach(player => {
             if (player.role && player.role instanceof Witch && player.role.killing) {
                 if (player.role.killing.alive) {
-                    this.sendNotification(`${player.role.killing.name} has been poisoned by a witch.`);
+                    // this.sendNotification(`${player.role.killing.name} has been poisoned by a witch.`);
+                    this.sendNotification(witchElimination(player.role.killing));
                     player.role.killing.alive = false;
                     player.role.killing = undefined;
                     return false;
@@ -123,7 +137,8 @@ export default class Game {
 
                 if (player.role.target && player.role.target.alive) {
                     player.role.target.alive = false;
-                    this.sendNotification(`${player.role.target.name} was shot by ${player.name} as they were killed.`);
+                    // this.sendNotification(`${player.role.target.name} was shot by ${player.name} as they were killed.`);
+                    this.sendNotification(hunterElimination(player.role.target, player));
                     return false;
                 }
             }
@@ -136,7 +151,8 @@ export default class Game {
         const lynchedPlayer = Player.getLynchElimination(this.players);
         if (lynchedPlayer) {
             lynchedPlayer.alive = false;
-            this.sendNotification(`${lynchedPlayer.name} has been eliminated by lynching.`);
+            // this.sendNotification(`${lynchedPlayer.name} has been eliminated by lynching.`);
+            this.sendNotification(lynchElimination(lynchedPlayer));
         }
 
         // Hunter
@@ -146,9 +162,10 @@ export default class Game {
 
                 if (player.role.target && player.role.target.alive) {
                     player.role.target.alive = false;
-                    this.sendNotification(
-                        `${player.role.target.name} was shot by ${player.name} as they were lynched.`,
-                    );
+                    // this.sendNotification(
+                    //     `${player.role.target.name} was shot by ${player.name} as they were lynched.`,
+                    // );
+                    this.sendNotification(hunterElimination(player.role.target, player));
                     return false;
                 }
             }
@@ -175,7 +192,8 @@ export default class Game {
         const tannerWin = this.players.some(player => {
             if (player.role && player.role instanceof Tanner) {
                 if (!player.alive) {
-                    this.sendNotification("Tanner wins!");
+                    // this.sendNotification("Tanner wins!");
+                    this.sendNotification(tannerVictory(this));
                     return true;
                 }
             }
@@ -186,12 +204,14 @@ export default class Game {
 
         // WEREWOLF VICTORY
         if (aliveWerewolves.length >= aliveVillagers.length) {
-            this.sendNotification("Werewolves win!");
+            // this.sendNotification("Werewolves win!");
+            this.sendNotification(werewolvesVictory(this));
             return true;
         }
         // VILLAGER VICTORY
         else if (aliveWerewolves.length === 0) {
-            this.sendNotification("Villagers win!");
+            // this.sendNotification("Villagers win!");
+            this.sendNotification(villagerVictory(this));
             return true;
         }
 
@@ -200,6 +220,14 @@ export default class Game {
 
     // Player specific functions
     getPlayers(nameOrId: string): Array<Player> {
+        const regex = /<@!?([0-9]+)>/;
+
+        if (regex.test(nameOrId)) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+            // @ts-ignore
+            nameOrId = regex.exec(nameOrId)[1];
+        }
+
         let playerById;
         const players = this.players.filter(p => {
             if (p.id === nameOrId) {
@@ -229,6 +257,16 @@ export default class Game {
     }
     sendAllPlayerNightActions(): void {
         this.players.forEach(player => {
+            if (this.day === 1) {
+                if (
+                    player.role instanceof Werewolf ||
+                    player.role instanceof Witch ||
+                    player.role instanceof Bodyguard
+                ) {
+                    return;
+                }
+            }
+
             if (player.alive) {
                 player.sendNightActions();
             }
