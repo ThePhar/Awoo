@@ -27,6 +27,7 @@ export function getGame(message: Message): Game | undefined {
     // Get the game object for this server.
     return games.get(message.guild.id);
 }
+
 export async function onMessage(client: Client, message: Message): Promise<void> {
     if (message.author.bot) return;
 
@@ -69,13 +70,38 @@ export async function onMessage(client: Client, message: Message): Promise<void>
                     return;
                 }
 
+                // TODO: Create a class method to handle this.
                 game.send = (content: unknown): Promise<Message | Message[]> => {
                     return (channel as TextChannel).send(content);
                 };
 
                 message.channel.send(`Got it. I will use ${channel} for sending game notifications. Be sure I can post in that channel or you may not see my messages.`);
-            } else {
+            } else if (game) {
                 message.channel.send("Sorry, only administrators of this server can change these settings.");
+            }
+        }
+        // Admin :: Initialize a game.
+        else if (command.type === RecognisedCommands.StartNewGame) {
+            const game = getGame(message);
+
+            if (message.member.hasPermission("ADMINISTRATOR")) {
+                if (game && !game.active) {
+                    // TODO: Add class method for handling game starting.
+                    game.active = true;
+                    // TODO: Create an embed for showing lobby message.
+                    if (game.send) {
+                        game.send("Now accepting players.");
+                    }
+                    message.channel.send("Now accepting players.");
+                    return;
+                } else if (game && game.active) {
+                    // TODO: Add functionality to cancel current game and start new game.
+                    message.channel.send("A game is already in progress. You cannot start a new game until the current one has completed.");
+                    return;
+                }
+            } else {
+                message.channel.send("Only an administrator of this server can start a new game.");
+                return;
             }
         }
         // Player :: Join a game waiting for players.
@@ -168,10 +194,7 @@ export async function initialize(client: Client): Promise<void> {
             }
 
             // Initialize our game.
-            games.set(guild.id, new Game({
-                id: guild.id,
-                send: (): number => 0,
-            }));
+            games.set(guild.id, new Game({ id: guild.id }));
 
             log(`\x1b[42m  READY  \x1b[0m ${guild.name} :: ${guild.id}`, 1, true);
         }

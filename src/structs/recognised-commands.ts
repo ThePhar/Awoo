@@ -9,6 +9,7 @@ enum RecognisedCommands {
     Save = "save",
 
     SetChannel = "setchannel",
+    StartNewGame = "start"
 }
 
 export default RecognisedCommands;

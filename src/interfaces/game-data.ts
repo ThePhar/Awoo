@@ -5,6 +5,5 @@ export default interface GameData {
     active?: boolean;
     phase?: Phases;
     day?: number;
-
-    send: Function;
+    send?: Function;
 }

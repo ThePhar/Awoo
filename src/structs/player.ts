@@ -41,6 +41,10 @@ export default class Player {
             return;
         }
 
+        if (!game.send) {
+            return;
+        }
+
         // Target a player for accusation (day only!).
         if (command.type === RecognisedCommands.Accuse && game.phase === Phases.Day) {
             // No name specified after the command.

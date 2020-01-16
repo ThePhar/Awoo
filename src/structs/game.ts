@@ -10,7 +10,7 @@ export default class Game {
 
     players: Array<Player> = [];
 
-    send: Function;
+    send?: Function;
 
     constructor(data: GameData) {
         this.id = data.id;
