@@ -22,12 +22,14 @@ export default class Player {
         this.id = data.id;
         this.game = data.game;
         this.role = data.role;
-
-        // Assign implementation specific functions.
         this.send = data.send;
 
         // Generate default values if not already specified.
         this.alive = data.alive === undefined ? true : data.alive;
+    }
+
+    toString(): string {
+        return `<@!${this.id}> (\`${this.name}\`)`;
     }
 
     accuse(command: Command): void {

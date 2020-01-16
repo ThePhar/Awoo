@@ -7,5 +7,4 @@ export default interface GameData {
     day?: number;
 
     send: Function;
-    sendNotification: Function;
 }

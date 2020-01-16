@@ -7,6 +7,8 @@ enum RecognisedCommands {
     Role = "role",
     Kill = "kill",
     Save = "save",
+
+    SetChannel = "setchannel",
 }
 
 export default RecognisedCommands;
