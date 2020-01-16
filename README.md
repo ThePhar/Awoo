@@ -1,10 +1,6 @@
-# Awoo (working title)
+# Awoo 
+![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/ThePhar/awoo/master) [![Coverage Status](https://coveralls.io/repos/github/ThePhar/awoo/badge.svg?branch=master)](https://coveralls.io/github/ThePhar/awoo?branch=master) [![Build Status](https://travis-ci.com/ThePhar/awoo.svg?branch=master)](https://travis-ci.com/ThePhar/awoo)
 
-Foobar is a realtime werewolf game for Discord. All moderator comands are handled automatically
-by a discord bot.
+An automatic werewolf moderator and game manager for discord.
 
-## Contributing
 todo: write me
-
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
