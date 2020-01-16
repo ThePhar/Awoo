@@ -193,3 +193,6 @@ settings.ts
 
 # Ignore vim swap files.
 *.swp
+
+# Ignore sqlite files
+*.sqlite
