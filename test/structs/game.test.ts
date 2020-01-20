@@ -1,6 +1,7 @@
 import * as Discord from "discord.js";
 import Game from "../../src/structs/game";
 import Phase from "../../src/structs/phase";
+import { createMember } from "../fixtures/guild-member";
 
 let game: Game, channel: Discord.TextChannel;
 beforeEach(() => {
@@ -12,27 +13,21 @@ describe("constructor() & Properties", () => {
     test("A game object must have an `id` property.", () => {
         expect(game.id).toBe("1");
     });
-
     test("A game object must have a `send` property mapped to a TextChannel send func.", () => {
         expect(game.send).toBe(channel.send);
     });
-
     test("A game object must have an `active` property.", () => {
         expect(game.active).toBe(false);
     });
-
     test("A game object must have a `phase` property.", () => {
         expect(game.phase).toBe(Phase.Waiting);
     });
-
     test("A game object must have a `day` property.", () => {
         expect(game.day).toBe(0);
     });
-
-    test("A game object must have a `players` array.", () => {
-        expect(game.players).toEqual([]);
+    test("A game object must have a `players` map of size 0 at initialization.", () => {
+        expect(game.totalPlayers).toBe(0);
     });
-
     test("Allow optional predetermined game state during instantiation to set initial game state.", () => {
         game = new Game(channel, {
             active: true,
@@ -43,5 +38,60 @@ describe("constructor() & Properties", () => {
         expect(game.active).toBe(true);
         expect(game.phase).toBe(Phase.Day);
         expect(game.day).toBe(3);
+    });
+});
+
+describe("addPlayer()", () => {
+    test("Should create a player object, place into map, and return new player object.", () => {
+        const member = createMember("1", "Test");
+
+        const player = game.addPlayer(member);
+        expect(player).toBeDefined();
+        expect(game.totalPlayers).toBe(1);
+        expect(game.getPlayer(member.id)).toBe(player);
+    });
+    test("Should return undefined if a player is already signed up under that member.", () => {
+        const member = createMember("1", "Test");
+
+        const firstAdd = game.addPlayer(member);
+        const secondAdd = game.addPlayer(member);
+
+        expect(secondAdd).toBeUndefined();
+        expect(game.totalPlayers).toBe(1);
+        expect(game.getPlayer(member.id)).toBe(firstAdd);
+    });
+});
+
+describe("getPlayer()", () => {
+    test("Should return the player object of a particular id if it exists.", () => {
+        const member = createMember("1", "Test");
+
+        const instantiatedPlayer = game.addPlayer(member);
+        const fetchedPlayer = game.getPlayer(member.id);
+
+        expect(fetchedPlayer).toBe(instantiatedPlayer);
+    });
+    test("Should return undefined if a particular player does not exist.", () => {
+        const player = game.getPlayer("12345");
+
+        expect(player).toBeUndefined();
+    });
+});
+
+describe("removePlayer()", () => {
+    test("Should remove the player from the game and return the removed player object if it exists.", () => {
+        const member = createMember("1", "Test");
+
+        const instantiatedPlayer = game.addPlayer(member);
+        const removedPlayer = game.removePlayer(member.id);
+
+        expect(removedPlayer).toBe(instantiatedPlayer);
+        expect(game.totalPlayers).toBe(0);
+        expect(game.getPlayer(member.id)).toBeUndefined();
+    });
+    test("Should return undefined if a particular player does not exist.", () => {
+        const player = game.removePlayer("12345");
+
+        expect(player).toBeUndefined();
     });
 });

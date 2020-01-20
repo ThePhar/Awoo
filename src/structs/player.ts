@@ -20,7 +20,7 @@ export default class Player {
     }
 
     /**
-     * Returns a player mention in Discord's mention format.
+     * Returns a player name string in Discord's mention format.
      */
     toString(): string {
         return `<@!${this._member.id}>`;
