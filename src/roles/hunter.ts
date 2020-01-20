@@ -2,13 +2,13 @@ import Role from "../interfaces/role";
 import Command from "../structs/command";
 import Player from "../structs/player";
 import RecognisedCommands from "../structs/recognised-commands";
-import Teams from "../structs/teams";
+import Team from "../structs/team";
 
 export default class Hunter implements Role {
     name = "Hunter";
     pluralName = "Hunters";
     appearance = "villager";
-    team = Teams.Villagers;
+    team = Team.Villagers;
 
     player: Player;
     getRoleMessage: () => unknown;

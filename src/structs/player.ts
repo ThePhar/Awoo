@@ -1,9 +1,13 @@
 import * as Discord from "discord.js";
-import PlayerState from "../interfaces/player-state";
-import Game from "./game";
+
+import PlayerState  from "../interfaces/player-state";
+import Role         from "../interfaces/role";
+import Game         from "./game";
+import Villager     from "../roles/villager";
 
 export default class Player {
     private readonly _member: Discord.GuildMember;
+    private readonly _role:   Role;
     private readonly _game:   Game;
 
     private readonly _alive:    boolean       = true;
@@ -11,10 +15,11 @@ export default class Player {
 
     constructor(member: Discord.GuildMember, game: Game, state?: PlayerState) {
         this._member = member;
-        this._game = game;
+        this._role   = new Villager(this);
+        this._game   = game;
 
         if (state) {
-            this._alive = state.alive;
+            this._alive    = state.alive;
             this._accusing = state.accusing;
         }
     }
@@ -37,6 +42,9 @@ export default class Player {
     }
     get name():     string {
         return this._member.displayName;
+    }
+    get role():     Role {
+        return this._role;
     }
     get game():     Game {
         return this._game;

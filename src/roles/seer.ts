@@ -2,14 +2,14 @@ import Role from "../interfaces/role";
 import Command from "../structs/command";
 import Player from "../structs/player";
 import RecognisedCommands from "../structs/recognised-commands";
-import Teams from "../structs/teams";
+import Team from "../structs/team";
 import Phases from "../structs/phase";
 
 export default class Seer implements Role {
     name = "Seer";
     pluralName = "Seers";
     appearance = "villager";
-    team = Teams.Villagers;
+    team = Team.Villagers;
 
     player: Player;
     getRoleMessage: () => unknown;

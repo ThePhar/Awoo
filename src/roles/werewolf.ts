@@ -1,6 +1,6 @@
 import Role from "../interfaces/role";
 import Player from "../structs/player";
-import Teams from "../structs/teams";
+import Team from "../structs/team";
 import Command from "../structs/command";
 import RecognisedCommands from "../structs/recognised-commands";
 import Phases from "../structs/phase";
@@ -10,7 +10,7 @@ export default class Werewolf implements Role {
     name = "Werewolf";
     pluralName = "Werewolves";
     appearance = "werewolf";
-    team = Teams.Werewolves;
+    team = Team.Werewolves;
 
     player: Player;
     getRoleMessage: () => unknown;

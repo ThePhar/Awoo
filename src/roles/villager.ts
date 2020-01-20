@@ -1,27 +1,17 @@
-import Role from "../interfaces/role";
-import Player from "../structs/player";
-import Teams from "../structs/teams";
+import Role         from "../interfaces/role";
+import Player       from "../structs/player";
+import Team         from "../structs/team";
+import RoleTemplate from "../templates/role-templates";
 
 export default class Villager implements Role {
-    name = "Villager";
-    pluralName = "Villagers";
-    appearance = "villager";
-    team = Teams.Villagers;
+    readonly player: Player;
 
-    player: Player;
-    getRoleMessage: () => unknown;
+    readonly name       = RoleTemplate.villager.name;
+    readonly pluralName = RoleTemplate.villager.pluralName;
+    readonly appearance = RoleTemplate.villager.appearance;
+    readonly team       = Team.Villagers;
 
-    resetChoices(): void {
-        this.player.accusing = undefined;
-    }
-
-    constructor(player: Player, getRoleMessage: () => unknown) {
+    constructor(player: Player) {
         this.player = player;
-        this.getRoleMessage = getRoleMessage;
-    }
-
-    actionHandler(): void {
-        // Villagers have no special actions.
-        return;
     }
 }

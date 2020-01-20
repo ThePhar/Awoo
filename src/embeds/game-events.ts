@@ -1,10 +1,9 @@
-/* eslint-disable prettier/prettier */
 import { RichEmbed } from "discord.js";
 import Player from "../structs/player";
 import mention from "../util/mention";
 import dedent from "dedent";
 import Game from "../structs/game";
-import Teams from "../structs/teams";
+import Team from "../structs/team";
 
 export function playerJoined(player: Player): RichEmbed {
     return new RichEmbed().setDescription(`${mention(player.id)} has joined the next game!`);
@@ -71,8 +70,8 @@ export function night(game: Game): RichEmbed {
 export function villagerVictory(game: Game): RichEmbed {
     const players = game.players;
 
-    const winners = players.filter(player => { if (player.role) return player.role.team === Teams.Villagers; });
-    const losers = players.filter(player => { if (player.role) return player.role.team !== Teams.Villagers; });
+    const winners = players.filter(player => { if (player.role) return player.role.team === Team.Villagers; });
+    const losers = players.filter(player => { if (player.role) return player.role.team !== Team.Villagers; });
 
     const winnersMentionable = winners.map(player => `${mention(player.id)} (\`${player.name}\`) :: ${player.role ? player.role.name: ""}`);
     const losersMentionable = losers.map(player => `${mention(player.id)} (\`${player.name}\`) :: ${player.role ? player.role.name: ""}`);
@@ -92,8 +91,8 @@ export function villagerVictory(game: Game): RichEmbed {
 export function werewolvesVictory(game: Game): RichEmbed {
     const players = game.players;
 
-    const winners = players.filter(player => { if (player.role) return player.role.team === Teams.Werewolves; });
-    const losers = players.filter(player => { if (player.role) return player.role.team !== Teams.Werewolves; });
+    const winners = players.filter(player => { if (player.role) return player.role.team === Team.Werewolves; });
+    const losers = players.filter(player => { if (player.role) return player.role.team !== Team.Werewolves; });
 
     const winnersMentionable = winners.map(player => `${mention(player.id)} (\`${player.name}\`) :: ${player.role ? player.role.name: ""}`);
     const losersMentionable = losers.map(player => `${mention(player.id)} (\`${player.name}\`) :: ${player.role ? player.role.name: ""}`);
@@ -112,8 +111,8 @@ export function werewolvesVictory(game: Game): RichEmbed {
 export function tannerVictory(game: Game): RichEmbed {
     const players = game.players;
 
-    const winners = players.filter(player => { if (player.role) return player.role.team === Teams.Tanner; });
-    const losers = players.filter(player => { if (player.role) return player.role.team !== Teams.Tanner; });
+    const winners = players.filter(player => { if (player.role) return player.role.team === Team.Tanner; });
+    const losers = players.filter(player => { if (player.role) return player.role.team !== Team.Tanner; });
 
     const winnersMentionable = winners.map(player => `${mention(player.id)} (\`${player.name}\`) :: ${player.role ? player.role.name: ""}`);
     const losersMentionable = losers.map(player => `${mention(player.id)} (\`${player.name}\`) :: ${player.role ? player.role.name: ""}`);

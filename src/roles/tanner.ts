@@ -1,12 +1,12 @@
 import Role from "../interfaces/role";
 import Player from "../structs/player";
-import Teams from "../structs/teams";
+import Team from "../structs/team";
 
 export default class Tanner implements Role {
     name = "Tanner";
     pluralName = "Tanners";
     appearance = "villager";
-    team = Teams.Tanner;
+    team = Team.Tanner;
 
     player: Player;
     getRoleMessage: () => unknown;

@@ -1,7 +1,8 @@
 import * as Discord from "discord.js";
-import GameState from "../interfaces/game-state";
-import Phase from "./phase";
-import Player from "./player";
+
+import GameState    from "../interfaces/game-state";
+import Phase        from "./phase";
+import Player       from "./player";
 
 export default class Game {
     private readonly _notificationChannel: Discord.TextChannel;

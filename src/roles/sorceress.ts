@@ -2,7 +2,7 @@ import Role from "../interfaces/role";
 import Command from "../structs/command";
 import Player from "../structs/player";
 import RecognisedCommands from "../structs/recognised-commands";
-import Teams from "../structs/teams";
+import Team from "../structs/team";
 import Phases from "../structs/phase";
 import Seer from "./seer";
 
@@ -10,7 +10,7 @@ export default class Sorceress implements Role {
     name = "Sorceress";
     pluralName = "Sorceresses";
     appearance = "villager";
-    team = Teams.Werewolves;
+    team = Team.Werewolves;
 
     player: Player;
     getRoleMessage: () => unknown;

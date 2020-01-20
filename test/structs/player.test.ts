@@ -1,11 +1,13 @@
 import * as Discord from "discord.js";
-import Player from "../../src/structs/player";
-import Game from "../../src/structs/game";
-import { createMember } from "../fixtures/guild-member";
+import * as Fixture from "../fixtures/guild-member";
+
+import Player       from "../../src/structs/player";
+import Game         from "../../src/structs/game";
+import Villager     from "../../src/roles/villager";
 
 let player: Player, member: Discord.GuildMember, game: Game;
 beforeEach(() => {
-    member = createMember("1", "Test");
+    member = Fixture.createMember("1", "Test");
     game = new Game({} as Discord.TextChannel);
     player = new Player(member, game);
 });
@@ -31,6 +33,9 @@ describe("constructor() & Properties", () => {
     });
     test("A player object must have an `accusing` property.", () => {
         expect(player.accusing).toBeNull();
+    });
+    test("A player object must have a `role` property with a default of villager.", () => {
+        expect(player.role).toBeInstanceOf(Villager);
     });
     test("A player object's toString method should return a Discord friendly mention string.", () => {
         expect(player.toString()).toBe("<@!1>");

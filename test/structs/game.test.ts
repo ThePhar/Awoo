@@ -1,7 +1,8 @@
 import * as Discord from "discord.js";
-import Game from "../../src/structs/game";
-import Phase from "../../src/structs/phase";
-import { createMember } from "../fixtures/guild-member";
+import * as Fixture from "../fixtures/guild-member";
+
+import Game         from "../../src/structs/game";
+import Phase        from "../../src/structs/phase";
 
 let game: Game, channel: Discord.TextChannel;
 beforeEach(() => {
@@ -43,7 +44,7 @@ describe("constructor() & Properties", () => {
 
 describe("addPlayer()", () => {
     test("Should create a player object, place into map, and return new player object.", () => {
-        const member = createMember("1", "Test");
+        const member = Fixture.createMember("1", "Test");
 
         const player = game.addPlayer(member);
         expect(player).toBeDefined();
@@ -51,7 +52,7 @@ describe("addPlayer()", () => {
         expect(game.getPlayer(member.id)).toBe(player);
     });
     test("Should return undefined if a player is already signed up under that member.", () => {
-        const member = createMember("1", "Test");
+        const member = Fixture.createMember("1", "Test");
 
         const firstAdd = game.addPlayer(member);
         const secondAdd = game.addPlayer(member);
@@ -64,7 +65,7 @@ describe("addPlayer()", () => {
 
 describe("getPlayer()", () => {
     test("Should return the player object of a particular id if it exists.", () => {
-        const member = createMember("1", "Test");
+        const member = Fixture.createMember("1", "Test");
 
         const instantiatedPlayer = game.addPlayer(member);
         const fetchedPlayer = game.getPlayer(member.id);
@@ -80,7 +81,7 @@ describe("getPlayer()", () => {
 
 describe("removePlayer()", () => {
     test("Should remove the player from the game and return the removed player object if it exists.", () => {
-        const member = createMember("1", "Test");
+        const member = Fixture.createMember("1", "Test");
 
         const instantiatedPlayer = game.addPlayer(member);
         const removedPlayer = game.removePlayer(member.id);
