@@ -1,51 +1,41 @@
+import * as Discord from "discord.js";
+import GameState from "../interfaces/game-state";
+import Phase from "./phase";
 import Player from "./player";
-import Phases from "./phases";
-import GameData from "../interfaces/game-data";
 
 export default class Game {
-    id: string;
-    active: boolean;
-    phase: Phases;
-    day: number;
+    readonly players: Player[] = [];
 
-    players: Array<Player> = [];
+    private readonly _notificationChannel: Discord.TextChannel;
 
-    send?: Function;
+    private readonly _active: boolean = false;
+    private readonly _phase:  Phase   = Phase.Waiting;
+    private readonly _day:    number  = 0;
 
-    constructor(data: GameData) {
-        this.id = data.id;
-        this.active = data.active || false;
-        this.phase = data.phase || Phases.WaitingForPlayers;
-        this.day = data.day || 0;
-        this.send = data.send;
-    }
+    constructor(channel: Discord.TextChannel, state?: GameState) {
+        this._notificationChannel = channel;
 
-    // Player specific functions
-    getPlayers(nameOrId: string): Array<Player> {
-        const regex = /<@!?([0-9]+)>/;
-
-        if (regex.test(nameOrId)) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-            // @ts-ignore
-            nameOrId = regex.exec(nameOrId)[1];
+        // Predetermined values.
+        if (state) {
+            this._active = state.active;
+            this._phase = state.phase;
+            this._day = state.day;
         }
-
-        let playerById;
-        const players = this.players.filter(p => {
-            if (p.id === nameOrId) {
-                playerById = p;
-            }
-
-            return p.name.toLowerCase().includes(nameOrId.toLowerCase());
-        });
-
-        // Return a player found by their id, or return all players with matching names.
-        return playerById ? [playerById] : players;
     }
-    addPlayer(player: Player): void {
-        this.players.push(player);
+
+    get send():   Function {
+        return this._notificationChannel.send;
     }
-    removePlayer(player: Player): void {
-        this.players = this.players.filter(p => p.id !== player.id);
+    get id():     string {
+        return this._notificationChannel.guild.id;
+    }
+    get active(): boolean {
+        return this._active;
+    }
+    get phase():  Phase {
+        return this._phase;
+    }
+    get day():    number {
+        return this._day;
     }
 }

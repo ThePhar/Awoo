@@ -3,7 +3,7 @@ import Player from "../structs/player";
 import Teams from "../structs/teams";
 import Command from "../structs/command";
 import RecognisedCommands from "../structs/recognised-commands";
-import Phases from "../structs/phases";
+import Phases from "../structs/phase";
 import getMostDuplicates from "../util/duplicate";
 
 export default class Werewolf implements Role {

@@ -3,7 +3,7 @@ import Command from "../structs/command";
 import Player from "../structs/player";
 import RecognisedCommands from "../structs/recognised-commands";
 import Teams from "../structs/teams";
-import Phases from "../structs/phases";
+import Phases from "../structs/phase";
 
 export default class Witch implements Role {
     name = "Witch";
