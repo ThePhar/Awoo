@@ -1,9 +1,12 @@
 import * as Discord from "discord.js";
 
-import PlayerState  from "../interfaces/player-state";
-import Role         from "../interfaces/role";
-import Game         from "./game";
-import Villager     from "../roles/villager";
+import PlayerState from "../interfaces/player-state";
+import Role        from "../interfaces/role";
+import Villager    from "../roles/villager";
+import Game        from "./game";
+import Phase       from "./phase";
+
+import AccusationTemplate from "../templates/accusation-templates";
 
 export default class Player {
     private readonly _member: Discord.GuildMember;
@@ -11,7 +14,7 @@ export default class Player {
     private readonly _game:   Game;
 
     private readonly _alive:    boolean       = true;
-    private readonly _accusing: Player | null = null;
+    private          _accusing: Player | null = null;
 
     constructor(member: Discord.GuildMember, game: Game, state?: PlayerState) {
         this._member = member;
@@ -29,6 +32,45 @@ export default class Player {
      */
     toString(): string {
         return `<@!${this._member.id}>`;
+    }
+
+    /**
+     * Accuse a player of being a werewolf and bring them closer to being lynched. Does not set accusation if the
+     * player or game state does not allow it.
+     * @param accusing The player to vote to be lynched.
+     * @return Returns true if successfully set accusing flag; returns false otherwise.
+     */
+    accuse(accusing: Player): boolean {
+        // Game is not active.
+        if (!this.game.active) {
+            this.send(AccusationTemplate.inactiveLynch());
+            return false;
+        }
+        // Player is dead.
+        if (!this.alive) {
+            this.send(AccusationTemplate.ghostLynch());
+            return false;
+        }
+        // Not the Day Phase
+        if (this.game.phase !== Phase.Day) {
+            this.send(AccusationTemplate.nonDayLynch());
+            return false;
+        }
+        // Player is targeting themselves.
+        if (accusing.id === this.id) {
+            this.send(AccusationTemplate.selfLynch());
+            return false;
+        }
+        // Accusing player is dead.
+        if (!accusing.alive) {
+            this.send(AccusationTemplate.deadLynch());
+            return false;
+        }
+
+        // All else is good!
+        this._accusing = accusing;
+        this.send(AccusationTemplate.success(accusing));
+        return true;
     }
 
     get send():     Function {

@@ -6,6 +6,7 @@ export function createMember(id: string, name: string, discriminator = "4444"): 
         displayName: name,
         user: {
             tag: `${name}#${discriminator}`
-        }
-    } as Discord.GuildMember;
+        },
+        send: jest.fn()
+    } as unknown as Discord.GuildMember;
 }
