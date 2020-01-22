@@ -1,8 +1,31 @@
 import * as Discord from "discord.js";
-import Player       from "../structs/player";
-import RoleTemplate from "./role-templates";
-import getTip       from "./tips";
 
+import Player from "../structs/player";
+import Game   from "../structs/game";
+import getTip from "./tips";
+
+import RoleTemplate  from "./role-templates";
+import PhaseTemplate from "./phase-templates";
+
+/* Phase Embeds */
+export function dayEmbed(game: Game): Discord.RichEmbed {
+    return new Discord.RichEmbed()
+        .setTitle(PhaseTemplate.day.title(game.day))
+        .setDescription(PhaseTemplate.day.description)
+        .setColor(PhaseTemplate.day.color)
+        .setImage(PhaseTemplate.day.image)
+        .setFooter(getTip());
+}
+export function nightEmbed(game: Game): Discord.RichEmbed {
+    return new Discord.RichEmbed()
+        .setTitle(PhaseTemplate.night.title(game.day))
+        .setDescription(PhaseTemplate.night.description)
+        .setColor(PhaseTemplate.night.color)
+        .setImage(PhaseTemplate.night.image)
+        .setFooter(getTip());
+}
+
+/* Role Embeds */
 export function villagerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.villager.roleNotification.title)
@@ -26,7 +49,6 @@ export function villagerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.villager.roleNotification.accusationExample,
         );
 }
-
 export function werewolfRoleEmbed(guild: Discord.Guild, werewolves: Player[]): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.werewolf.roleNotification.title)
@@ -59,7 +81,6 @@ export function werewolfRoleEmbed(guild: Discord.Guild, werewolves: Player[]): D
             RoleTemplate.werewolf.roleNotification.actions,
         );
 }
-
 export function seerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.seer.roleNotification.title)
@@ -87,7 +108,6 @@ export function seerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.seer.roleNotification.actions,
         );
 }
-
 export function bodyguardRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.bodyguard.roleNotification.title)
@@ -115,7 +135,6 @@ export function bodyguardRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.bodyguard.roleNotification.actions,
         );
 }
-
 export function hunterRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.hunter.roleNotification.title)
@@ -143,7 +162,6 @@ export function hunterRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.hunter.roleNotification.actions,
         );
 }
-
 export function lycanRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.lycan.roleNotification.title)
@@ -167,7 +185,6 @@ export function lycanRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.villager.roleNotification.accusationExample,
         );
 }
-
 export function mayorRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.mayor.roleNotification.title)
@@ -191,7 +208,6 @@ export function mayorRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.villager.roleNotification.accusationExample,
         );
 }
-
 export function tannerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.tanner.roleNotification.title)
@@ -215,7 +231,6 @@ export function tannerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.villager.roleNotification.accusationExample,
         );
 }
-
 export function sorceressRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.sorceress.roleNotification.title)
@@ -243,7 +258,6 @@ export function sorceressRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.sorceress.roleNotification.actions,
         );
 }
-
 export function insomniacRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.insomniac.roleNotification.title)
@@ -271,7 +285,6 @@ export function insomniacRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.insomniac.roleNotification.actions,
         );
 }
-
 export function minionRoleEmbed(guild: Discord.Guild, werewolves: Player[]): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.minion.roleNotification.title)
@@ -300,7 +313,6 @@ export function minionRoleEmbed(guild: Discord.Guild, werewolves: Player[]): Dis
             RoleTemplate.villager.roleNotification.accusationExample,
         );
 }
-
 export function drunkRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.drunk.roleNotification.title)
@@ -324,7 +336,6 @@ export function drunkRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.villager.roleNotification.accusationExample,
         );
 }
-
 export function masonRoleEmbed(guild: Discord.Guild, masons: Player[]): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.mason.roleNotification.title)
@@ -353,7 +364,6 @@ export function masonRoleEmbed(guild: Discord.Guild, masons: Player[]): Discord.
             RoleTemplate.villager.roleNotification.accusationExample,
         );
 }
-
 export function loneWolfRoleEmbed(guild: Discord.Guild, werewolves: Player[]): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.loneWolf.roleNotification.title)
@@ -386,7 +396,6 @@ export function loneWolfRoleEmbed(guild: Discord.Guild, werewolves: Player[]): D
             RoleTemplate.werewolf.roleNotification.actions,
         );
 }
-
 export function apprenticeSeerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.apprenticeSeer.roleNotification.title)
@@ -410,7 +419,6 @@ export function apprenticeSeerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed
             RoleTemplate.villager.roleNotification.accusationExample,
         );
 }
-
 export function doppelgangerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.doppelganger.roleNotification.title)
@@ -438,7 +446,6 @@ export function doppelgangerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
             RoleTemplate.doppelganger.roleNotification.actions,
         );
 }
-
 export function witchRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
     return new Discord.RichEmbed()
         .setTitle(RoleTemplate.witch.roleNotification.title)

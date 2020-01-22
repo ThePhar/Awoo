@@ -1,12 +1,12 @@
 import * as Discord from "discord.js";
 import * as Fixture from "../fixtures/guild-member";
 
-import Game         from "../../src/structs/game";
-import Phase        from "../../src/structs/phase";
+import Game  from "../../src/structs/game";
+import Phase from "../../src/structs/phase";
 
 let game: Game, channel: Discord.TextChannel;
 beforeEach(() => {
-    channel = { send: () => 0, guild: { id: "1" } } as unknown as Discord.TextChannel;
+    channel = { send: jest.fn(), guild: { id: "1" } } as unknown as Discord.TextChannel;
     game = new Game(channel);
 });
 
@@ -42,6 +42,48 @@ describe("constructor() & Properties", () => {
     });
 });
 
+describe("startDayPhase()", () => {
+    beforeEach(() => {
+        game = new Game(channel, { active: true, day: 1, phase: Phase.Night });
+    });
+
+    test("Should only set the phase to day.", () => {
+        game.startDayPhase();
+
+        expect(game.phase).toBe(Phase.Day);
+        expect(game.day).toBe(1);
+        expect(game.active).toBe(true);
+    });
+
+    test("Should send a new day notification if no win condition was met.", () => {
+        game.startDayPhase();
+
+        expect((game.send as jest.Mock).mock.calls[0][0].title)
+            .toBe("Start of Day 1");
+    });
+});
+
+describe("startNightPhase()", () => {
+    beforeEach(() => {
+        game = new Game(channel, { active: true, day: 1, phase: Phase.Day });
+    });
+
+    test("Should set the phase to night and increment day.", () => {
+        game.startNightPhase();
+
+        expect(game.phase).toBe(Phase.Night);
+        expect(game.day).toBe(2);
+        expect(game.active).toBe(true);
+    });
+
+    test("Should send a new day notification if no win condition was met.", () => {
+        game.startNightPhase();
+
+        expect((game.send as jest.Mock).mock.calls[0][0].title)
+            .toBe("Start of Night 2");
+    });
+});
+
 describe("addPlayer()", () => {
     test("Should create a player object, place into map, and return new player object.", () => {
         const member = Fixture.createMember("1", "Test");
@@ -62,7 +104,6 @@ describe("addPlayer()", () => {
         expect(game.getPlayer(member.id)).toBe(firstAdd);
     });
 });
-
 describe("getPlayer()", () => {
     test("Should return the player object of a particular id if it exists.", () => {
         const member = Fixture.createMember("1", "Test");
@@ -78,7 +119,6 @@ describe("getPlayer()", () => {
         expect(player).toBeUndefined();
     });
 });
-
 describe("removePlayer()", () => {
     test("Should remove the player from the game and return the removed player object if it exists.", () => {
         const member = Fixture.createMember("1", "Test");

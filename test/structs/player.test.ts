@@ -54,9 +54,12 @@ describe("constructor() & Properties", () => {
 });
 
 describe("accuse()", () => {
-    test("Should set accusing property when passed a player and return true on success.", () => {
-        const accused = new Player(Fixture.createMember("2", "Accused"), game);
+    let accused: Player;
+    beforeEach(() => {
+        accused = new Player(Fixture.createMember("2", "Accused"), game);
+    });
 
+    test("Should set accusing property when passed a player and return true on success.", () => {
         const success = player.accuse(accused);
 
         expect(player.accusing).toBe(accused);
@@ -74,7 +77,6 @@ describe("accuse()", () => {
     });
     test("Should not allow accusations to be set if player is dead.", () => {
         player = new Player(member, game, { alive: false, accusing: null });
-        const accused = new Player(Fixture.createMember("2", "Accused"), game);
 
         const success = player.accuse(accused);
 
@@ -86,7 +88,6 @@ describe("accuse()", () => {
     test("Should not allow accusations when game is not active.", () => {
         game = new Game({} as Discord.TextChannel, { phase: Phase.Day, active: false, day: 1 });
         player = new Player(member, game);
-        const accused = new Player(Fixture.createMember("2", "Accused"), game);
 
         const success = player.accuse(accused);
 
@@ -109,7 +110,6 @@ describe("accuse()", () => {
     test("Should not allow accusations outside the day phase.", () => {
         game = new Game({} as Discord.TextChannel, { phase: Phase.Night, active: true, day: 1 });
         player = new Player(member, game);
-        const accused = new Player(Fixture.createMember("2", "Accused"), game);
 
         const success = player.accuse(accused);
 

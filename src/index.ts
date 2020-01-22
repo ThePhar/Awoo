@@ -1,25 +1,9 @@
 import { Client, TextChannel } from "discord.js";
 import * as Env from "dotenv";
-import {
-    apprenticeSeerRoleEmbed,
-    bodyguardRoleEmbed,
-    doppelgangerRoleEmbed, drunkRoleEmbed,
-    hunterRoleEmbed,
-    insomniacRoleEmbed,
-    loneWolfRoleEmbed,
-    lycanRoleEmbed,
-    masonRoleEmbed,
-    mayorRoleEmbed,
-    minionRoleEmbed,
-    seerRoleEmbed,
-    sorceressRoleEmbed,
-    tannerRoleEmbed,
-    villagerRoleEmbed,
-    werewolfRoleEmbed,
-    witchRoleEmbed
-} from "./templates/embed-templates";
-import Player from "./structs/player";
+import { dayEmbed, nightEmbed } from "./templates/embed-templates";
+// import Player from "./structs/player";
 import Game from "./structs/game";
+import Phase from "./structs/phase";
 // import * as Manager from "./manager-functions";
 
 console.clear();
@@ -37,10 +21,15 @@ client.on("message", (message) => {
     if (message.author.bot) return;
 
     if (message.content.startsWith("#!test")) {
-        const testWerewolf = [
-            new Player(message.member, new Game(message.channel as TextChannel)),
-            new Player(message.guild.me, new Game(message.channel as TextChannel)),
-        ];
+        // const testWerewolf = [
+        //     new Player(message.member, new Game(message.channel as TextChannel)),
+        //     new Player(message.guild.me, new Game(message.channel as TextChannel)),
+        // ];
+        const game = new Game(message.channel as TextChannel, {
+            phase: Phase.Day,
+            day: 3,
+            active: true
+        });
 
         // message.channel.send(villagerRoleEmbed(message.guild));
         // message.channel.send(werewolfRoleEmbed(message.guild, testWerewolf));
@@ -53,12 +42,14 @@ client.on("message", (message) => {
         // message.channel.send(sorceressRoleEmbed(message.guild));
         // message.channel.send(witchRoleEmbed(message.guild));
         // message.channel.send(insomniacRoleEmbed(message.guild));
-        message.channel.send(minionRoleEmbed(message.guild, testWerewolf));
+        // message.channel.send(minionRoleEmbed(message.guild, testWerewolf));
         // message.channel.send(apprenticeSeerRoleEmbed(message.guild));
         // message.channel.send(loneWolfRoleEmbed(message.guild, testWerewolf));
         // message.channel.send(masonRoleEmbed(message.guild, testWerewolf));
         // message.channel.send(drunkRoleEmbed(message.guild));
-        message.channel.send(doppelgangerRoleEmbed(message.guild));
+        // message.channel.send(doppelgangerRoleEmbed(message.guild));
 
+        message.channel.send(dayEmbed(game));
+        message.channel.send(nightEmbed(game));
     }
 });

@@ -1,4 +1,5 @@
 import * as Discord from "discord.js";
+import * as Embeds  from "../templates/embed-templates";
 
 import GameState    from "../interfaces/game-state";
 import Phase        from "./phase";
@@ -9,8 +10,8 @@ export default class Game {
 
     private readonly _players         = new Map<string, Player>();
     private readonly _active: boolean = false;
-    private readonly _phase:  Phase   = Phase.Waiting;
-    private readonly _day:    number  = 0;
+    private          _phase:  Phase   = Phase.Waiting;
+    private          _day             = 0;
 
     constructor(channel: Discord.TextChannel, state?: GameState) {
         this._notificationChannel = channel;
@@ -23,6 +24,20 @@ export default class Game {
         }
     }
 
+    /* Game Functions */
+    startDayPhase(): void {
+        this._phase = Phase.Day;
+
+        this.send(Embeds.dayEmbed(this));
+    }
+    startNightPhase(): void {
+        this._day += 1;
+        this._phase = Phase.Night;
+
+        this.send(Embeds.nightEmbed(this));
+    }
+
+    /* Players Functions */
     /**
      * Create a player and add it to the game's players map. If a player already exists, does nothing and returns.
      * @param member The guild member object from Discord.
@@ -38,7 +53,6 @@ export default class Game {
         this._players.set(player.id, player);
         return player;
     }
-
     /**
      * Get the player from the game's players map if exists. If no player exists, returns undefined.
      * @param id The id of the player to find. Should match the id of the Discord user.
@@ -47,7 +61,6 @@ export default class Game {
     getPlayer(id: string): Player | undefined {
         return this._players.get(id);
     }
-
     /**
      * Remove and return the player from the game's players map if exists. If no player exists, returns undefined.
      * @param id The id of the player to find. Should match the id of the Discord user.
