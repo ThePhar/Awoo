@@ -13,8 +13,8 @@ export default class Player {
     private readonly _role:   Role;
     private readonly _game:   Game;
 
-    private readonly _alive:    boolean       = true;
-    private          _accusing: Player | null = null;
+    private _alive                   = true;
+    private _accusing: Player | null = null;
 
     constructor(member: Discord.GuildMember, game: Game, state?: PlayerState) {
         this._member = member;
@@ -94,7 +94,13 @@ export default class Player {
     get alive():    boolean {
         return this._alive;
     }
+    set alive(value: boolean) {
+        this._alive = value;
+    }
     get accusing(): Player | null {
         return this._accusing;
+    }
+    set accusing(value: Player | null) {
+        this._accusing = value;
     }
 }

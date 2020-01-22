@@ -51,15 +51,19 @@ client.on("message", async (message) => {
         // message.channel.send(drunkRoleEmbed(message.guild));
         // message.channel.send(doppelgangerRoleEmbed(message.guild));
 
-        const deadState = { alive: false, accusing: null };
+        const p1 = game.addPlayer(message.member) as Player;
+        const p2 = game.addPlayer(await message.guild.fetchMember("589023961367576598")) as Player;
+        const p3 = game.addPlayer(await message.guild.fetchMember("661764578924953631")) as Player;
 
-        game.addPlayer(message.member);
-        game.addPlayer(await message.guild.fetchMember("589023961367576598"));
+        p2.alive = false;
 
-        message.channel.send(dayEmbed(game));
+        // p1.accusing = p2;
+        // p2.accusing = p3;
 
-        game.addPlayer(await message.guild.fetchMember("661764578924953631"), deadState);
-
-        message.channel.send(nightEmbed(game));
+        try {
+            game.startNightPhase();
+        } catch (err) {
+            console.error("ERROR: " + err);
+        }
     }
 });

@@ -5,6 +5,7 @@ import GameState   from "../interfaces/game-state";
 import PlayerState from "../interfaces/player-state";
 import Phase       from "./phase";
 import Player      from "./player";
+import ElimEmbeds  from "../templates/elimination-templates";
 
 export default class Game {
     private readonly _notificationChannel: Discord.TextChannel;
@@ -25,6 +26,11 @@ export default class Game {
         }
     }
 
+    /* Discord Functions */
+    send(content: unknown): void {
+        this._notificationChannel.send(content);
+    }
+
     /* Game Functions */
     /**
      * Changes the state to start the day phase.
@@ -40,6 +46,12 @@ export default class Game {
     startNightPhase(): void {
         this._day += 1;
         this._phase = Phase.Night;
+
+        // Eliminate the player with the most votes.
+        this.processLynchElimination();
+
+        // Clear all accusations.
+        this._players.forEach((player) => player.accusing = null);
 
         this.send(Embeds.nightEmbed(this));
     }
@@ -83,9 +95,39 @@ export default class Game {
         }
     }
 
-    get send():         Function {
-        return this._notificationChannel.send;
+    private processLynchElimination(): void {
+        // Go through each player and tally up the votes.
+        const votes = new Map<Player, number>();
+        for (const [, player] of this._players) {
+            if (player.accusing) {
+                const value = votes.get(player.accusing);
+                if (value) {
+                    votes.set(player.accusing, value + 1);
+                } else {
+                    votes.set(player.accusing, 1);
+                }
+            }
+        }
+
+        // Convert map to array and sort by number of votes.
+        const sorted = [...votes.entries()].sort((a, b) => b[1] - a[1]);
+
+        if (sorted.length === 1) {
+            sorted[0][0].alive = false;
+            this.send(ElimEmbeds.lynch(sorted[0][0], sorted, this));
+            return;
+        }
+        else if (sorted.length > 1) {
+            if (sorted[0][1] > sorted[1][1]) {
+                sorted[0][0].alive = false;
+                this.send(ElimEmbeds.lynch(sorted[0][0], sorted, this));
+                return;
+            }
+        }
+
+        this.send(ElimEmbeds.noLynch(sorted, this));
     }
+
     get id():           string {
         return this._notificationChannel.guild.id;
     }

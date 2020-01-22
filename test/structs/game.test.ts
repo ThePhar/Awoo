@@ -4,6 +4,7 @@ import * as Fixture from "../fixtures/guild-member";
 import Game   from "../../src/structs/game";
 import Phase  from "../../src/structs/phase";
 import Player from "../../src/structs/player";
+import { createMember } from "../fixtures/guild-member";
 
 let game: Game, channel: Discord.TextChannel;
 beforeEach(() => {
@@ -14,9 +15,6 @@ beforeEach(() => {
 describe("constructor() & Properties", () => {
     test("A game object must have an `id` property.", () => {
         expect(game.id).toBe("1");
-    });
-    test("A game object must have a `send` property mapped to a TextChannel send func.", () => {
-        expect(game.send).toBe(channel.send);
     });
     test("A game object must have an `active` property.", () => {
         expect(game.active).toBe(false);
@@ -59,7 +57,7 @@ describe("startDayPhase()", () => {
     test("Should send a new day notification if no win condition was met.", () => {
         game.startDayPhase();
 
-        expect((game.send as jest.Mock).mock.calls[0][0].title)
+        expect((channel.send as jest.Mock).mock.calls[0][0].title)
             .toBe("Start of Day 1");
     });
 });
@@ -75,13 +73,61 @@ describe("startNightPhase()", () => {
         expect(game.day).toBe(2);
         expect(game.active).toBe(true);
     });
+    test("Should clear all accusations made by players.", () => {
+        const player1 = game.addPlayer(Fixture.createMember("1", "Test")) as Player;
+        const player2 = game.addPlayer(
+            Fixture.createMember("2", "Test"), { accusing: player1, alive: true }) as Player;
 
+        game.startNightPhase();
+
+        expect(player2.accusing).toBeNull();
+    });
     test("Should send a new day notification if no win condition was met.", () => {
         game.startNightPhase();
 
-        expect((game.send as jest.Mock).mock.calls[0][0].title)
+        expect((channel.send as jest.Mock).mock.calls[1][0].title)
             .toBe("Start of Night 2");
     });
+
+    test("Should eliminate a player with the most accusations.", () => {
+        const accusedPlayer = game.addPlayer(createMember("1", "Accused")) as Player;
+        const secondPlayer  = game.addPlayer(createMember("2", "Second")) as Player;
+        const accuseState1 = { accusing: accusedPlayer, alive: true };
+        const accuseState2 = { accusing: secondPlayer, alive: true };
+
+        game.addPlayer(createMember("3", "Test"), accuseState1);
+        game.addPlayer(createMember("4", "Test"), accuseState1);
+        game.addPlayer(createMember("5", "Test"), accuseState1);
+        game.addPlayer(createMember("6", "Test"), accuseState2);
+        game.addPlayer(createMember("7", "Test"), accuseState2);
+
+        game.startNightPhase();
+        expect(accusedPlayer.alive).toBe(false);
+        expect(secondPlayer.alive).toBe(true);
+    });
+    test("Should not eliminate a player if there is a tie.", () => {
+        const accusedPlayer = game.addPlayer(createMember("1", "Accused")) as Player;
+        const secondPlayer  = game.addPlayer(createMember("2", "Second")) as Player;
+        const accuseState1 = { accusing: accusedPlayer, alive: true };
+        const accuseState2 = { accusing: secondPlayer, alive: true };
+
+        game.addPlayer(createMember("3", "Test"), accuseState1);
+        game.addPlayer(createMember("4", "Test"), accuseState1);
+        game.addPlayer(createMember("5", "Test"), accuseState2);
+        game.addPlayer(createMember("6", "Test"), accuseState2);
+
+        game.startNightPhase();
+        expect(accusedPlayer.alive).toBe(true);
+        expect(secondPlayer.alive).toBe(true);
+    });
+    test("Should not eliminate a player if there are no votes.", () => {
+        game.addPlayer(createMember("1", "Test"));
+        game.addPlayer(createMember("2", "Test"));
+        game.addPlayer(createMember("3", "Test"));
+
+        game.startNightPhase();
+        expect(game.players.alive.length).toBe(3);
+    })
 });
 
 describe("addPlayer()", () => {
