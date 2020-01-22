@@ -1,8 +1,9 @@
 import * as Discord from "discord.js";
 import * as Fixture from "../fixtures/guild-member";
 
-import Game  from "../../src/structs/game";
-import Phase from "../../src/structs/phase";
+import Game   from "../../src/structs/game";
+import Phase  from "../../src/structs/phase";
+import Player from "../../src/structs/player";
 
 let game: Game, channel: Discord.TextChannel;
 beforeEach(() => {
@@ -62,7 +63,6 @@ describe("startDayPhase()", () => {
             .toBe("Start of Day 1");
     });
 });
-
 describe("startNightPhase()", () => {
     beforeEach(() => {
         game = new Game(channel, { active: true, day: 1, phase: Phase.Day });
@@ -103,6 +103,14 @@ describe("addPlayer()", () => {
         expect(game.totalPlayers).toBe(1);
         expect(game.getPlayer(member.id)).toBe(firstAdd);
     });
+    test("Should allow predefined player state when creating a player.", () => {
+        const member = Fixture.createMember("1", "Test");
+
+        const player = game.addPlayer(member, { accusing: null, alive: false });
+
+        expect(player).toBeDefined();
+        expect(player).toHaveProperty("alive", false);
+    });
 });
 describe("getPlayer()", () => {
     test("Should return the player object of a particular id if it exists.", () => {
@@ -134,5 +142,31 @@ describe("removePlayer()", () => {
         const player = game.removePlayer("12345");
 
         expect(player).toBeUndefined();
+    });
+});
+describe("getPlayers()", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    let player1, player2, player3, player4, player5, player6, player7, player8;
+    beforeEach(() => {
+        const deadState = { alive: false, accusing: null };
+
+        player1 = game.addPlayer(Fixture.createMember("1", "Test"))            as Player;
+        player2 = game.addPlayer(Fixture.createMember("2", "Test"))            as Player;
+        player3 = game.addPlayer(Fixture.createMember("3", "Test"))            as Player;
+        player4 = game.addPlayer(Fixture.createMember("4", "Test"))            as Player;
+        player5 = game.addPlayer(Fixture.createMember("5", "Test"))            as Player;
+        player6 = game.addPlayer(Fixture.createMember("6", "Test"))            as Player;
+        player7 = game.addPlayer(Fixture.createMember("7", "Test"), deadState) as Player;
+        player8 = game.addPlayer(Fixture.createMember("8", "Test"), deadState) as Player;
+    });
+
+    test("Should return an object with an array of all players.", () => {
+        expect(game.players.all.length).toBe(8);
+    });
+    test("Should return an object with an array of alive players.", () => {
+        expect(game.players.alive.length).toBe(6);
+    });
+    test("Should return an object with an array of dead players.", () => {
+        expect(game.players.dead.length).toBe(2);
     });
 });

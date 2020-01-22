@@ -1,9 +1,10 @@
 import * as Discord from "discord.js";
 import * as Embeds  from "../templates/embed-templates";
 
-import GameState    from "../interfaces/game-state";
-import Phase        from "./phase";
-import Player       from "./player";
+import GameState   from "../interfaces/game-state";
+import PlayerState from "../interfaces/player-state";
+import Phase       from "./phase";
+import Player      from "./player";
 
 export default class Game {
     private readonly _notificationChannel: Discord.TextChannel;
@@ -25,11 +26,17 @@ export default class Game {
     }
 
     /* Game Functions */
+    /**
+     * Changes the state to start the day phase.
+     */
     startDayPhase(): void {
         this._phase = Phase.Day;
 
         this.send(Embeds.dayEmbed(this));
     }
+    /**
+     * Changes the state to start the night phase.
+     */
     startNightPhase(): void {
         this._day += 1;
         this._phase = Phase.Night;
@@ -41,14 +48,15 @@ export default class Game {
     /**
      * Create a player and add it to the game's players map. If a player already exists, does nothing and returns.
      * @param member The guild member object from Discord.
+     * @param state An optional player state to initialize this player with.
      * @return The newly instantiated player object if not already exists. Otherwise, undefined.
      */
-    addPlayer(member: Discord.GuildMember): Player | undefined {
+    addPlayer(member: Discord.GuildMember, state?: PlayerState): Player | undefined {
         if (this._players.get(member.id)) {
             return;
         }
 
-        const player = new Player(member, this);
+        const player = new Player(member, this, state);
 
         this._players.set(player.id, player);
         return player;
@@ -84,6 +92,27 @@ export default class Game {
     get totalPlayers(): number {
         return this._players.size;
     }
+    get players():      Players {
+        const all:   Player[] = [];
+        const alive: Player[] = [];
+        const dead:  Player[] = [];
+
+        this._players.forEach((player) => {
+            all.push(player);
+
+            if (player.alive) {
+                alive.push(player);
+            } else {
+                dead.push(player);
+            }
+        });
+
+        return {
+            all,
+            dead,
+            alive
+        };
+    }
     get active():       boolean {
         return this._active;
     }
@@ -93,4 +122,10 @@ export default class Game {
     get day():          number {
         return this._day;
     }
+}
+
+type Players = {
+    all: Player[];
+    alive: Player[];
+    dead: Player[];
 }

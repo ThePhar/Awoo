@@ -4,6 +4,8 @@ import { dayEmbed, nightEmbed } from "./templates/embed-templates";
 // import Player from "./structs/player";
 import Game from "./structs/game";
 import Phase from "./structs/phase";
+import * as Fixture from "../test/fixtures/guild-member";
+import Player from "./structs/player";
 // import * as Manager from "./manager-functions";
 
 console.clear();
@@ -17,7 +19,7 @@ const client = new Client();
 client.login(process.env.DISCORD_BOT_TOKEN)
     .catch((err) => { console.error(err); });
 
-client.on("message", (message) => {
+client.on("message", async (message) => {
     if (message.author.bot) return;
 
     if (message.content.startsWith("#!test")) {
@@ -49,7 +51,15 @@ client.on("message", (message) => {
         // message.channel.send(drunkRoleEmbed(message.guild));
         // message.channel.send(doppelgangerRoleEmbed(message.guild));
 
+        const deadState = { alive: false, accusing: null };
+
+        game.addPlayer(message.member);
+        game.addPlayer(await message.guild.fetchMember("589023961367576598"));
+
         message.channel.send(dayEmbed(game));
+
+        game.addPlayer(await message.guild.fetchMember("661764578924953631"), deadState);
+
         message.channel.send(nightEmbed(game));
     }
 });
