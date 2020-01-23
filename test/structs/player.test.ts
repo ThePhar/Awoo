@@ -17,9 +17,6 @@ describe("constructor() & Properties", () => {
     test("A player object must have an `id` property.", () => {
         expect(player.id).toBe("1");
     });
-    test("A player object must have a `send` property mapped to a User send func.", () => {
-        expect(player.send).toBe(member.send);
-    });
     test("A player object must have a `tag` property mapped to a User tag.", () => {
         expect(player.tag).toBe("Test#4444");
     });
@@ -65,7 +62,8 @@ describe("accuse()", () => {
         expect(player.accusing).toBe(accused);
         expect(success).toBe(true);
 
-        expect(player.send).toHaveBeenCalledWith("You are now voting to lynch <@!2>.");
+        expect((member.send as jest.Mock).mock.calls[0][0])
+            .toBe("You are now voting to lynch <@!2>.");
     });
     test("Should not set accusing property when passed the same player.", () => {
         const success = player.accuse(player);
@@ -73,7 +71,8 @@ describe("accuse()", () => {
         expect(player.accusing).toBeNull();
         expect(success).toBe(false);
 
-        expect(player.send).toHaveBeenCalledWith("You cannot vote to lynch yourself.");
+        expect((member.send as jest.Mock).mock.calls[0][0])
+            .toBe("You cannot vote to lynch yourself.");
     });
     test("Should not allow accusations to be set if player is dead.", () => {
         player = new Player(member, game, { alive: false, accusing: null });
@@ -83,7 +82,8 @@ describe("accuse()", () => {
         expect(player.accusing).toBeNull();
         expect(success).toBe(false);
 
-        expect(player.send).toHaveBeenCalledWith("You cannot vote to lynch players when you are eliminated.");
+        expect((member.send as jest.Mock).mock.calls[0][0])
+            .toBe("You cannot vote to lynch players when you are eliminated.");
     });
     test("Should not allow accusations when game is not active.", () => {
         game = new Game({} as Discord.TextChannel, { phase: Phase.Day, active: false, day: 1 });
@@ -94,7 +94,8 @@ describe("accuse()", () => {
         expect(player.accusing).toBeNull();
         expect(success).toBe(false);
 
-        expect(player.send).toHaveBeenCalledWith("You cannot vote to lynch players when the game is not active.");
+        expect((member.send as jest.Mock).mock.calls[0][0])
+            .toBe("You cannot vote to lynch players when the game is not active.");
     });
     test("Should not allow accusations to be set if target is dead.", () => {
         const accused = new Player(
@@ -105,7 +106,8 @@ describe("accuse()", () => {
         expect(player.accusing).toBeNull();
         expect(success).toBe(false);
 
-        expect(player.send).toHaveBeenCalledWith("You cannot vote to lynch eliminated players.");
+        expect((member.send as jest.Mock).mock.calls[0][0])
+            .toBe("You cannot vote to lynch eliminated players.");
     });
     test("Should not allow accusations outside the day phase.", () => {
         game = new Game({} as Discord.TextChannel, { phase: Phase.Night, active: true, day: 1 });
@@ -116,6 +118,7 @@ describe("accuse()", () => {
         expect(player.accusing).toBeNull();
         expect(success).toBe(false);
 
-        expect(player.send).toHaveBeenCalledWith("You cannot vote to lynch players outside the day phase.");
+        expect((member.send as jest.Mock).mock.calls[0][0])
+            .toBe("You cannot vote to lynch players outside the day phase.");
     });
 });

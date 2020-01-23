@@ -7,6 +7,7 @@ enum RecognisedCommands {
     Role = "role",
     Kill = "kill",
     Save = "save",
+    Lynch = "lynch",
 
     SetChannel = "setchannel",
     StartNewGame = "start"

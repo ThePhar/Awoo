@@ -72,6 +72,26 @@ const EliminationTemplate = {
                 lynchVotes.length > 1 ? lynchVotes : "-",
                 true
             )
+    },
+    werewolf: (eliminated: Player): Discord.RichEmbed => {
+        return new Discord.RichEmbed()
+            .setTitle(`${eliminated.name} has Been Eaten By Werewolves`)
+            .setDescription(dedent(`
+                > You all awaken to find the mangled corpse of ${eliminated} strung about the village square. It would seem they met quite a gruesome end by some wild beast last night.
+                
+                ${eliminated} has been eliminated by the werewolves.
+            `))
+            .setColor(eliminationColor);
+    },
+    noNightElim: (): Discord.RichEmbed => {
+        return new Discord.RichEmbed()
+            .setTitle(`A Peaceful Night`)
+            .setDescription(dedent(`
+                > Despite everyone's fears, there were no casualties last night, but the village cannot rest as the next night may not be so peaceful.
+                
+                For an unknown reason, no one was eliminated.
+            `))
+            .setColor(0x0000ff);
     }
 };
 

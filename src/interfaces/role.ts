@@ -1,5 +1,6 @@
-import Player from "../structs/player";
-import Team   from "../structs/team";
+import Player  from "../structs/player";
+import Team    from "../structs/team";
+import Command from "../structs/command";
 
 export default interface Role {
     readonly player:     Player;
@@ -7,4 +8,8 @@ export default interface Role {
     readonly pluralName: string;
     readonly appearance: string;
     readonly team:       Team;
+
+    readonly sendRole: () => void;
+    readonly sendActionReminder: () => void;
+    readonly action: (command: Command) => boolean;
 }

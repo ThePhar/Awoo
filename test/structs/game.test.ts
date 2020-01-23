@@ -5,6 +5,7 @@ import Game   from "../../src/structs/game";
 import Phase  from "../../src/structs/phase";
 import Player from "../../src/structs/player";
 import { createMember } from "../fixtures/guild-member";
+import Werewolf from "../../src/roles/werewolf";
 
 let game: Game, channel: Discord.TextChannel;
 beforeEach(() => {
@@ -41,6 +42,22 @@ describe("constructor() & Properties", () => {
     });
 });
 
+describe("initializeGame()", () => {
+    test("Should send role information to every single player.", () => {
+        const member1 = createMember("1", "Test");
+        const member2 = createMember("2", "Test");
+
+        game.addPlayer(member1);
+        game.addPlayer(member2);
+
+        game.initializeGame();
+
+        expect((member1.send as jest.Mock).mock.calls[0][0].title)
+            .toBe("You are a Villager");
+        expect((member2.send as jest.Mock).mock.calls[0][0].title)
+            .toBe("You are a Villager");
+    });
+});
 describe("startDayPhase()", () => {
     beforeEach(() => {
         game = new Game(channel, { active: true, day: 1, phase: Phase.Night });
@@ -53,7 +70,6 @@ describe("startDayPhase()", () => {
         expect(game.day).toBe(1);
         expect(game.active).toBe(true);
     });
-
     test("Should send a new day notification if no win condition was met.", () => {
         game.startDayPhase();
 
@@ -204,6 +220,9 @@ describe("getPlayers()", () => {
         player6 = game.addPlayer(Fixture.createMember("6", "Test"))            as Player;
         player7 = game.addPlayer(Fixture.createMember("7", "Test"), deadState) as Player;
         player8 = game.addPlayer(Fixture.createMember("8", "Test"), deadState) as Player;
+
+        player4.role = new Werewolf(player4);
+        player5.role = new Werewolf(player5);
     });
 
     test("Should return an object with an array of all players.", () => {
@@ -214,5 +233,11 @@ describe("getPlayers()", () => {
     });
     test("Should return an object with an array of dead players.", () => {
         expect(game.players.dead.length).toBe(2);
+    });
+    test("Should return an object with an array of all alive werewolves.", () => {
+        expect(game.players.aliveWerewolves.length).toBe(2);
+    });
+    test("Should return an object with an array of all alive villagers (non-werewolves).", () => {
+        expect(game.players.aliveVillagers.length).toBe(4);
     });
 });

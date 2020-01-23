@@ -10,7 +10,7 @@ import AccusationTemplate from "../templates/accusation-templates";
 
 export default class Player {
     private readonly _member: Discord.GuildMember;
-    private readonly _role:   Role;
+    private          _role:   Role;
     private readonly _game:   Game;
 
     private _alive                   = true;
@@ -73,9 +73,10 @@ export default class Player {
         return true;
     }
 
-    get send():     Function {
-        return this._member.send;
+    send(content: unknown): void {
+        this._member.send(content);
     }
+
     get id():       string {
         return this._member.id;
     }
@@ -87,6 +88,9 @@ export default class Player {
     }
     get role():     Role {
         return this._role;
+    }
+    set role(value: Role) {
+        this._role = value;
     }
     get game():     Game {
         return this._game;

@@ -1,10 +1,10 @@
 import * as Discord from "discord.js";
 
-// import Player from "../structs/player";
+import Player from "../structs/player";
 import Game   from "../structs/game";
 import getTip from "./tips";
 
-// import RoleTemplate  from "./role-templates";
+import RoleTemplate  from "./role-templates";
 import PhaseTemplate from "./phase-templates";
 
 /* Phase Embeds */
@@ -34,62 +34,61 @@ export function nightEmbed(game: Game): Discord.RichEmbed {
 }
 
 /* Role Embeds */
-
-// export function villagerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
-//     return new Discord.RichEmbed()
-//         .setTitle(RoleTemplate.villager.roleNotification.title)
-//         .setDescription(RoleTemplate.villager.roleNotification.description)
-//         .setThumbnail(RoleTemplate.villager.roleNotification.thumbnail)
-//         .setColor(RoleTemplate.villager.roleNotification.color)
-//         .setAuthor(guild.name, guild.iconURL)
-//         .setFooter(getTip())
-//         .addField(
-//             RoleTemplate.villager.roleNotification.fields[0].name,
-//             RoleTemplate.villager.roleNotification.fields[0].value,
-//             true
-//         )
-//         .addField(
-//             RoleTemplate.villager.roleNotification.fields[1].name,
-//             RoleTemplate.villager.roleNotification.fields[1].value,
-//             true
-//         )
-//         .addField(
-//             "During the Day",
-//             RoleTemplate.villager.roleNotification.accusationExample,
-//         );
-// }
-// export function werewolfRoleEmbed(guild: Discord.Guild, werewolves: Player[]): Discord.RichEmbed {
-//     return new Discord.RichEmbed()
-//         .setTitle(RoleTemplate.werewolf.roleNotification.title)
-//         .setDescription(RoleTemplate.werewolf.roleNotification.description)
-//         .setThumbnail(RoleTemplate.werewolf.roleNotification.thumbnail)
-//         .setColor(RoleTemplate.werewolf.roleNotification.color)
-//         .setAuthor(guild.name, guild.iconURL)
-//         .setFooter(getTip())
-//         .addField(
-//             RoleTemplate.werewolf.roleNotification.fields[0].name,
-//             RoleTemplate.werewolf.roleNotification.fields[0].value,
-//             true
-//         )
-//         .addField(
-//             RoleTemplate.werewolf.roleNotification.fields[1].name,
-//             RoleTemplate.werewolf.roleNotification.fields[1].value,
-//             true
-//         )
-//         .addField(
-//             "Werewolves",
-//             werewolves,
-//             true
-//         )
-//         .addField(
-//             "During the Day",
-//             RoleTemplate.villager.roleNotification.accusationExample,
-//         )
-//         .addField(
-//             "During the Night",
-//             RoleTemplate.werewolf.roleNotification.actions,
-//         );
-// }
+export function villagerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
+    return new Discord.RichEmbed()
+        .setTitle(RoleTemplate.villager.roleNotification.title)
+        .setDescription(RoleTemplate.villager.roleNotification.description)
+        .setThumbnail(RoleTemplate.villager.roleNotification.thumbnail)
+        .setColor(RoleTemplate.villager.roleNotification.color)
+        .setAuthor(guild.name, guild.iconURL)
+        .setFooter(getTip())
+        .addField(
+            RoleTemplate.villager.roleNotification.fields[0].name,
+            RoleTemplate.villager.roleNotification.fields[0].value,
+            true
+        )
+        .addField(
+            RoleTemplate.villager.roleNotification.fields[1].name,
+            RoleTemplate.villager.roleNotification.fields[1].value,
+            true
+        )
+        .addField(
+            "During the Day",
+            RoleTemplate.villager.roleNotification.accusationExample,
+        );
+}
+export function werewolfRoleEmbed(guild: Discord.Guild, werewolves: Player[]): Discord.RichEmbed {
+    return new Discord.RichEmbed()
+        .setTitle(RoleTemplate.werewolf.roleNotification.title)
+        .setDescription(RoleTemplate.werewolf.roleNotification.description)
+        .setThumbnail(RoleTemplate.werewolf.roleNotification.thumbnail)
+        .setColor(RoleTemplate.werewolf.roleNotification.color)
+        .setAuthor(guild.name, guild.iconURL)
+        .setFooter(getTip())
+        .addField(
+            RoleTemplate.werewolf.roleNotification.fields[0].name,
+            RoleTemplate.werewolf.roleNotification.fields[0].value,
+            true
+        )
+        .addField(
+            RoleTemplate.werewolf.roleNotification.fields[1].name,
+            RoleTemplate.werewolf.roleNotification.fields[1].value,
+            true
+        )
+        .addField(
+            "Werewolves",
+            werewolves,
+            true
+        )
+        .addField(
+            "During the Day",
+            RoleTemplate.villager.roleNotification.accusationExample,
+        )
+        .addField(
+            "During the Night",
+            RoleTemplate.werewolf.roleNotification.actions,
+        );
+}
 // export function seerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
 //     return new Discord.RichEmbed()
 //         .setTitle(RoleTemplate.seer.roleNotification.title)
@@ -482,3 +481,19 @@ export function nightEmbed(game: Game): Discord.RichEmbed {
 //             RoleTemplate.witch.roleNotification.actions,
 //         );
 // }
+
+/* Action Embeds */
+export function werewolfActionEmbed(guild: Discord.Guild, villagers: Player[]): Discord.RichEmbed {
+    return new Discord.RichEmbed()
+        .setTitle("Time to Feast - Werewolf Night Action")
+        .setDescription("Please select a player to eliminate with `!kill <name>`. The player with the most werewolves targeting them will be eliminated. In the event of a tie, no player will be eliminated. You will be notified what your fellow werewolves choose.")
+        .setThumbnail(RoleTemplate.werewolf.roleNotification.thumbnail)
+        .setColor(RoleTemplate.werewolf.roleNotification.color)
+        .setAuthor(guild.name, guild.iconURL)
+        .setFooter(getTip())
+        .addField(
+            "Available Targets",
+            villagers.length > 0 ? villagers : "*No Available Targets*"
+        )
+
+}

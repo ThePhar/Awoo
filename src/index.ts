@@ -1,11 +1,12 @@
 import { Client, TextChannel } from "discord.js";
 import * as Env from "dotenv";
-import { dayEmbed, nightEmbed } from "./templates/embed-templates";
 // import Player from "./structs/player";
 import Game from "./structs/game";
 import Phase from "./structs/phase";
-import * as Fixture from "../test/fixtures/guild-member";
 import Player from "./structs/player";
+import Werewolf from "./roles/werewolf";
+import Command from "./structs/command";
+import RecognisedCommands from "./structs/recognised-commands";
 // import * as Manager from "./manager-functions";
 
 console.clear();
@@ -19,51 +20,50 @@ const client = new Client();
 client.login(process.env.DISCORD_BOT_TOKEN)
     .catch((err) => { console.error(err); });
 
+let game: Game;
+
 client.on("message", async (message) => {
     if (message.author.bot) return;
 
-    if (message.content.startsWith("#!test")) {
-        // const testWerewolf = [
-        //     new Player(message.member, new Game(message.channel as TextChannel)),
-        //     new Player(message.guild.me, new Game(message.channel as TextChannel)),
-        // ];
-        const game = new Game(message.channel as TextChannel, {
-            phase: Phase.Day,
-            day: 3,
+    if (message.content.startsWith("#!init")) {
+        game = new Game(message.channel as TextChannel, {
+            phase: Phase.Waiting,
+            day: 0,
             active: true
         });
 
-        // message.channel.send(villagerRoleEmbed(message.guild));
-        // message.channel.send(werewolfRoleEmbed(message.guild, testWerewolf));
-        // message.channel.send(seerRoleEmbed(message.guild));
-        // message.channel.send(bodyguardRoleEmbed(message.guild));
-        // message.channel.send(hunterRoleEmbed(message.guild));
-        // message.channel.send(lycanRoleEmbed(message.guild));
-        // message.channel.send(mayorRoleEmbed(message.guild));
-        // message.channel.send(tannerRoleEmbed(message.guild));
-        // message.channel.send(sorceressRoleEmbed(message.guild));
-        // message.channel.send(witchRoleEmbed(message.guild));
-        // message.channel.send(insomniacRoleEmbed(message.guild));
-        // message.channel.send(minionRoleEmbed(message.guild, testWerewolf));
-        // message.channel.send(apprenticeSeerRoleEmbed(message.guild));
-        // message.channel.send(loneWolfRoleEmbed(message.guild, testWerewolf));
-        // message.channel.send(masonRoleEmbed(message.guild, testWerewolf));
-        // message.channel.send(drunkRoleEmbed(message.guild));
-        // message.channel.send(doppelgangerRoleEmbed(message.guild));
-
         const p1 = game.addPlayer(message.member) as Player;
+        p1.role = new Werewolf(p1);
         const p2 = game.addPlayer(await message.guild.fetchMember("589023961367576598")) as Player;
+        p2.role = new Werewolf(p2);
         const p3 = game.addPlayer(await message.guild.fetchMember("661764578924953631")) as Player;
-
-        p2.alive = false;
 
         // p1.accusing = p2;
         // p2.accusing = p3;
 
-        try {
-            game.startNightPhase();
-        } catch (err) {
-            console.error("ERROR: " + err);
+        game.initializeGame();
+    }
+
+    if (message.content.startsWith("#!day")) {
+        game.startDayPhase();
+        return;
+    }
+    if (message.content.startsWith("#!night")) {
+        game.startNightPhase();
+        return;
+    }
+
+    if (message.content.startsWith("!") && game) {
+        const command = Command.parse(message.content, game);
+        const player = game.getPlayer(message.author.id);
+
+        if (command && player) {
+            if (command.type === RecognisedCommands.Lynch && command.target instanceof Player) {
+                player.accuse(command.target);
+                return;
+            }
+
+            player.role.action(command);
         }
     }
 });

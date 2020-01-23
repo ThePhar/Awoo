@@ -36,7 +36,7 @@ export default {
             color:       Color.WerewolfRed,
             description: "You are a werewolf and learn the identity of all other werewolves, if any. Every night, eliminate a villager and avoid suspicion.",
             actions:
-                "During the night phase, type `!kill <name>` to choose a player to eliminate. When the night phase ends, the player with the most werewolves targeting them will be eliminated. You must send this command via this direct message for the bot to register your command. You will be notified of all the targets your fellow werewolves make and may change your target at any time up until the end of the night phase. If there is a tie in votes, no player will be eliminated, so be sure to coordinate accordingly.",
+                "During the night phase, type `!kill <name>` to choose a player to eliminate. When the night phase ends, the player with the most werewolves targeting them will be eliminated. You must send this command via this direct message for the bot to register your command. You will be notified of all the targets your fellow werewolves make and may change your target at any time up until the end of the night phase. If there is a tie in votes, no player will be eliminated, so be sure to coordinate accordingly. You cannot choose a player to eliminate the first night.",
             fields: [
                 {
                     name: "Objective",
