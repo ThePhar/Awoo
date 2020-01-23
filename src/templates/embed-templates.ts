@@ -1,31 +1,36 @@
 import * as Discord from "discord.js";
 
 import Player from "../structs/player";
-import Game   from "../structs/game";
+import Game from "../structs/game";
 import getTip from "./tips";
 
-import RoleTemplate  from "./role-templates";
+import RoleTemplate from "./role-templates";
 import PhaseTemplate from "./phase-templates";
+import Color from "../structs/color";
+import Team from "../structs/team";
+import Moment from "moment";
+
+const dateFormat = "dddd, MMMM Do [at] H:mm A [CST-6:00]";
 
 /* Phase Embeds */
-export function dayEmbed(game: Game): Discord.RichEmbed {
+export function dayEmbed(game: Game, dusk: Moment.Moment): Discord.RichEmbed {
     const players = game.players;
 
     return new Discord.RichEmbed()
         .setTitle(PhaseTemplate.day.title(game.day))
-        .setDescription(PhaseTemplate.day.description)
+        .setDescription(PhaseTemplate.day.description + `\n\nThe sun will set on **${dusk.format(dateFormat)}**.`)
         .setColor(PhaseTemplate.day.color)
         .setImage(PhaseTemplate.day.image)
         .setFooter(getTip())
         .addField("Alive Players", players.alive.length > 0 ? players.alive : "-", true)
         .addField("Eliminated Players", players.dead.length > 0 ? players.dead : "-", true);
 }
-export function nightEmbed(game: Game): Discord.RichEmbed {
+export function nightEmbed(game: Game, dawn: Moment.Moment): Discord.RichEmbed {
     const players = game.players;
 
     return new Discord.RichEmbed()
         .setTitle(PhaseTemplate.night.title(game.day))
-        .setDescription(PhaseTemplate.night.description)
+        .setDescription(PhaseTemplate.night.description + `\n\nThe sun will rise on **${dawn.format(dateFormat)}**.`)
         .setColor(PhaseTemplate.night.color)
         .setImage(PhaseTemplate.night.image)
         .setFooter(getTip())
@@ -523,4 +528,60 @@ export function seerActionEmbed(guild: Discord.Guild, alivePlayers: Player[], se
             true
         );
 
+}
+
+/* Win Embeds */
+export function werewolfVictoryEmbed(allPlayers: Player[]): Discord.RichEmbed {
+    const winners = allPlayers
+        .filter((player) => player.role.team === Team.Werewolves)
+        .map((player) => `${player} \`${player.role.name}\``);
+    const losers = allPlayers
+        .filter((player) => player.role.team !== Team.Werewolves)
+        .map((player) => `${player} \`${player.role.name}\``);
+
+    return new Discord.RichEmbed()
+        .setTitle("Werewolves Win")
+        .setDescription(
+            "The villagers have been whittled down to the point where the werewolves can take complete control of the village. All of your screens fall on deaf ears as you all meet a gruesome fate."
+        )
+        .setThumbnail(RoleTemplate.werewolf.roleNotification.thumbnail)
+        .setColor(Color.WerewolfRed)
+        .setFooter(getTip())
+        .addField(
+            "Winning Team",
+            winners.length > 0 ? winners : "***None***",
+            true
+        )
+        .addField(
+            "Losing Teams",
+            losers.length > 0 ? losers : "***None***",
+            true
+        );
+}
+export function villagerVictoryEmbed(allPlayers: Player[]): Discord.RichEmbed {
+    const winners = allPlayers
+        .filter((player) => player.role.team === Team.Villagers)
+        .map((player) => `${player} \`${player.role.name}\``);
+    const losers = allPlayers
+        .filter((player) => player.role.team !== Team.Villagers)
+        .map((player) => `${player} \`${player.role.name}\``);
+
+    return new Discord.RichEmbed()
+        .setTitle("Villagers Win")
+        .setDescription(
+            "The last of the werewolves were completely eliminated along with those who allied with them. The first calm night in what feels like forever, has finally come."
+        )
+        .setThumbnail(RoleTemplate.villager.roleNotification.thumbnail)
+        .setColor(Color.VillagerBlue)
+        .setFooter(getTip())
+        .addField(
+            "Winning Team",
+            winners.length > 0 ? winners : "***None***",
+            true
+        )
+        .addField(
+            "Losing Teams",
+            losers.length > 0 ? losers : "***None***",
+            true
+        );
 }

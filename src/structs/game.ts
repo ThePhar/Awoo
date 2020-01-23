@@ -1,17 +1,21 @@
 import * as Discord from "discord.js";
 import * as Embeds  from "../templates/embed-templates";
+import * as Time    from "../util/date";
 
 import GameState   from "../interfaces/game-state";
 import PlayerState from "../interfaces/player-state";
 import Phase       from "./phase";
 import Player      from "./player";
 import ElimEmbeds  from "../templates/elimination-templates";
+import Schedule    from "node-schedule";
 
 import Werewolf from "../roles/werewolf";
 import Seer     from "../roles/seer";
 
 export default class Game {
     private readonly _notificationChannel: Discord.TextChannel;
+    private          _schedule?:           Schedule.Job;
+    private          _reminder?:           Schedule.Job;
 
     private readonly _players         = new Map<string, Player>();
     private          _active          = false;
@@ -54,12 +58,41 @@ export default class Game {
             this.processWerewolfElimination();
         }
 
+        // Check for win conditions.
+        if (this.winCondition()) {
+            if (this._schedule && this._reminder) {
+                this._schedule.cancelNext();
+                this._reminder.cancelNext();
+                this._schedule = undefined;
+                this._reminder = undefined;
+            }
+            return;
+        }
+
         // Process inspections.
         this.players.all.forEach((player) => {
             this.processSeerInspection(player);
         });
 
-        this.send(Embeds.dayEmbed(this));
+        const nextNight = Time.getNextNight();
+
+        this.send(Embeds.dayEmbed(this, nextNight));
+        this._schedule = Schedule.scheduleJob(nextNight.toDate(), () => this.startNightPhase());
+        this._reminder = Schedule.scheduleJob(nextNight.subtract("1", "hours").toDate(), () => {
+            const playersWithNoLynch = this.players.alive.filter((p) => !p.accuse).map((p) => p.toString()).join(" ");
+
+            if (playersWithNoLynch.length > 0) {
+                this.send(
+                    new Discord.RichEmbed()
+                        .setDescription(`The day will end in 1 hour.\n\nJust a reminder to: ${playersWithNoLynch}, you have not voted to lynch any players.`)
+                );
+            } else {
+                this.send(
+                    new Discord.RichEmbed()
+                        .setDescription(`The day will end in 1 hour.`)
+                );
+            }
+        });
     }
 
     /**
@@ -74,6 +107,17 @@ export default class Game {
             this.processLynchElimination();
         }
 
+        // Check for win conditions.
+        if (this.winCondition()) {
+            if (this._schedule && this._reminder) {
+                this._schedule.cancelNext();
+                this._reminder.cancelNext();
+                this._schedule = undefined;
+                this._reminder = undefined;
+            }
+            return;
+        }
+
         // Clear all accusations and send night action reminders.
         this._players.forEach((player) => {
             player.accusing = null;
@@ -83,7 +127,16 @@ export default class Game {
             }
         });
 
-        this.send(Embeds.nightEmbed(this));
+        const nextDay = Time.getNextMorning();
+
+        this.send(Embeds.nightEmbed(this, nextDay));
+        this._schedule = Schedule.scheduleJob(nextDay.toDate(), () => this.startDayPhase());
+        this._reminder = Schedule.scheduleJob(nextDay.subtract("1", "hours").toDate(), () => {
+            this.send(
+                new Discord.RichEmbed()
+                    .setDescription(`The night will end in 1 hour. If you have a night active role, be sure to use it in the DMs!`)
+            );
+        });
     }
 
     /* Players Functions */
@@ -227,6 +280,24 @@ export default class Game {
                 player.role.target = undefined;
             }
         }
+    }
+
+    private winCondition(): boolean {
+        const vCount = this.players.aliveVillagers.length;
+        const wCount = this.players.aliveWerewolves.length;
+
+        if (vCount === 0 || wCount >= vCount) {
+            // Werewolves win.
+            this.send(Embeds.werewolfVictoryEmbed(this.players.all));
+            return true;
+        }
+        else if (wCount === 0) {
+            // Villagers win.
+            this.send(Embeds.villagerVictoryEmbed(this.players.all));
+            return true;
+        }
+
+        return false;
     }
 
     get id():           string {
