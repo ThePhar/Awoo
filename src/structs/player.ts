@@ -8,6 +8,8 @@ import Phase       from "./phase";
 
 import AccusationTemplate from "../templates/accusation-templates";
 
+import Manager from "../manager";
+
 export default class Player {
     private readonly _member: Discord.GuildMember;
     private          _role:   Role;
@@ -73,12 +75,15 @@ export default class Player {
         return true;
     }
 
-    send(content: unknown): void {
-        this._member.send(content);
+    async send(content: unknown): Promise<void> {
+        await this._member.send(content);
     }
 
     get id():       string {
         return this._member.id;
+    }
+    get user():     Discord.User {
+        return this._member.user;
     }
     get tag():      string {
         return this._member.user.tag;
@@ -99,6 +104,12 @@ export default class Player {
         return this._alive;
     }
     set alive(value: boolean) {
+        if (!value) {
+            Manager.mutePlayer(this);
+        } else {
+            Manager.unmutePlayer(this);
+        }
+
         this._alive = value;
     }
     get accusing(): Player | null {

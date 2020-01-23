@@ -14,7 +14,7 @@ export default class Game {
     private readonly _notificationChannel: Discord.TextChannel;
 
     private readonly _players         = new Map<string, Player>();
-    private readonly _active: boolean = false;
+    private          _active          = false;
     private          _phase:  Phase   = Phase.Waiting;
     private          _day             = 0;
 
@@ -232,6 +232,12 @@ export default class Game {
     get id():           string {
         return this._notificationChannel.guild.id;
     }
+    get channel():      Discord.TextChannel {
+        return this._notificationChannel;
+    }
+    get channelId():    string {
+        return this._notificationChannel.id;
+    }
     get guild():        Discord.Guild {
         return this._notificationChannel.guild;
     }
@@ -271,6 +277,9 @@ export default class Game {
     }
     get active():       boolean {
         return this._active;
+    }
+    set active(value: boolean) {
+        this._active = value;
     }
     get phase():        Phase {
         return this._phase;

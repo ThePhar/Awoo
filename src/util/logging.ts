@@ -1,11 +1,16 @@
-const prefix = "\x1b[32m[Awoo] ";
+import chalk from "chalk";
+import moment from "moment";
 
-export function log(message: string, indentationLevel = 0, newline = false): void {
-    let indents = "";
-    for (let i = 0; i < indentationLevel; i++) {
-        indents += "\t";
-    }
+const prefix   = chalk.bgWhiteBright(" A ") + " ";
+const errorSym = chalk.bgRedBright(" ERR ") + " ";
+const logSym   = chalk.bgWhiteBright(" INF ") + " ";
 
-    // Only show prefix if no indentation. Also add a newline character if newline is true.
-    console.log((indents || prefix) + "\x1b[0m" + message + (newline ? "\n" : "") + "\x1b[0m");
+const dateFormat = "YYYY-MM-DD HH:mm:ss.SSSSS";
+
+export function log(message: string): void {
+    console.log(prefix + logSym + "[" + moment().format(dateFormat) + "]: " + chalk.whiteBright(message));
+}
+
+export function error(message: string): void {
+    console.log(prefix + errorSym + "[" + moment().format(dateFormat) + "]: " + chalk.redBright(message));
 }

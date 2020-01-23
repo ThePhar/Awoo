@@ -15,7 +15,7 @@ const ActionTemplate = {
             `Sorry, I couldn't find a player under the name or id of \`${string}\`.`,
         multipleTargetsFound: (players: Player[], string: string): string =>
             `There are multiple players using that name. Try being more specific and/or include their discriminator.\n\n` +
-            `*Players under \`${string}\`?:*\n${ players.map(p => `${p.toString()}: \`${p.tag}\``).join("\n") }`,
+            `*Players under \`${string}\`:*\n${ players.map(p => `${p.toString()}: \`${p.tag}\``).join("\n") }`,
         selfTarget: (): string =>
             `You cannot target yourself for elimination.`,
         deadTarget: (player: Player): string =>
@@ -35,11 +35,20 @@ const ActionTemplate = {
             `Sorry, I couldn't find a player under the name or id of \`${string}\`.`,
         multipleTargetsFound: (players: Player[], string: string): string =>
             `There are multiple players using that name. Try being more specific and/or include their discriminator.\n\n` +
-            `*Players under \`${string}\`?:*\n${ players.map(p => `${p.toString()}: \`${p.tag}\``).join("\n") }`,
+            `*Players under \`${string}\`:*\n${ players.map(p => `${p.toString()}: \`${p.tag}\``).join("\n") }`,
         selfTarget: (): string =>
             `You know you're a villager! Hopefully?`,
         deadTarget: (player: Player): string =>
             `${player} is eliminated. Choose another target.`,
+    },
+
+
+    accuse: {
+        multipleTargetsFound: (players: Player[], string: string): string =>
+            `There are multiple players using that name. Try being more specific and/or include their discriminator.\n\n` +
+            `*Players under \`${string}\`:*\n${ players.map(p => `${p.toString()}: \`${p.tag}\``).join("\n") }`,
+        noTarget: (): string =>
+            `Please enter the name of the player you're trying to lynch after the command.`,
     }
 };
 
