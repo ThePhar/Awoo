@@ -9,10 +9,7 @@ import { error, log } from "./util/logging";
 import RecognisedCommands from "./structs/recognised-commands";
 import ActionTemplate     from "./templates/action-templates";
 
-// TODO: REMOVE THESE FROM DEBUG
-import Seer from "./roles/seer";
-import Werewolf from "./roles/werewolf";
-import Villager from "./roles/villager";
+import { lobbyEmbed } from "./templates/embed-templates";
 
 export default class Manager {
     static games = new Map<string, Game>();
@@ -51,23 +48,23 @@ export default class Manager {
         })();
 
         // DEBUG Commands. TODO: Remove.
-        if (message.content.startsWith("#!init")) {
-            if (game) game.initializeGame();
-        } else if (message.content.startsWith("#!day")) {
-            if (game) game.startDayPhase();
-        } else if (message.content.startsWith("#!night")) {
-            if (game) game.startNightPhase();
-        } else if (message.content.startsWith("#!seer")) {
-            if (player) player.role = new Seer(player);
-        } else if (message.content.startsWith("#!were")) {
-            if (player) player.role = new Werewolf(player);
-        } else if (message.content.startsWith("#!vill")) {
-            if (player) player.role = new Villager(player);
-        } else if (message.content.startsWith("#!kill")) {
-            if (player) player.alive = false;
-        } else if (message.content.startsWith("#!rez")) {
-            if (player) player.alive = true;
-        }
+        // if (message.content.startsWith("#!init")) {
+        //     if (game) game.initializeGame();
+        // } else if (message.content.startsWith("#!day")) {
+        //     if (game) game.startDayPhase();
+        // } else if (message.content.startsWith("#!night")) {
+        //     if (game) game.startNightPhase();
+        // } else if (message.content.startsWith("#!seer")) {
+        //     if (player) player.role = new Seer(player);
+        // } else if (message.content.startsWith("#!were")) {
+        //     if (player) player.role = new Werewolf(player);
+        // } else if (message.content.startsWith("#!vill")) {
+        //     if (player) player.role = new Villager(player);
+        // } else if (message.content.startsWith("#!kill")) {
+        //     if (player) player.alive = false;
+        // } else if (message.content.startsWith("#!rez")) {
+        //     if (player) player.alive = true;
+        // }
 
         // Watch for commands.
         if (message.content.startsWith(Command.prefix)) {
@@ -112,6 +109,9 @@ export default class Manager {
                 log(`Starting a new game in ${guild.name} in channel #${channel.name}.`);
                 const game = new Game(channel);
                 this.games.set(guild.id, game);
+
+                const lobbyMsg = await game.send(lobbyEmbed(game)) as Discord.Message;
+                game.lobbyMessage = lobbyMsg;
 
                 // Clear all old permissions.
                 try {
@@ -162,6 +162,9 @@ export default class Manager {
                     if (player) {
                         this.players.set(player.id, player);
                         game.send(`${player} has joined the next game!`);
+                        if (game.lobbyMessage) {
+                            await game.lobbyMessage.edit(lobbyEmbed(game));
+                        }
                     } else {
                         error(`Error adding ${message.author.tag} to game in ${message.guild.name}.`);
                     }
@@ -202,6 +205,9 @@ export default class Manager {
                         game.removePlayer(player.id);
                         this.players.delete(player.id);
                         game.send(`${player} is no longer signed up for the next game.`);
+                        if (game.lobbyMessage) {
+                            await game.lobbyMessage.edit(lobbyEmbed(game));
+                        }
                         return;
                 }
             } else {

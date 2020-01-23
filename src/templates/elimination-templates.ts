@@ -83,6 +83,16 @@ const EliminationTemplate = {
             `))
             .setColor(eliminationColor);
     },
+    hunter: (eliminated: Player, hunter: Player): Discord.RichEmbed => {
+        return new Discord.RichEmbed()
+            .setTitle(`${eliminated.name} has Been Shot`)
+            .setDescription(dedent(`
+                > Just as ${hunter} was being killed, they quickly pulled out their gun and shot ${eliminated}. Seems like they won't be going to the afterlife alone.
+                
+                ${eliminated} has been eliminated by the hunter.
+            `))
+            .setColor(eliminationColor);
+    },
     noNightElim: (): Discord.RichEmbed => {
         return new Discord.RichEmbed()
             .setTitle(`A Peaceful Night`)

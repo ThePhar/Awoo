@@ -6,12 +6,12 @@ import Team         from "../structs/team";
 import Command      from "../structs/command";
 import RoleTemplate from "../templates/role-templates";
 
-export default class Villager implements Role {
+export default class Lycan implements Role {
     readonly player: Player;
 
-    readonly name       = RoleTemplate.villager.name;
-    readonly pluralName = RoleTemplate.villager.pluralName;
-    readonly appearance = RoleTemplate.villager.appearance;
+    readonly name       = RoleTemplate.lycan.name;
+    readonly pluralName = RoleTemplate.lycan.pluralName;
+    readonly appearance = RoleTemplate.werewolf.appearance;
     readonly team       = Team.Villagers;
 
     usedAction = false;
@@ -21,7 +21,7 @@ export default class Villager implements Role {
     }
 
     sendRole(): void {
-        this.player.send(Embeds.villagerRoleEmbed(this.player.game.guild));
+        this.player.send(Embeds.lycanRoleEmbed(this.player.game.guild));
     }
 
     // Villagers do not have actions, so do nothing.

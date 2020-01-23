@@ -9,6 +9,8 @@ export default interface Role {
     readonly appearance: string;
     readonly team:       Team;
 
+    usedAction: boolean;
+
     readonly sendRole: () => void;
     readonly sendActionReminder: () => void;
     readonly action: (command: Command) => boolean;

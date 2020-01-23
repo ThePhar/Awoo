@@ -17,6 +17,7 @@ export default class Werewolf implements Role {
     readonly appearance = RoleTemplate.werewolf.appearance;
     readonly team       = Team.Werewolves;
 
+    usedAction = false;
     target?: Player;
 
     constructor(player: Player) {
@@ -30,6 +31,7 @@ export default class Werewolf implements Role {
     sendActionReminder(): void {
         // Reset target.
         this.target = undefined;
+        this.usedAction = false;
 
         // Do not send an action reminder on the first night.
         if (this.player.game.day === 1) return;
@@ -88,6 +90,7 @@ export default class Werewolf implements Role {
             this.player.game.players.aliveWerewolves.forEach((werewolf) => {
                 werewolf.send(ActionTemplate.werewolf.success(player, target));
             });
+            this.usedAction = true;
             return true;
         }
 

@@ -4,7 +4,7 @@ export function getNextMorning(): moment.Moment {
     const morning = moment();
 
     // TODO: DEBUG
-    return moment().add("5", "seconds");
+    // return moment().add("5", "seconds");
 
     // Set the hour and minutes to a specific time.
     morning.hour(8);
@@ -23,7 +23,7 @@ export function getNextNight(): moment.Moment {
     const night = moment();
 
     // TODO: DEBUG
-    return moment().add("5", "seconds");
+    // return moment().add("5", "seconds");
 
     // Set the hour and minutes to a specific time.
     night.hour(20);

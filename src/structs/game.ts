@@ -8,9 +8,23 @@ import Phase       from "./phase";
 import Player      from "./player";
 import ElimEmbeds  from "../templates/elimination-templates";
 import Schedule    from "node-schedule";
+import shuffle     from "../util/shuffle";
 
 import Werewolf from "../roles/werewolf";
 import Seer     from "../roles/seer";
+import { getNextNight } from "../util/date";
+import Bodyguard from "../roles/bodyguard";
+import Hunter from "../roles/hunter";
+import Lycan from "../roles/lycan";
+import Mayor from "../roles/mayor";
+import Tanner from "../roles/tanner";
+import Sorceress from "../roles/sorceress";
+import Witch from "../roles/witch";
+import Insomniac from "../roles/insomniac";
+import Minion from "../roles/minion";
+import Mason from "../roles/mason";
+import Villager from "../roles/villager";
+import Drunk from "../roles/drunk";
 
 export default class Game {
     private readonly _notificationChannel: Discord.TextChannel;
@@ -21,6 +35,8 @@ export default class Game {
     private          _active          = false;
     private          _phase:  Phase   = Phase.Waiting;
     private          _day             = 0;
+
+    lobbyMessage?: Discord.Message;
 
     constructor(channel: Discord.TextChannel, state?: GameState) {
         this._notificationChannel = channel;
@@ -34,12 +50,14 @@ export default class Game {
     }
 
     /* Discord Functions */
-    send(content: unknown): void {
-        this._notificationChannel.send(content);
+    send(content: unknown): Promise<Discord.Message | Discord.Message[]> {
+        return this._notificationChannel.send(content);
     }
 
     /* Game Functions */
     initializeGame(): void {
+        this.assignRoles();
+
         // Send everyone their roles.
         this._players.forEach((player) => {
             player.role.sendRole();
@@ -55,7 +73,14 @@ export default class Game {
 
         // Eliminate the werewolf target.
         if (this._day !== 1) {
-            this.processWerewolfElimination();
+            const elim1 = this.processWerewolfElimination();
+            const elim2 = this.processWitchElimination();
+            const elim3 = this.processHunterElimination();
+
+
+            if (!elim1 && !elim2 && !elim3) {
+                this.send(ElimEmbeds.noNightElim());
+            }
         }
 
         // Check for win conditions.
@@ -72,6 +97,8 @@ export default class Game {
         // Process inspections.
         this.players.all.forEach((player) => {
             this.processSeerInspection(player);
+            this.processSorceressInspection(player);
+            this.processInsomniacInspection(player);
         });
 
         const nextNight = Time.getNextNight();
@@ -103,9 +130,8 @@ export default class Game {
         this._phase = Phase.Night;
 
         // Eliminate the player with the most votes.
-        if (this._day !== 1) {
-            this.processLynchElimination();
-        }
+        this.processLynchElimination();
+        this.processHunterElimination();
 
         // Check for win conditions.
         if (this.winCondition()) {
@@ -154,6 +180,12 @@ export default class Game {
         const player = new Player(member, this, state);
 
         this._players.set(player.id, player);
+
+        if (this._players.size >= 6 && this._schedule === undefined) {
+            this._schedule = Schedule.scheduleJob(getNextNight().toDate(), () => this.initializeGame());
+            this.send("We have enough players to begin the next game. Scheduling to start next night.");
+        }
+
         return player;
     }
     /**
@@ -195,7 +227,93 @@ export default class Game {
 
         if (player) {
             this._players.delete(id);
+
+            if (this._players.size < 6 && this._schedule) {
+                this._schedule.cancelNext();
+                this._schedule = undefined;
+                this.send("Oh no! Now we don't have enough players. Canceling start until more players join.");
+            }
+
             return player;
+        }
+    }
+
+    private assignRoles(): void {
+        const shuffled = shuffle(this.players.all);
+
+        shuffled[0].role = new Seer(shuffled[0]);
+        shuffled[1].role = new Werewolf(shuffled[1]);
+
+        // Chance for roles?
+        if (shuffled.length >= 7) {
+            if (Math.random() < 0.1) shuffled[2].role = new Tanner(shuffled[2]);
+            if (Math.random() < 0.25) shuffled[3].role = new Mayor(shuffled[3]);
+            if (Math.random() < 0.25) shuffled[5].role = new Lycan(shuffled[5]);
+        }
+        if (shuffled.length >= 8) {
+            if (Math.random() < 0.2) shuffled[2].role = new Tanner(shuffled[2]);
+            if (Math.random() < 0.5) shuffled[3].role = new Mayor(shuffled[3]);
+            if (Math.random() < 0.2) shuffled[4].role = new Bodyguard(shuffled[4]);
+            if (Math.random() < 0.5) shuffled[5].role = new Lycan(shuffled[5]);
+            if (Math.random() < 0.2) shuffled[6].role = new Hunter(shuffled[6]);
+        }
+        if (shuffled.length >= 9) {
+            if (Math.random() < 0.3) shuffled[2].role = new Tanner(shuffled[2]);
+            if (Math.random() < 0.75) shuffled[3].role = new Mayor(shuffled[3]);
+            if (Math.random() < 0.4) shuffled[4].role = new Bodyguard(shuffled[4]);
+            if (Math.random() < 0.75) shuffled[5].role = new Lycan(shuffled[5]);
+            if (Math.random() < 0.4) shuffled[6].role = new Hunter(shuffled[6]);
+            if (Math.random() < 0.2) shuffled[7].role = new Sorceress(shuffled[7]);
+            shuffled[8].role = new Werewolf(shuffled[8]);
+        }
+        if (shuffled.length >= 10) {
+            if (Math.random() < 0.4) shuffled[2].role = new Tanner(shuffled[2]);
+            if (Math.random() < 0.9) shuffled[3].role = new Mayor(shuffled[3]);
+            if (Math.random() < 0.6) shuffled[4].role = new Bodyguard(shuffled[4]);
+            if (Math.random() < 0.9) shuffled[5].role = new Lycan(shuffled[5]);
+            if (Math.random() < 0.6) shuffled[6].role = new Hunter(shuffled[6]);
+            if (Math.random() < 0.4) shuffled[7].role = new Sorceress(shuffled[7]);
+            if (Math.random() < 0.33) shuffled[9].role = new Witch(shuffled[9]);
+        }
+        if (shuffled.length >= 11) {
+            if (Math.random() < 0.5) shuffled[2].role = new Tanner(shuffled[2]);
+            shuffled[3].role = new Mayor(shuffled[3]);
+            if (Math.random() < 0.8) shuffled[4].role = new Bodyguard(shuffled[4]);
+            shuffled[5].role = new Lycan(shuffled[5]);
+            if (Math.random() < 0.8) shuffled[6].role = new Hunter(shuffled[6]);
+            if (Math.random() < 0.65) shuffled[7].role = new Sorceress(shuffled[7]);
+            if (Math.random() < 0.66) shuffled[9].role = new Witch(shuffled[9]);
+            if (Math.random() < 0.4) shuffled[10].role = new Insomniac(shuffled[10]);
+        }
+        if (shuffled.length >= 12) {
+            shuffled[4].role = new Bodyguard(shuffled[4]);
+            shuffled[6].role = new Hunter(shuffled[6]);
+            if (Math.random() < 0.9) shuffled[7].role = new Sorceress(shuffled[7]);
+            if (Math.random() < 0.9) shuffled[9].role = new Witch(shuffled[9]);
+            if (Math.random() < 0.8) shuffled[10].role = new Insomniac(shuffled[10]);
+            shuffled[11].role = new Werewolf(shuffled[11]);
+        }
+        if (shuffled.length >= 13) {
+            shuffled[7].role = new Sorceress(shuffled[7]);
+            shuffled[9].role = new Witch(shuffled[9]);
+            shuffled[10].role = new Insomniac(shuffled[10]);
+            shuffled[12].role = new Minion(shuffled[12]);
+        }
+
+        if (Math.random() < 0.7 && shuffled.length >= 8) {
+            const newShuffle = shuffle(this.players.all);
+            const oldRole = newShuffle[0].role;
+            newShuffle[0].role = new Drunk(newShuffle[0], oldRole);
+        }
+
+        // New shuffle.
+        if (shuffled.length >= 12) {
+            // Masons!
+            const newShuffle = shuffle(this.players.normalVillagers);
+            if (newShuffle.length >= 2 && Math.random() < 0.6) {
+                newShuffle[0].role = new Mason(newShuffle[0]);
+                newShuffle[1].role = new Mason(newShuffle[1]);
+            }
         }
     }
 
@@ -206,10 +324,18 @@ export default class Game {
         for (const [, player] of this._players) {
             if (player.accusing) {
                 const value = votes.get(player.accusing);
-                if (value) {
-                    votes.set(player.accusing, value + 1);
+                if (player.role instanceof Mayor) {
+                    if (value) {
+                        votes.set(player.accusing, value + 2);
+                    } else {
+                        votes.set(player.accusing, 2);
+                    }
                 } else {
-                    votes.set(player.accusing, 1);
+                    if (value) {
+                        votes.set(player.accusing, value + 1);
+                    } else {
+                        votes.set(player.accusing, 1);
+                    }
                 }
             }
         }
@@ -232,7 +358,9 @@ export default class Game {
 
         this.send(ElimEmbeds.noLynch(sorted, this));
     }
-    private processWerewolfElimination(): void {
+    private processWerewolfElimination(): boolean {
+        if (this.processWitchSave()) return false;
+
         // Go through each player and tally up the votes.
         const votes = new Map<Player, number>();
         for (const player of this.players.aliveWerewolves) {
@@ -253,17 +381,47 @@ export default class Game {
         if (sorted.length === 1) {
             sorted[0][0].alive = false;
             this.send(ElimEmbeds.werewolf(sorted[0][0]));
-            return;
+            return true;
         }
         else if (sorted.length > 1) {
             if (sorted[0][1] > sorted[1][1]) {
                 sorted[0][0].alive = false;
                 this.send(ElimEmbeds.werewolf(sorted[0][0]));
-                return;
+                return true;
             }
         }
 
-        this.send(ElimEmbeds.noNightElim());
+        return false;
+    }
+    private processHunterElimination(): boolean {
+        let killed = false;
+
+        this.players.all.forEach((player) => {
+            if (player.role instanceof Hunter) {
+                if (!player.alive && player.role.target && player.role.target.alive && !player.role.shot) {
+                    this.send(ElimEmbeds.hunter(player.role.target, player));
+                    player.role.shot = true;
+                    killed = true;
+                }
+            }
+        });
+
+        return killed;
+    }
+    private processWitchElimination(): boolean {
+        let killed = false;
+
+        this.players.all.forEach((player) => {
+            if (player.role instanceof Witch) {
+                if (!player.alive && player.role.target && player.role.target.alive && !player.role.usedDeath) {
+                    this.send(ElimEmbeds.hunter(player.role.target, player));
+                    player.role.usedDeath = true;
+                    killed = true;
+                }
+            }
+        });
+
+        return killed;
     }
     private processSeerInspection(player: Player): void {
         if (player.role instanceof Seer && player.role.target) {
@@ -271,7 +429,6 @@ export default class Game {
                 player.send(
                     `You have learned that ${player.role.target} is a ${player.role.target.role.appearance}.`
                 );
-                player.role.inspected.set(player.role.target.id, player.role.target);
                 player.role.target = undefined;
             } else {
                 player.send(
@@ -281,19 +438,67 @@ export default class Game {
             }
         }
     }
+    private processSorceressInspection(player: Player): void {
+        if (player.role instanceof Sorceress && player.role.target) {
+            if (player.alive) {
+                player.send(
+                    `You have learned that ${player.role.target} is ${player.role.target.role instanceof Seer ? "" : "not"} the seer.`
+                );
+                player.role.target = undefined;
+            } else {
+                player.send(
+                    `You have met an unfortunate end before you could learn about ${player.role.target}. May you rest peacefully in the next life.`
+                );
+                player.role.target = undefined;
+            }
+        }
+    }
+    private processInsomniacInspection(player: Player): void {
+        if (player.role instanceof Insomniac && player.role.target) {
+            if (player.alive) {
+                player.send(
+                    `You have learned that ${player.role.target} did ${player.role.target.role.usedAction ? "" : "not"} do something last night.`
+                );
+                player.role.target = undefined;
+            } else {
+                player.send(
+                    `You have met an unfortunate end before you could learn about ${player.role.target}. May you rest peacefully in the next life.`
+                );
+                player.role.target = undefined;
+            }
+        }
+    }
+    private processWitchSave(): boolean {
+        let saving = false;
+
+        this.players.alive.forEach((player) => {
+            if (player.role instanceof Witch && player.role.saving) {
+                saving = true;
+                player.role.usedSave = true;
+            }
+        });
+
+        return saving;
+    }
 
     private winCondition(): boolean {
-        const vCount = this.players.aliveVillagers.length;
-        const wCount = this.players.aliveWerewolves.length;
+        const players = this.players;
 
-        if (vCount === 0 || wCount >= vCount) {
+        const vCount = players.aliveVillagers.length;
+        const wCount = players.aliveWerewolves.length;
+
+        if (players.deadTanners.length > 0) {
+            // Tanner win.
+            this.send(Embeds.tannerVictoryEmbed(players.all));
+        }
+        else if (vCount === 0 || wCount >= vCount) {
             // Werewolves win.
-            this.send(Embeds.werewolfVictoryEmbed(this.players.all));
+            this.send(Embeds.werewolfVictoryEmbed(players.all));
             return true;
         }
         else if (wCount === 0) {
             // Villagers win.
-            this.send(Embeds.villagerVictoryEmbed(this.players.all));
+            this.send(Embeds.villagerVictoryEmbed(players.all));
             return true;
         }
 
@@ -321,9 +526,20 @@ export default class Game {
         const dead:            Player[] = [];
         const aliveWerewolves: Player[] = [];
         const aliveVillagers:  Player[] = [];
+        const deadTanners:     Player[] = [];
+        const masons:          Player[] = [];
+        const normalVillagers: Player[] = [];
 
         this._players.forEach((player) => {
             all.push(player);
+
+            if (player.role instanceof Mason) {
+                masons.push(player);
+            }
+
+            if (player.role instanceof Villager) {
+                normalVillagers.push(player);
+            }
 
             if (player.alive) {
                 alive.push(player);
@@ -334,6 +550,10 @@ export default class Game {
                     aliveVillagers.push(player);
                 }
             } else {
+                if (player.role instanceof Tanner) {
+                    deadTanners.push(player);
+                }
+
                 dead.push(player);
             }
         });
@@ -343,7 +563,10 @@ export default class Game {
             dead,
             alive,
             aliveVillagers,
-            aliveWerewolves
+            aliveWerewolves,
+            deadTanners,
+            masons,
+            normalVillagers
         };
     }
     get active():       boolean {
@@ -366,4 +589,7 @@ type Players = {
     dead: Player[];
     aliveWerewolves: Player[];
     aliveVillagers: Player[];
+    deadTanners: Player[];
+    masons: Player[];
+    normalVillagers: Player[];
 }

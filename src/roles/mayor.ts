@@ -6,11 +6,11 @@ import Team         from "../structs/team";
 import Command      from "../structs/command";
 import RoleTemplate from "../templates/role-templates";
 
-export default class Villager implements Role {
+export default class Mayor implements Role {
     readonly player: Player;
 
-    readonly name       = RoleTemplate.villager.name;
-    readonly pluralName = RoleTemplate.villager.pluralName;
+    readonly name       = RoleTemplate.mayor.name;
+    readonly pluralName = RoleTemplate.mayor.pluralName;
     readonly appearance = RoleTemplate.villager.appearance;
     readonly team       = Team.Villagers;
 
@@ -21,7 +21,7 @@ export default class Villager implements Role {
     }
 
     sendRole(): void {
-        this.player.send(Embeds.villagerRoleEmbed(this.player.game.guild));
+        this.player.send(Embeds.mayorRoleEmbed(this.player.game.guild));
     }
 
     // Villagers do not have actions, so do nothing.

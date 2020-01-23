@@ -6,6 +6,9 @@ enum RecognisedCommands {
     Lynch = "lynch",
     Kill = "kill",
     Inspect = "inspect",
+    Protect = "protect",
+    Target = "target",
+    Save = "save",
 
     StartNewGame = "start"
 }
