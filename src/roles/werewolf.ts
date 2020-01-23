@@ -28,6 +28,9 @@ export default class Werewolf implements Role {
     }
 
     sendActionReminder(): void {
+        // Reset target.
+        this.target = undefined;
+
         // Do not send an action reminder on the first night.
         if (this.player.game.day === 1) return;
 

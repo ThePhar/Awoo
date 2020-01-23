@@ -1,96 +1,84 @@
-import Role from "../interfaces/role";
-import Command from "../structs/command";
-import Player from "../structs/player";
+import * as Embeds from "../templates/embed-templates";
+
+import Role               from "../interfaces/role";
+import Team               from "../structs/team";
+import Phase              from "../structs/phase";
+import Player             from "../structs/player";
+import Command            from "../structs/command";
+import RoleTemplate       from "../templates/role-templates";
+import ActionTemplate     from "../templates/action-templates";
 import RecognisedCommands from "../structs/recognised-commands";
-import Team from "../structs/team";
-import Phases from "../structs/phase";
 
 export default class Seer implements Role {
-    name = "Seer";
-    pluralName = "Seers";
-    appearance = "villager";
-    team = Team.Villagers;
+    readonly player: Player;
 
-    player: Player;
-    getRoleMessage: () => unknown;
-    getNightActionMessage: () => unknown;
+    readonly name       = RoleTemplate.seer.name;
+    readonly pluralName = RoleTemplate.seer.pluralName;
+    readonly appearance = RoleTemplate.villager.appearance;
+    readonly team       = Team.Villagers;
 
-    active = true;
-    inspected: Array<Player> = [];
+    target?: Player;
+    inspected = new Map<string, Player>();
 
-    constructor(player: Player, getRoleMessage: () => unknown, getNightActionMessage: () => unknown) {
+    constructor(player: Player) {
         this.player = player;
-        this.getRoleMessage = getRoleMessage;
-        this.getNightActionMessage = getNightActionMessage;
     }
 
-    resetChoices(): void {
-        this.player.accusing = undefined;
-        this.active = true;
+    sendRole(): void {
+        this.player.send(Embeds.seerRoleEmbed(this.player.game.guild));
     }
 
-    actionHandler(command: Command): void {
-        const game = this.player.game;
-        const targetNameOrId = command.args.join(" ");
+    sendActionReminder(): void {
+        // Reset active.
+        this.target = undefined;
 
-        // Do not process actions from dead players or outside of the night phase.
-        if (!this.player.alive || game.phase !== Phases.Night) {
-            return;
+        this.player.send(Embeds.seerActionEmbed(
+            this.player.game.guild,
+            this.player.game.players.alive,
+            this.player,
+            this.inspected));
+    }
+
+    action(command: Command): boolean {
+        if (command.type === RecognisedCommands.Inspect) {
+            // Player cannot make a target outside of the night phase.
+            if (this.player.game.phase !== Phase.Night) {
+                this.player.send(ActionTemplate.seer.nonNightPhase());
+                return false;
+            }
+            // Player did not have a target.
+            if (command.target === undefined && command.args === "") {
+                this.player.send(ActionTemplate.seer.noTarget());
+                return false;
+            }
+            // Could not find that target.
+            if (command.target === undefined) {
+                this.player.send(ActionTemplate.seer.noTargetFound(command.args));
+                return false;
+            }
+            // Multiple players were found under that name.
+            if (command.target instanceof Array) {
+                this.player.send(ActionTemplate.seer.multipleTargetsFound(command.target, command.args));
+                return false;
+            }
+            // Player targeting themselves.
+            if (command.target.id === this.player.id) {
+                this.player.send(ActionTemplate.seer.selfTarget());
+                return false;
+            }
+            // Target is dead.
+            if (!command.target.alive) {
+                this.player.send(ActionTemplate.seer.deadTarget(command.target));
+                return false;
+            }
+
+            // All is good!
+            this.target = command.target;
+            this.player.send(ActionTemplate.seer.success(this.target));
+            return true;
         }
 
-        // Player is only allowed to inspect 1 player per night.
-        if (!this.active) {
-            this.player.send("You have already inspected someone tonight. Please try again tomorrow night.");
-            return;
-        }
-
-        // Target a player for inspection.
-        if (command.type === RecognisedCommands.Target) {
-            // No name specified in target.
-            if (targetNameOrId === "") {
-                this.player.send("Please enter a target.");
-                return;
-            }
-
-            // Find a suitable target.
-            const targets = game.getPlayers(targetNameOrId);
-
-            // Multiple targets found.
-            if (targets.length > 1) {
-                this.player.send("Sorry, I found multiple players under that name. Please be more specific.");
-                return;
-            }
-
-            // Get the first target.
-            const target = targets[0];
-
-            // No target found.
-            if (!target) {
-                this.player.send(`Sorry, I couldn't find a player by the name or id of \`${targetNameOrId}\``);
-                return;
-            }
-            // Target has no role.
-            if (!target.role) {
-                throw new Error("No role is specified for this player!");
-            }
-            // Player is attempting to target themselves.
-            if (target.id === this.player.id) {
-                this.player.send("You cannot inspect yourself.");
-                return;
-            }
-            // Attempting to target a player already inspected.
-            const inspected = this.inspected.find(p => p.id === target.id);
-            if (inspected) {
-                this.player.send(
-                    `You have already inspected ${target.name} before. They are a ${target.role.appearance}.`,
-                );
-                return;
-            }
-
-            // Set our state.
-            this.active = false;
-            this.inspected.push(target);
-            this.player.send(`You look into ${target.name}'s true self. They are a ${target.role.appearance}.`);
-        }
+        // Not a command I understand, ignore it.
+        return false;
     }
 }

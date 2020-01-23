@@ -89,33 +89,33 @@ export function werewolfRoleEmbed(guild: Discord.Guild, werewolves: Player[]): D
             RoleTemplate.werewolf.roleNotification.actions,
         );
 }
-// export function seerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
-//     return new Discord.RichEmbed()
-//         .setTitle(RoleTemplate.seer.roleNotification.title)
-//         .setDescription(RoleTemplate.seer.roleNotification.description)
-//         .setThumbnail(RoleTemplate.seer.roleNotification.thumbnail)
-//         .setColor(RoleTemplate.villager.roleNotification.color)
-//         .setAuthor(guild.name, guild.iconURL)
-//         .setFooter(getTip())
-//         .addField(
-//             RoleTemplate.villager.roleNotification.fields[0].name,
-//             RoleTemplate.villager.roleNotification.fields[0].value,
-//             true
-//         )
-//         .addField(
-//             RoleTemplate.villager.roleNotification.fields[1].name,
-//             RoleTemplate.villager.roleNotification.fields[1].value,
-//             true
-//         )
-//         .addField(
-//             "During the Day",
-//             RoleTemplate.villager.roleNotification.accusationExample,
-//         )
-//         .addField(
-//             "During the Night",
-//             RoleTemplate.seer.roleNotification.actions,
-//         );
-// }
+export function seerRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
+    return new Discord.RichEmbed()
+        .setTitle(RoleTemplate.seer.roleNotification.title)
+        .setDescription(RoleTemplate.seer.roleNotification.description)
+        .setThumbnail(RoleTemplate.seer.roleNotification.thumbnail)
+        .setColor(RoleTemplate.villager.roleNotification.color)
+        .setAuthor(guild.name, guild.iconURL)
+        .setFooter(getTip())
+        .addField(
+            RoleTemplate.villager.roleNotification.fields[0].name,
+            RoleTemplate.villager.roleNotification.fields[0].value,
+            true
+        )
+        .addField(
+            RoleTemplate.villager.roleNotification.fields[1].name,
+            RoleTemplate.villager.roleNotification.fields[1].value,
+            true
+        )
+        .addField(
+            "During the Day",
+            RoleTemplate.villager.roleNotification.accusationExample,
+        )
+        .addField(
+            "During the Night",
+            RoleTemplate.seer.roleNotification.actions,
+        );
+}
 // export function bodyguardRoleEmbed(guild: Discord.Guild): Discord.RichEmbed {
 //     return new Discord.RichEmbed()
 //         .setTitle(RoleTemplate.bodyguard.roleNotification.title)
@@ -494,6 +494,33 @@ export function werewolfActionEmbed(guild: Discord.Guild, villagers: Player[]): 
         .addField(
             "Available Targets",
             villagers.length > 0 ? villagers : "*No Available Targets*"
+        );
+
+}
+export function seerActionEmbed(guild: Discord.Guild, alivePlayers: Player[], self: Player, inspected: Map<string, Player>): Discord.RichEmbed {
+    const targets = alivePlayers.filter((player) => {
+        if (player.id === self.id) return false;
+
+        return !inspected.has(player.id);
+    });
+    const inspectedPlayers = [...inspected.entries()].map(([, player]) => `${player} is a ${player.role.appearance}.`);
+
+    return new Discord.RichEmbed()
+        .setTitle("Look Into The Crystal Ball - Seer Night Action")
+        .setDescription("Please select a player to inspect with `!inspect <name>`. If you survive the night, you will be shown if they are a werewolf or villager in the morning.")
+        .setThumbnail(RoleTemplate.seer.roleNotification.thumbnail)
+        .setColor(RoleTemplate.villager.roleNotification.color)
+        .setAuthor(guild.name, guild.iconURL)
+        .setFooter(getTip())
+        .addField(
+            "Available To Inspect",
+            targets.length > 0 ? targets : "*None Available To Inspect*",
+            true
         )
+        .addField(
+            "Inspected Players",
+            inspectedPlayers.length > 0 ? inspectedPlayers : "*None Inspected*",
+            true
+        );
 
 }

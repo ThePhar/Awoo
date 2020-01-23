@@ -7,6 +7,7 @@ import Player from "./structs/player";
 import Werewolf from "./roles/werewolf";
 import Command from "./structs/command";
 import RecognisedCommands from "./structs/recognised-commands";
+import Seer from "./roles/seer";
 // import * as Manager from "./manager-functions";
 
 console.clear();
@@ -35,7 +36,7 @@ client.on("message", async (message) => {
         const p1 = game.addPlayer(message.member) as Player;
         p1.role = new Werewolf(p1);
         const p2 = game.addPlayer(await message.guild.fetchMember("589023961367576598")) as Player;
-        p2.role = new Werewolf(p2);
+        p2.role = new Seer(p2);
         const p3 = game.addPlayer(await message.guild.fetchMember("661764578924953631")) as Player;
 
         // p1.accusing = p2;

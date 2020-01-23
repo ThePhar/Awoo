@@ -5,8 +5,10 @@ import GameState   from "../interfaces/game-state";
 import PlayerState from "../interfaces/player-state";
 import Phase       from "./phase";
 import Player      from "./player";
-import Werewolf    from "../roles/werewolf";
 import ElimEmbeds  from "../templates/elimination-templates";
+
+import Werewolf from "../roles/werewolf";
+import Seer     from "../roles/seer";
 
 export default class Game {
     private readonly _notificationChannel: Discord.TextChannel;
@@ -52,8 +54,14 @@ export default class Game {
             this.processWerewolfElimination();
         }
 
+        // Process inspections.
+        this.players.all.forEach((player) => {
+            this.processSeerInspection(player);
+        });
+
         this.send(Embeds.dayEmbed(this));
     }
+
     /**
      * Changes the state to start the night phase.
      */
@@ -69,7 +77,10 @@ export default class Game {
         // Clear all accusations and send night action reminders.
         this._players.forEach((player) => {
             player.accusing = null;
-            player.role.sendActionReminder();
+
+            if (player.alive) {
+                player.role.sendActionReminder();
+            }
         });
 
         this.send(Embeds.nightEmbed(this));
@@ -135,7 +146,7 @@ export default class Game {
         }
     }
 
-    // Elimination processes.
+    // Role processes.
     private processLynchElimination(): void {
         // Go through each player and tally up the votes.
         const votes = new Map<Player, number>();
@@ -200,6 +211,22 @@ export default class Game {
         }
 
         this.send(ElimEmbeds.noNightElim());
+    }
+    private processSeerInspection(player: Player): void {
+        if (player.role instanceof Seer && player.role.target) {
+            if (player.alive) {
+                player.send(
+                    `You have learned that ${player.role.target} is a ${player.role.target.role.appearance}.`
+                );
+                player.role.inspected.set(player.role.target.id, player.role.target);
+                player.role.target = undefined;
+            } else {
+                player.send(
+                    `You have met an unfortunate end before you could learn about ${player.role.target}. May you rest peacefully in the next life.`
+                );
+                player.role.target = undefined;
+            }
+        }
     }
 
     get id():           string {
