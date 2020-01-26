@@ -112,8 +112,8 @@ export default class Manager {
                 const game = new Game(channel);
                 this.games.set(guild.id, game);
 
-                const lobbyMsg = await game.send(lobbyEmbed(game)) as Discord.Message;
-                game.lobbyMessage = lobbyMsg;
+                // const lobbyMsg = await game.send(lobbyEmbed(game)) as Discord.Message;
+                // game.lobbyMessage = lobbyMsg;
 
                 // Clear all old permissions.
                 try {

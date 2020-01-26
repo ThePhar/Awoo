@@ -306,4 +306,90 @@ describe("addPlayer(member, state?)", () => {
         expect(game.totalPlayers).toBe(2);
         expect(player).toHaveProperty("alive", false);
     });
+
+    it("should schedule a job to start the game next night if the player count is above the minimum", () => {
+        game.addPlayer(createMember("2", "Test"));
+        game.addPlayer(createMember("3", "Test"));
+        game.addPlayer(createMember("4", "Test"));
+        game.addPlayer(createMember("5", "Test"));
+        game.addPlayer(createMember("6", "Test"));
+
+        expect(game.schedule).not.toBeUndefined();
+        expect(game.channel.send).toBeCalledWith("We have enough players to begin the next game. Scheduling to start next night.");
+    });
+    it("should not schedule a job to start the game if less than the minimum threshold of players joined", () => {
+        game.addPlayer(createMember("4", "Test"));
+        game.addPlayer(createMember("5", "Test"));
+        game.addPlayer(createMember("6", "Test"));
+
+        expect(game.schedule).toBeUndefined();
+        expect(game.channel.send).not.toBeCalledWith("We have enough players to begin the next game. Scheduling to start next night.");
+    });
+});
+
+describe("removePlayer(id)", () => {
+    let member: Discord.GuildMember,
+        player: Player;
+    beforeEach(() => {
+        member = createMember("1", "Test");
+        player = game.addPlayer(member);
+    });
+
+    it("should return the player object that was removed to the game's player map", () => {
+        const removed = game.removePlayer(member.id);
+
+        expect(game.totalPlayers).toBe(0);
+        expect(removed).toBe(player);
+    });
+    it("should return undefined, if player does not exist under a specified member", () => {
+        const removed = game.removePlayer("FAKE_ID_THAT_DOESNT_EXIST");
+
+        expect(game.players.all.length).toBe(1);
+        expect(removed).toBeUndefined();
+    });
+
+    it("should cancel a job to start the game next night if the player count is below the minimum", () => {
+        game.addPlayer(createMember("2", "Test"));
+        game.addPlayer(createMember("3", "Test"));
+        game.addPlayer(createMember("4", "Test"));
+        game.addPlayer(createMember("5", "Test"));
+        game.addPlayer(createMember("6", "Test"));
+
+        game.removePlayer(member.id);
+
+        expect(game.schedule).toBeUndefined();
+        expect(game.channel.send).toBeCalledWith("Oh no! Now we don't have enough players. Canceling start until more players join.");
+    });
+    it("should not cancel a job to start the game if player count did not drop below minimum", () => {
+        game.addPlayer(createMember("2", "Test"));
+        game.addPlayer(createMember("3", "Test"));
+        game.addPlayer(createMember("4", "Test"));
+        game.addPlayer(createMember("5", "Test"));
+        game.addPlayer(createMember("6", "Test"));
+        game.addPlayer(createMember("7", "Test"));
+
+        game.removePlayer(member.id);
+
+        expect(game.schedule).not.toBeUndefined();
+        expect(game.channel.send).not.toBeCalledWith("Oh no! Now we don't have enough players. Canceling start until more players join.");
+    });
+});
+describe("getPlayer(id)", () => {
+    let member: Discord.GuildMember,
+        player: Player;
+    beforeEach(() => {
+        member = createMember("1", "Test");
+        player = game.addPlayer(member);
+    });
+
+    it("should return the player object matching the id, if it exists", () => {
+        const find = game.getPlayer(member.id);
+
+        expect(find).toBe(player);
+    });
+    it("should return undefined if player object does not exist", () => {
+        const find = game.getPlayer("PLAYER DOES NOT EXIST");
+
+        expect(find).toBeUndefined();
+    })
 });

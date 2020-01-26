@@ -30,8 +30,8 @@ import * as AwooConsole from "../util/logging";
 
 export default class Game {
     private readonly _notificationChannel: Discord.TextChannel;
-    private          _schedule?:           Schedule.Job;
-    private          _reminder?:           Schedule.Job;
+    schedule?:           Schedule.Job;
+    reminder?:           Schedule.Job;
 
     private readonly _players         = new Map<string, Player>();
     private          _active          = false;
@@ -156,11 +156,11 @@ export default class Game {
 
         // Check for win conditions.
         if (this.winCondition()) {
-            if (this._schedule && this._reminder) {
-                this._schedule.cancelNext();
-                this._reminder.cancelNext();
-                this._schedule = undefined;
-                this._reminder = undefined;
+            if (this.schedule && this.reminder) {
+                this.schedule.cancelNext();
+                this.reminder.cancelNext();
+                this.schedule = undefined;
+                this.reminder = undefined;
             }
             return;
         }
@@ -175,8 +175,8 @@ export default class Game {
         const nextNight = Time.getNextNight();
 
         this.send(Embeds.dayEmbed(this, nextNight));
-        this._schedule = Schedule.scheduleJob(nextNight.toDate(), () => this.startNightPhase());
-        this._reminder = Schedule.scheduleJob(nextNight.subtract("1", "hours").toDate(), () => {
+        this.schedule = Schedule.scheduleJob(nextNight.toDate(), () => this.startNightPhase());
+        this.reminder = Schedule.scheduleJob(nextNight.subtract("1", "hours").toDate(), () => {
             const playersWithNoLynch = this.players.alive.filter((p) => !p.accuse).map((p) => p.toString()).join(" ");
 
             if (playersWithNoLynch.length > 0) {
@@ -206,11 +206,11 @@ export default class Game {
 
         // Check for win conditions.
         if (this.winCondition()) {
-            if (this._schedule && this._reminder) {
-                this._schedule.cancelNext();
-                this._reminder.cancelNext();
-                this._schedule = undefined;
-                this._reminder = undefined;
+            if (this.schedule && this.reminder) {
+                this.schedule.cancelNext();
+                this.reminder.cancelNext();
+                this.schedule = undefined;
+                this.reminder = undefined;
             }
             return;
         }
@@ -227,8 +227,8 @@ export default class Game {
         const nextDay = Time.getNextMorning();
 
         this.send(Embeds.nightEmbed(this, nextDay));
-        this._schedule = Schedule.scheduleJob(nextDay.toDate(), () => this.startDayPhase());
-        this._reminder = Schedule.scheduleJob(nextDay.subtract("1", "hours").toDate(), () => {
+        this.schedule = Schedule.scheduleJob(nextDay.toDate(), () => this.startDayPhase());
+        this.reminder = Schedule.scheduleJob(nextDay.subtract("1", "hours").toDate(), () => {
             this.send(
                 new Discord.RichEmbed()
                     .setDescription(`The night will end in 1 hour. If you have a night active role, be sure to use it in the DMs!`)
@@ -237,32 +237,43 @@ export default class Game {
     }
 
     /* Players Functions */
-    /**
-     * Create a player and add it to the game's players map. If a player already exists, does nothing and returns.
-     * @param member The guild member object from Discord.
-     * @param state An optional player state to initialize this player with.
-     * @return The newly instantiated player object if not already exists. Otherwise, undefined.
-     */
     addPlayer(member: Discord.GuildMember, state?: PlayerState): Player {
         // If our player already exists, return the player we were trying to add.
         let player = this._players.get(member.id);
-        if (player) return player;
+        if (player) {
+            AwooConsole.warn(dedent(`
+                Player already exists in this game.
+                    Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                    Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                    Player:  ${player.id}: ${player.name} (${player.tag})
+            `));
+            return player;
+        }
 
         player = new Player(member, this, state);
         this._players.set(player.id, player);
+        AwooConsole.log(dedent(`
+                Player joined game.
+                    Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                    Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                    Player:  ${player.id}: ${player.name} (${player.tag})
+            `));
 
-        if (this._players.size >= 6 && this._schedule === undefined) {
-            this._schedule = Schedule.scheduleJob(getNextNight().toDate(), () => this.initializeGame());
+        // TODO: Remove hardcoded min players and move to settings file.
+        if (this.totalPlayers >= 6 && !this.schedule) {
+            AwooConsole.log(dedent(`
+                Player count has exceeded minimum threshold. Scheduling game start at next night.
+                    Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                    Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                    Start:   ${getNextNight().format()}
+            `));
+
+            this.schedule = Schedule.scheduleJob(getNextNight().toDate(), () => this.initializeGame());
             this.send("We have enough players to begin the next game. Scheduling to start next night.");
         }
 
         return player;
     }
-    /**
-     * Get the player from the game's players map if exists. If no player exists, returns undefined.
-     * @param id The id of the player to find. Should match the id of the Discord user.
-     * @return The existing player object if already exists. Otherwise, undefined.
-     */
     getPlayer(id: string): Player | undefined {
         return this._players.get(id);
     }
@@ -287,24 +298,37 @@ export default class Game {
             return playerArray;
         }
     }
-    /**
-     * Remove and return the player from the game's players map if exists. If no player exists, returns undefined.
-     * @param id The id of the player to find. Should match the id of the Discord user.
-     * @return The removed player object if already exists. Otherwise, undefined.
-     */
     removePlayer(id: string): Player | undefined {
         const player = this._players.get(id);
 
         if (player) {
+            AwooConsole.log(dedent(`
+                Player left game.
+                    Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                    Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                    Player:  ${player.id}: ${player.name} (${player.tag})
+            `));
             this._players.delete(id);
 
-            if (this._players.size < 6 && this._schedule) {
-                this._schedule.cancelNext();
-                this._schedule = undefined;
+            if (this._players.size < 6) {
+                AwooConsole.log(dedent(`
+                    Player count is lower than minimum threshold. Canceling game start until threshold reached.
+                        Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                        Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                `));
+
+                this.clearSchedule();
                 this.send("Oh no! Now we don't have enough players. Canceling start until more players join.");
             }
 
             return player;
+        } else {
+            AwooConsole.warn(dedent(`
+                    Attempted to remove player that doesn't exist in this game.
+                        Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                        Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                        ID:      ${id}
+                `));
         }
     }
 
@@ -387,6 +411,13 @@ export default class Game {
         }
     }
 
+    clearSchedule(): void {
+        if (this.schedule) {
+            this.schedule.cancelNext();
+            this.schedule = undefined;
+        }
+    }
+
     // Role processes.
     processLynchElimination(): void {
         // Go through each player and tally up the votes.
@@ -449,12 +480,30 @@ export default class Game {
         const sorted = [...votes.entries()].sort((a, b) => b[1] - a[1]);
 
         if (sorted.length === 1) {
+            // Check for bodyguard protection.
+            for (const bodyguard of this.players.aliveBodyguards) {
+                if (bodyguard.role instanceof Bodyguard
+                    && bodyguard.role.target
+                    && bodyguard.role.target.id === sorted[0][0].id) {
+                    return false;
+                }
+            }
+
             sorted[0][0].alive = false;
             this.send(ElimEmbeds.werewolf(sorted[0][0]));
             return true;
         }
         else if (sorted.length > 1) {
             if (sorted[0][1] > sorted[1][1]) {
+                // Check for bodyguard protection.
+                for (const bodyguard of this.players.aliveBodyguards) {
+                    if (bodyguard.role instanceof Bodyguard
+                        && bodyguard.role.target
+                        && bodyguard.role.target.id === sorted[0][0].id) {
+                        return false;
+                    }
+                }
+
                 sorted[0][0].alive = false;
                 this.send(ElimEmbeds.werewolf(sorted[0][0]));
                 return true;
@@ -599,6 +648,7 @@ export default class Game {
         const deadTanners:     Player[] = [];
         const masons:          Player[] = [];
         const normalVillagers: Player[] = [];
+        const aliveBodyguards:     Player[] = [];
 
         this._players.forEach((player) => {
             all.push(player);
@@ -613,6 +663,9 @@ export default class Game {
 
             if (player.alive) {
                 alive.push(player);
+                if (player.role instanceof Bodyguard) {
+                    aliveBodyguards.push(player);
+                }
 
                 if (player.role instanceof Werewolf) {
                     aliveWerewolves.push(player);
@@ -636,7 +689,8 @@ export default class Game {
             aliveWerewolves,
             deadTanners,
             masons,
-            normalVillagers
+            normalVillagers,
+            aliveBodyguards
         };
     }
     get active():       boolean {
@@ -659,4 +713,5 @@ type Players = {
     deadTanners: Player[];
     masons: Player[];
     normalVillagers: Player[];
+    aliveBodyguards: Player[];
 }
