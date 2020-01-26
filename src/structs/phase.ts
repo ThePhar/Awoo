@@ -1,7 +1,7 @@
 enum Phase {
-    Waiting,
-    Day,
-    Night,
+    Waiting = "waiting",
+    Day = "day",
+    Night = "night",
 }
 
 export default Phase;

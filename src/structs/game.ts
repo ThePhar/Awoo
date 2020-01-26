@@ -9,6 +9,7 @@ import Player      from "./player";
 import ElimEmbeds  from "../templates/elimination-templates";
 import Schedule    from "node-schedule";
 import shuffle     from "../util/shuffle";
+import dedent from "dedent";
 
 import Werewolf from "../roles/werewolf";
 import Seer     from "../roles/seer";
@@ -25,6 +26,7 @@ import Minion from "../roles/minion";
 import Mason from "../roles/mason";
 import Villager from "../roles/villager";
 import Drunk from "../roles/drunk";
+import * as AwooConsole from "../util/logging";
 
 export default class Game {
     private readonly _notificationChannel: Discord.TextChannel;
@@ -34,7 +36,8 @@ export default class Game {
     private readonly _players         = new Map<string, Player>();
     private          _active          = false;
     private          _phase:  Phase   = Phase.Waiting;
-    private          _day             = 0;
+
+    day = 0;
 
     lobbyMessage?: Discord.Message;
 
@@ -43,15 +46,83 @@ export default class Game {
 
         // Predetermined values.
         if (state) {
+            AwooConsole.log(dedent(`
+                Generating a new game with predefined state.
+                    Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                    Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                    Active:  ${state.active}
+                    Phase:   ${state.phase}
+                    Day:     ${state.day}
+            `));
+
             this._active = state.active;
             this._phase = state.phase;
-            this._day = state.day;
+            this.day = state.day;
+        } else {
+            AwooConsole.log(dedent(`
+                Generating a new game with default state.
+                    Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                    Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                    Active:  ${this._active}
+                    Phase:   ${this._phase}
+                    Day:     ${this.day}
+            `));
         }
     }
 
     /* Discord Functions */
-    send(content: unknown): Promise<Discord.Message | Discord.Message[]> {
-        return this._notificationChannel.send(content);
+    async send(content: unknown): Promise<boolean> {
+        try {
+            await this._notificationChannel.send(content);
+
+            if (content instanceof Discord.RichEmbed) {
+                AwooConsole.log(dedent(`
+                    Sent an embed to guild channel.
+                        Guild:       ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                        Channel:     ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                        Title:       ${content.title}
+                        Description: ${content.description}
+                        Color:       ${content.color     ? content.color.toString(16) : "undefined"}
+                        Thumbnail:   ${content.thumbnail ? content.thumbnail.url           : "undefined"}
+                        Image:       ${content.image     ? content.image.url               : "undefined"}
+                        Footer:      ${content.footer    ? content.footer.text             : "undefined"}
+                `));
+            } else {
+                AwooConsole.log(dedent(`
+                    Sent a message to guild channel.
+                        Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                        Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                        Message: ${content}
+                `));
+            }
+
+            return true;
+        } catch (error) {
+            if (content instanceof Discord.RichEmbed) {
+                AwooConsole.error(dedent(`
+                    Error sending an embed to guild channel.
+                        Guild:       ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                        Channel:     ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                        Error:       ${error}
+                        Title:       ${content.title}
+                        Description: ${content.description}
+                        Color:       ${content.color     ? content.color.toString(16) : "undefined"}
+                        Thumbnail:   ${content.thumbnail ? content.thumbnail.url           : "undefined"}
+                        Image:       ${content.image     ? content.image.url               : "undefined"}
+                        Footer:      ${content.footer    ? content.footer.text             : "undefined"}
+                `));
+            } else {
+                AwooConsole.error(dedent(`
+                    Error sending a message to guild channel.
+                        Guild:   ${this._notificationChannel.guild.id}: ${this._notificationChannel.guild.name}
+                        Channel: ${this._notificationChannel.id}: ${this._notificationChannel.name}
+                        Error:   ${error}
+                        Message: ${content}
+                `));
+            }
+
+            return false;
+        }
     }
 
     /* Game Functions */
@@ -72,7 +143,7 @@ export default class Game {
         this._phase = Phase.Day;
 
         // Eliminate the werewolf target.
-        if (this._day !== 1) {
+        if (this.day !== 1) {
             const elim1 = this.processWerewolfElimination();
             const elim2 = this.processWitchElimination();
             const elim3 = this.processHunterElimination();
@@ -126,7 +197,7 @@ export default class Game {
      * Changes the state to start the night phase.
      */
     startNightPhase(): void {
-        this._day += 1;
+        this.day += 1;
         this._phase = Phase.Night;
 
         // Eliminate the player with the most votes.
@@ -172,13 +243,12 @@ export default class Game {
      * @param state An optional player state to initialize this player with.
      * @return The newly instantiated player object if not already exists. Otherwise, undefined.
      */
-    addPlayer(member: Discord.GuildMember, state?: PlayerState): Player | undefined {
-        if (this._players.get(member.id)) {
-            return;
-        }
+    addPlayer(member: Discord.GuildMember, state?: PlayerState): Player {
+        // If our player already exists, return the player we were trying to add.
+        let player = this._players.get(member.id);
+        if (player) return player;
 
-        const player = new Player(member, this, state);
-
+        player = new Player(member, this, state);
         this._players.set(player.id, player);
 
         if (this._players.size >= 6 && this._schedule === undefined) {
@@ -238,7 +308,7 @@ export default class Game {
         }
     }
 
-    private assignRoles(): void {
+    assignRoles(): void {
         const shuffled = shuffle(this.players.all);
 
         shuffled[0].role = new Seer(shuffled[0]);
@@ -318,7 +388,7 @@ export default class Game {
     }
 
     // Role processes.
-    private processLynchElimination(): void {
+    processLynchElimination(): void {
         // Go through each player and tally up the votes.
         const votes = new Map<Player, number>();
         for (const [, player] of this._players) {
@@ -358,7 +428,7 @@ export default class Game {
 
         this.send(ElimEmbeds.noLynch(sorted, this));
     }
-    private processWerewolfElimination(): boolean {
+    processWerewolfElimination(): boolean {
         if (this.processWitchSave()) return false;
 
         // Go through each player and tally up the votes.
@@ -393,7 +463,7 @@ export default class Game {
 
         return false;
     }
-    private processHunterElimination(): boolean {
+    processHunterElimination(): boolean {
         let killed = false;
 
         this.players.all.forEach((player) => {
@@ -408,7 +478,7 @@ export default class Game {
 
         return killed;
     }
-    private processWitchElimination(): boolean {
+    processWitchElimination(): boolean {
         let killed = false;
 
         this.players.all.forEach((player) => {
@@ -423,7 +493,7 @@ export default class Game {
 
         return killed;
     }
-    private processSeerInspection(player: Player): void {
+    processSeerInspection(player: Player): void {
         if (player.role instanceof Seer && player.role.target) {
             if (player.alive) {
                 player.send(
@@ -438,7 +508,7 @@ export default class Game {
             }
         }
     }
-    private processSorceressInspection(player: Player): void {
+    processSorceressInspection(player: Player): void {
         if (player.role instanceof Sorceress && player.role.target) {
             if (player.alive) {
                 player.send(
@@ -453,7 +523,7 @@ export default class Game {
             }
         }
     }
-    private processInsomniacInspection(player: Player): void {
+    processInsomniacInspection(player: Player): void {
         if (player.role instanceof Insomniac && player.role.target) {
             if (player.alive) {
                 player.send(
@@ -468,7 +538,7 @@ export default class Game {
             }
         }
     }
-    private processWitchSave(): boolean {
+    processWitchSave(): boolean {
         let saving = false;
 
         this.players.alive.forEach((player) => {
@@ -481,7 +551,7 @@ export default class Game {
         return saving;
     }
 
-    private winCondition(): boolean {
+    winCondition(): boolean {
         const players = this.players;
 
         const vCount = players.aliveVillagers.length;
@@ -577,9 +647,6 @@ export default class Game {
     }
     get phase():        Phase {
         return this._phase;
-    }
-    get day():          number {
-        return this._day;
     }
 }
 
