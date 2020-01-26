@@ -52,10 +52,12 @@ describe("initializeGame()", () => {
 
         game.initializeGame();
 
-        expect((member1.send as jest.Mock).mock.calls[0][0].title)
-            .toBe("You are a Villager");
-        expect((member2.send as jest.Mock).mock.calls[0][0].title)
-            .toBe("You are a Villager");
+        expect((member1.send as jest.Mock).mock.calls[0][0].title
+            .includes("You are a"))
+            .toBe(true);
+        expect((member2.send as jest.Mock).mock.calls[0][0].title
+            .includes("You are a"))
+            .toBe(true);
     });
 });
 describe("startDayPhase()", () => {
@@ -70,7 +72,15 @@ describe("startDayPhase()", () => {
         expect(game.day).toBe(1);
         expect(game.active).toBe(true);
     });
+
     test("Should send a new day notification if no win condition was met.", () => {
+        game.addPlayer(createMember("1", "Test"));
+        game.addPlayer(createMember("2", "Test"));
+        game.addPlayer(createMember("3", "Test"));
+        game.addPlayer(createMember("4", "Test"));
+        const werewolf = game.addPlayer(createMember("5", "TestWere")) as Player;
+        werewolf.role = new Werewolf(werewolf);
+
         game.startDayPhase();
 
         expect((channel.send as jest.Mock).mock.calls[0][0].title)
@@ -80,6 +90,13 @@ describe("startDayPhase()", () => {
 describe("startNightPhase()", () => {
     beforeEach(() => {
         game = new Game(channel, { active: true, day: 1, phase: Phase.Day });
+
+        game.addPlayer(createMember("10", "Test"));
+        game.addPlayer(createMember("11", "Test"));
+        game.addPlayer(createMember("12", "Test"));
+        game.addPlayer(createMember("13", "Test"));
+        const werewolf = game.addPlayer(createMember("14", "TestWere")) as Player;
+        werewolf.role = new Werewolf(werewolf);
     });
 
     test("Should set the phase to night and increment day.", () => {
@@ -142,7 +159,7 @@ describe("startNightPhase()", () => {
         game.addPlayer(createMember("3", "Test"));
 
         game.startNightPhase();
-        expect(game.players.alive.length).toBe(3);
+        expect(game.players.alive.length).toBe(8);
     })
 });
 

@@ -76,12 +76,14 @@ export default class Manager {
             else if (game) await this.noPlayerHandler(message, game);
             // Non-Player + Non-Game Command Handler
             else this.noGameHandler(message);
-        } else if (!player && game && game.phase !== Phase.Waiting) {
-            await message.delete();
-            await message.author.send(`You are not a player, ${message.author}. I have removed your message.`);
-        } else if (player && !player.alive) {
-            await message.delete();
-            await message.author.send(`You are eliminated, ${player}. I have removed your message.`);
+        } else if (game && message.channel.id === game.channelId) {
+            if (!player && game && game.phase !== Phase.Waiting) {
+                await message.delete();
+                await message.author.send(`You are not a player, ${message.author}. I have removed your message.`);
+            } else if (player && !player.alive) {
+                await message.delete();
+                await message.author.send(`You are eliminated, ${player}. I have removed your message.`);
+            }
         }
     }
 
