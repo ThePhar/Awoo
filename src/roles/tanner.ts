@@ -1,27 +1,35 @@
-import Role from "../interfaces/role";
-import Player from "../structs/player";
-import Teams from "../structs/teams";
+import * as Embeds  from "../templates/embed-templates";
+
+import Role         from "../interfaces/role";
+import Player       from "../structs/player";
+import Team         from "../structs/team";
+import Command      from "../structs/command";
+import RoleTemplate from "../templates/role-templates";
 
 export default class Tanner implements Role {
-    name = "Tanner";
-    pluralName = "Tanners";
-    appearance = "villager";
-    team = Teams.Tanner;
+    readonly player: Player;
 
-    player: Player;
-    getRoleMessage: () => unknown;
+    readonly name       = RoleTemplate.tanner.name;
+    readonly pluralName = RoleTemplate.tanner.pluralName;
+    readonly appearance = RoleTemplate.villager.appearance;
+    readonly team       = Team.Tanner;
 
-    resetChoices(): void {
-        this.player.accusing = undefined;
-    }
+    usedAction = false;
 
-    constructor(player: Player, getRoleMessage: () => unknown) {
+    constructor(player: Player) {
         this.player = player;
-        this.getRoleMessage = getRoleMessage;
     }
 
-    actionHandler(): void {
-        // Villagers have no special actions.
+    sendRole(): void {
+        this.player.send(Embeds.tannerRoleEmbed(this.player.game.guild));
+    }
+
+    // Villagers do not have actions, so do nothing.
+    sendActionReminder(): void {
         return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    action(command: Command): boolean {
+        return false;
     }
 }

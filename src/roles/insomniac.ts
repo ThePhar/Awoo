@@ -9,11 +9,11 @@ import RoleTemplate       from "../templates/role-templates";
 import ActionTemplate     from "../templates/action-templates";
 import RecognisedCommands from "../structs/recognised-commands";
 
-export default class Seer implements Role {
+export default class Insomniac implements Role {
     readonly player: Player;
 
-    readonly name       = RoleTemplate.seer.name;
-    readonly pluralName = RoleTemplate.seer.pluralName;
+    readonly name       = RoleTemplate.insomniac.name;
+    readonly pluralName = RoleTemplate.insomniac.pluralName;
     readonly appearance = RoleTemplate.villager.appearance;
     readonly team       = Team.Villagers;
 
@@ -25,7 +25,7 @@ export default class Seer implements Role {
     }
 
     sendRole(): void {
-        this.player.send(Embeds.seerRoleEmbed(this.player.game.guild));
+        this.player.send(Embeds.insomniacRoleEmbed(this.player.game.guild));
     }
 
     sendActionReminder(): void {
@@ -33,7 +33,7 @@ export default class Seer implements Role {
         this.target = undefined;
         this.usedAction = false;
 
-        this.player.send(Embeds.seerActionEmbed(
+        this.player.send(Embeds.insomniacActionEmbed(
             this.player.game.guild,
             this.player.game.players.alive,
             this.player));

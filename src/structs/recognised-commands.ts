@@ -2,13 +2,14 @@ enum RecognisedCommands {
     Join = "join",
     Leave = "leave",
     Rules = "rules",
-    Accuse = "accuse",
-    Target = "target",
     Role = "role",
+    Lynch = "lynch",
     Kill = "kill",
+    Inspect = "inspect",
+    Protect = "protect",
+    Target = "target",
     Save = "save",
 
-    SetChannel = "setchannel",
     StartNewGame = "start"
 }
 

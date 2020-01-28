@@ -1,19 +1,17 @@
-import Player from "../structs/player";
+import Player  from "../structs/player";
+import Team    from "../structs/team";
 import Command from "../structs/command";
-import Teams from "../structs/teams";
 
 export default interface Role {
-    name: string;
-    pluralName: string;
-    appearance: string;
-    team: Teams;
+    readonly player:     Player;
+    readonly name:       string;
+    readonly pluralName: string;
+    readonly appearance: string;
+    readonly team:       Team;
 
-    player: Player;
+    usedAction: boolean;
 
-    getRoleMessage: () => unknown;
-    getNightActionMessage?: () => unknown;
-
-    actionHandler: (command: Command) => void;
-
-    resetChoices: () => void;
+    readonly sendRole: () => void;
+    readonly sendActionReminder: () => void;
+    readonly action: (command: Command) => boolean;
 }

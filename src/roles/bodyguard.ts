@@ -1,75 +1,80 @@
-import Role from "../interfaces/role";
-import Command from "../structs/command";
-import Player from "../structs/player";
+import * as Embeds from "../templates/embed-templates";
+
+import Role               from "../interfaces/role";
+import Team               from "../structs/team";
+import Phase              from "../structs/phase";
+import Player             from "../structs/player";
+import Command            from "../structs/command";
+import RoleTemplate       from "../templates/role-templates";
+import ActionTemplate     from "../templates/action-templates";
 import RecognisedCommands from "../structs/recognised-commands";
-import Teams from "../structs/teams";
-import Phases from "../structs/phases";
 
 export default class Bodyguard implements Role {
-    name = "Bodyguard";
-    pluralName = "Bodyguards";
-    appearance = "villager";
-    team = Teams.Villagers;
+    readonly player: Player;
 
-    player: Player;
-    getRoleMessage: () => unknown;
-    getNightActionMessage: () => unknown;
+    readonly name       = RoleTemplate.bodyguard.name;
+    readonly pluralName = RoleTemplate.bodyguard.pluralName;
+    readonly appearance = RoleTemplate.villager.appearance;
+    readonly team       = Team.Villagers;
 
-    protecting?: Player;
+    usedAction = false;
+    target?: Player;
 
-    constructor(player: Player, getRoleMessage: () => unknown, getNightActionMessage: () => unknown) {
+    constructor(player: Player) {
         this.player = player;
-        this.getRoleMessage = getRoleMessage;
-        this.getNightActionMessage = getNightActionMessage;
     }
 
-    resetChoices(): void {
-        this.player.accusing = undefined;
-        this.protecting = undefined;
+    sendRole(): void {
+        this.player.send(Embeds.bodyguardRoleEmbed(this.player.game.guild));
     }
 
-    actionHandler(command: Command): void {
-        const game = this.player.game;
-        const targetNameOrId = command.args.join(" ");
+    sendActionReminder(): void {
+        // Reset active.
+        this.target = undefined;
+        this.usedAction = false;
 
-        // Do not process actions from dead players or outside of the night phase.
-        if (!this.player.alive || game.phase !== Phases.Night) {
-            return;
+        this.player.send(Embeds.bodyguardActionEmbed(
+            this.player.game.guild,
+            this.player.game.players.alive)
+        );
+    }
+
+    action(command: Command): boolean {
+        if (command.type === RecognisedCommands.Protect) {
+            // Player cannot make a target outside of the night phase.
+            if (this.player.game.phase !== Phase.Night) {
+                this.player.send(ActionTemplate.bodyguard.nonNightPhase());
+                return false;
+            }
+            // Player did not have a target.
+            if (command.target === undefined && command.args === "") {
+                this.player.send(ActionTemplate.bodyguard.noTarget());
+                return false;
+            }
+            // Could not find that target.
+            if (command.target === undefined) {
+                this.player.send(ActionTemplate.bodyguard.noTargetFound(command.args));
+                return false;
+            }
+            // Multiple players were found under that name.
+            if (command.target instanceof Array) {
+                this.player.send(ActionTemplate.bodyguard.multipleTargetsFound(command.target, command.args));
+                return false;
+            }
+            // Target is dead.
+            if (!command.target.alive) {
+                this.player.send(ActionTemplate.bodyguard.deadTarget(command.target));
+                return false;
+            }
+
+            // All is good!
+            this.target = command.target;
+            this.player.send(ActionTemplate.bodyguard.success(this.target));
+            this.usedAction = true;
+            return true;
         }
 
-        // Target a player for inspection.
-        if (command.type === RecognisedCommands.Target) {
-            // No name specified in target.
-            if (targetNameOrId === "") {
-                this.player.send("Please enter a target.");
-                return;
-            }
-
-            // Find a suitable target.
-            const targets = game.getPlayers(targetNameOrId);
-
-            // Multiple targets found.
-            if (targets.length > 1) {
-                this.player.send("Sorry, I found multiple players under that name. Please be more specific.");
-                return;
-            }
-
-            // Get the first target.
-            const target = targets[0];
-
-            // No target found.
-            if (!target) {
-                this.player.send(`Sorry, I couldn't find a player by the name or id of \`${targetNameOrId}\``);
-                return;
-            }
-            // Target has no role.
-            if (!target.role) {
-                throw new Error("No role is specified for this player!");
-            }
-
-            // Set our state.
-            this.protecting = target;
-            this.player.send(`You are now protecting ${target.name}. They are safe from elimination tonight.`);
-        }
+        // Not a command I understand, ignore it.
+        return false;
     }
 }

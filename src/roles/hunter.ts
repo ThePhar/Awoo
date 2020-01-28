@@ -1,79 +1,78 @@
-import Role from "../interfaces/role";
-import Command from "../structs/command";
-import Player from "../structs/player";
+import * as Embeds from "../templates/embed-templates";
+
+import Role               from "../interfaces/role";
+import Team               from "../structs/team";
+import Player             from "../structs/player";
+import Command            from "../structs/command";
+import RoleTemplate       from "../templates/role-templates";
+import ActionTemplate     from "../templates/action-templates";
 import RecognisedCommands from "../structs/recognised-commands";
-import Teams from "../structs/teams";
 
 export default class Hunter implements Role {
-    name = "Hunter";
-    pluralName = "Hunters";
-    appearance = "villager";
-    team = Teams.Villagers;
+    readonly player: Player;
 
-    player: Player;
-    getRoleMessage: () => unknown;
-    getNightActionMessage: () => unknown;
+    readonly name       = RoleTemplate.hunter.name;
+    readonly pluralName = RoleTemplate.hunter.pluralName;
+    readonly appearance = RoleTemplate.villager.appearance;
+    readonly team       = Team.Villagers;
 
+    usedAction = false;
     target?: Player;
     shot = false;
 
-    constructor(player: Player, getRoleMessage: () => unknown, getNightActionMessage: () => unknown) {
+    constructor(player: Player) {
         this.player = player;
-        this.getRoleMessage = getRoleMessage;
-        this.getNightActionMessage = getNightActionMessage;
     }
 
-    resetChoices(): void {
-        this.player.accusing = undefined;
+    sendRole(): void {
+        this.player.send(Embeds.hunterRoleEmbed(this.player.game.guild));
     }
 
-    actionHandler(command: Command): void {
-        const game = this.player.game;
-        const targetNameOrId = command.args.join(" ");
-
-        // Do not process actions from dead players.
-        if (!this.player.alive) {
-            return;
+    sendActionReminder(): void {
+        if (!this.target || !this.target.alive) {
+            this.player.send(Embeds.hunterActionEmbed(
+                this.player.game.guild,
+                this.player.game.players.alive,
+                this.player)
+            );
         }
+    }
 
-        // Target a player for inspection.
+    action(command: Command): boolean {
         if (command.type === RecognisedCommands.Target) {
-            // No name specified in target.
-            if (targetNameOrId === "") {
-                this.player.send("Please enter a target.");
-                return;
+            // Player did not have a target.
+            if (command.target === undefined && command.args === "") {
+                this.player.send(ActionTemplate.hunter.noTarget());
+                return false;
+            }
+            // Could not find that target.
+            if (command.target === undefined) {
+                this.player.send(ActionTemplate.hunter.noTargetFound(command.args));
+                return false;
+            }
+            // Multiple players were found under that name.
+            if (command.target instanceof Array) {
+                this.player.send(ActionTemplate.hunter.multipleTargetsFound(command.target, command.args));
+                return false;
+            }
+            // Target is dead.
+            if (!command.target.alive) {
+                this.player.send(ActionTemplate.hunter.deadTarget(command.target));
+                return false;
+            }
+            // Player targeting themselves.
+            if (command.target.id === this.player.id) {
+                this.player.send(ActionTemplate.hunter.selfTarget());
+                return false;
             }
 
-            // Find a suitable target.
-            const targets = game.getPlayers(targetNameOrId);
-
-            // Multiple targets found.
-            if (targets.length > 1) {
-                this.player.send("Sorry, I found multiple players under that name. Please be more specific.");
-                return;
-            }
-
-            // Get the first target.
-            const target = targets[0];
-
-            // No target found.
-            if (!target) {
-                this.player.send(`Sorry, I couldn't find a player by the name or id of \`${targetNameOrId}\``);
-                return;
-            }
-            // Target has no role.
-            if (!target.role) {
-                throw new Error("No role is specified for this player!");
-            }
-            // Player is attempting to target themselves.
-            if (target.id === this.player.id) {
-                this.player.send("You cannot target yourself.");
-                return;
-            }
-
-            // Set our state.
-            this.target = target;
-            this.player.send(`You are now targeting ${target.name}. If you die, they will die as well.`);
+            // All is good!
+            this.target = command.target;
+            this.player.send(ActionTemplate.hunter.success(this.target));
+            return true;
         }
+
+        // Not a command I understand, ignore it.
+        return false;
     }
 }

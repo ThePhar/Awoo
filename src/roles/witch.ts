@@ -1,96 +1,121 @@
-import Role from "../interfaces/role";
-import Command from "../structs/command";
-import Player from "../structs/player";
+import * as Embeds from "../templates/embed-templates";
+
+import Role               from "../interfaces/role";
+import Team               from "../structs/team";
+import Phase              from "../structs/phase";
+import Player             from "../structs/player";
+import Command            from "../structs/command";
+import RoleTemplate       from "../templates/role-templates";
+import ActionTemplate     from "../templates/action-templates";
 import RecognisedCommands from "../structs/recognised-commands";
-import Teams from "../structs/teams";
-import Phases from "../structs/phases";
 
 export default class Witch implements Role {
-    name = "Witch";
-    pluralName = "Witches";
-    appearance = "villager";
-    team = Teams.Villagers;
+    readonly player: Player;
 
-    player: Player;
-    getRoleMessage: () => unknown;
-    getNightActionMessage: () => unknown;
+    readonly name       = RoleTemplate.witch.name;
+    readonly pluralName = RoleTemplate.witch.pluralName;
+    readonly appearance = RoleTemplate.villager.appearance;
+    readonly team       = Team.Villagers;
 
-    killing?: Player;
+    usedAction = false;
+    target?: Player;
+    usedDeath = false;
+    usedSave = false;
     saving = false;
 
-    usedKillPotion = false;
-    usedSavePotion = false;
-
-    constructor(player: Player, getRoleMessage: () => unknown, getNightActionMessage: () => unknown) {
+    constructor(player: Player) {
         this.player = player;
-        this.getRoleMessage = getRoleMessage;
-        this.getNightActionMessage = getNightActionMessage;
     }
 
-    resetChoices(): void {
-        this.player.accusing = undefined;
+    sendRole(): void {
+        this.player.send(Embeds.witchRoleEmbed(this.player.game.guild));
     }
 
-    actionHandler(command: Command): void {
-        const game = this.player.game;
-        const targetNameOrId = command.args.join(" ");
+    sendActionReminder(): void {
+        this.usedAction = false;
 
-        // Do not allow these during the first night!
-        if (game.day === 1) {
-            return;
-        }
+        // Do not send an action reminder on the first night.
+        if (this.player.game.day === 1) return;
 
-        // Do not process actions from dead players or outside of the night phase.
-        if (!this.player.alive || game.phase !== Phases.Night) {
-            return;
-        }
-
-        // Target a player for inspection.
-        if (command.type === RecognisedCommands.Kill && !this.usedKillPotion) {
-            // No name specified in target.
-            if (targetNameOrId === "") {
-                this.player.send("Please enter a target.");
-                return;
-            }
-
-            // Find a suitable target.
-            const targets = game.getPlayers(targetNameOrId);
-
-            // Multiple targets found.
-            if (targets.length > 1) {
-                this.player.send("Sorry, I found multiple players under that name. Please be more specific.");
-                return;
-            }
-
-            // Get the first target.
-            const target = targets[0];
-
-            // No target found.
-            if (!target) {
-                this.player.send(`Sorry, I couldn't find a player by the name or id of \`${targetNameOrId}\``);
-                return;
-            }
-            // Target has no role.
-            if (!target.role) {
-                throw new Error("No role is specified for this player!");
-            }
-            // Player is attempting to target themselves.
-            if (target.id === this.player.id) {
-                this.player.send("You cannot kill yourself! Life is good!");
-                return;
-            }
-
-            // Set our state.
-            this.killing = target;
-            this.usedKillPotion = true;
-            this.player.send(`You have used your potion of death on ${target.name}. They will die tomorrow.`);
-        } else if (command.type === RecognisedCommands.Save) {
-            // Set our state.
-            this.saving = true;
-            this.usedSavePotion = true;
-            this.player.send(
-                `You have used your potion of life. Whoever is targeted by the werewolves will not die tomorrow.`,
+        if (!this.usedDeath && !this.usedSave) {
+            this.player.send(Embeds.witchActionEmbed(
+                this.player.game.guild,
+                this.player.game.players.alive,
+                this.player,
+                this)
             );
         }
+    }
+
+    action(command: Command): boolean {
+        if (command.type === RecognisedCommands.Kill && !this.usedDeath) {
+            // Player cannot use potion others on the first night.
+            if (this.player.game.phase === Phase.Night && this.player.game.day === 1) {
+                this.player.send(ActionTemplate.witch.firstNight());
+                return false;
+            }
+            // Player cannot make a target outside of the night phase.
+            if (this.player.game.phase !== Phase.Night) {
+                this.player.send(ActionTemplate.witch.nonNightPhase());
+                return false;
+            }
+            // Player did not have a target.
+            if (command.target === undefined && command.args === "") {
+                this.player.send(ActionTemplate.witch.noTarget());
+                return false;
+            }
+            // Could not find that target.
+            if (command.target === undefined) {
+                this.player.send(ActionTemplate.witch.noTargetFound(command.args));
+                return false;
+            }
+            // Multiple players were found under that name.
+            if (command.target instanceof Array) {
+                this.player.send(ActionTemplate.witch.multipleTargetsFound(command.target, command.args));
+                return false;
+            }
+            // Player targeting themselves.
+            if (command.target.id === this.player.id) {
+                this.player.send(ActionTemplate.witch.selfTarget());
+                return false;
+            }
+            // Target is dead.
+            if (!command.target.alive) {
+                this.player.send(ActionTemplate.witch.deadTarget(command.target));
+                return false;
+            }
+
+            // All is good!
+            this.target = command.target;
+            this.player.send(ActionTemplate.witch.successKill(this.target));
+            this.usedAction = true;
+            return true;
+        } else if (command.type === RecognisedCommands.Kill) {
+            this.player.send("You have already used your death potion. You cannot use it again.");
+            return false;
+        } else if (command.type === RecognisedCommands.Save && !this.usedSave) {
+            // Player cannot use potion others on the first night.
+            if (this.player.game.phase === Phase.Night && this.player.game.day === 1) {
+                this.player.send(ActionTemplate.witch.firstNight());
+                return false;
+            }
+            // Player cannot save people outside of the night phase.
+            if (this.player.game.phase !== Phase.Night) {
+                this.player.send(ActionTemplate.witch.nonNightPhase());
+                return false;
+            }
+
+            // All is good!
+            this.saving = true;
+            this.player.send(ActionTemplate.witch.successSave());
+            this.usedAction = true;
+            return true;
+        } else if (command.type === RecognisedCommands.Save) {
+            this.player.send("You have already used your life potion. You cannot use it again.");
+            return false;
+        }
+
+        // Not a command I understand, ignore it.
+        return false;
     }
 }

@@ -1,127 +1,121 @@
-import PlayerData from "../interfaces/player-data";
-import Role from "../interfaces/role";
-import Game from "./game";
-import getMostDuplicates from "../util/duplicate";
-import Phases from "./phases";
-import RecognisedCommands from "./recognised-commands";
-import Command from "./command";
-import Mayor from "../roles/mayor";
+import * as Discord from "discord.js";
+
+import PlayerState from "../interfaces/player-state";
+import Role        from "../interfaces/role";
+import Villager    from "../roles/villager";
+import Game        from "./game";
+import Phase       from "./phase";
+
+import AccusationTemplate from "../templates/accusation-templates";
+
+import Manager from "../manager";
 
 export default class Player {
-    name: string;
-    id: string;
-    game: Game;
-    alive: boolean;
-    role?: Role;
-    accusing?: Player;
+    private readonly _member: Discord.GuildMember;
+    private          _role:   Role;
+    private readonly _game:   Game;
 
-    send: Function;
+    private _alive                   = true;
+    private _accusing: Player | null = null;
 
-    constructor(data: PlayerData) {
-        this.name = data.name;
-        this.id = data.id;
-        this.game = data.game;
-        this.role = data.role;
-        this.send = data.send;
+    constructor(member: Discord.GuildMember, game: Game, state?: PlayerState) {
+        this._member = member;
+        this._role   = new Villager(this);
+        this._game   = game;
 
-        // Generate default values if not already specified.
-        this.alive = data.alive === undefined ? true : data.alive;
+        if (state) {
+            this._alive    = state.alive;
+            this._accusing = state.accusing;
+        }
     }
 
+    /**
+     * Returns a player name string in Discord's mention format.
+     */
     toString(): string {
-        return `<@!${this.id}> (\`${this.name}\`)`;
+        return `<@!${this._member.id}>`;
     }
 
-    accuse(command: Command): void {
-        const game = this.game;
-        const targetNameOrId = command.args.join(" ");
-
-        // Do not process accusations from dead players.
+    /**
+     * Accuse a player of being a werewolf and bring them closer to being lynched. Does not set accusation if the
+     * player or game state does not allow it.
+     * @param accusing The player to vote to be lynched.
+     * @return Returns true if successfully set accusing flag; returns false otherwise.
+     */
+    accuse(accusing: Player): boolean {
+        // Game is not active.
+        if (!this.game.active) {
+            this.send(AccusationTemplate.inactiveLynch());
+            return false;
+        }
+        // Player is dead.
         if (!this.alive) {
-            return;
+            this.send(AccusationTemplate.ghostLynch());
+            return false;
+        }
+        // Not the Day Phase
+        if (this.game.phase !== Phase.Day) {
+            this.send(AccusationTemplate.nonDayLynch());
+            return false;
+        }
+        // Player is targeting themselves.
+        if (accusing.id === this.id) {
+            this.send(AccusationTemplate.selfLynch());
+            return false;
+        }
+        // Accusing player is dead.
+        if (!accusing.alive) {
+            this.send(AccusationTemplate.deadLynch());
+            return false;
         }
 
-        if (!game.send) {
-            return;
-        }
-
-        // Target a player for accusation (day only!).
-        if (command.type === RecognisedCommands.Accuse && game.phase === Phases.Day) {
-            // No name specified after the command.
-            if (targetNameOrId === "") {
-                game.send("Please enter a target.");
-                return;
-            }
-
-            // Find a suitable target.
-            const targets = game.getPlayers(targetNameOrId);
-            // If multiple targets found, do not continue.
-            if (targets.length > 1) {
-                game.send("Sorry, I found multiple players under that name. Please be more specific.");
-                return;
-            }
-
-            // Get the first target.
-            const target = targets[0];
-
-            // No target found.
-            if (!target) {
-                game.send(`Sorry, I couldn't find a player by the name or id of \`${targetNameOrId}\``);
-                return;
-            }
-            // Player is attempting to target themselves.
-            if (target.id === this.id) {
-                game.send("You cannot accuse yourself.");
-                return;
-            }
-            // Target is dead.
-            if (!target.alive) {
-                game.send("You cannot accuse an eliminated player.");
-                return;
-            }
-            // Attempting to target a player already targeted.
-            if (this.accusing && target.id === this.accusing.id) {
-                game.send(`You are already accusing ${target.name}.`);
-                return;
-            }
-
-            game.send(`${this.name} has voted to lynch ${target.name}.`);
-            this.accusing = target;
-        }
-    }
-    sendRole(): void {
-        if (this.role) {
-            this.send(this.role.getRoleMessage());
-        }
-    }
-    sendNightActions(): void {
-        if (this.role && this.role.getNightActionMessage) {
-            this.send(this.role.getNightActionMessage());
-        }
+        // All else is good!
+        this._accusing = accusing;
+        this.send(AccusationTemplate.success(accusing));
+        return true;
     }
 
-    static getLynchElimination(players: Array<Player>): Player | undefined {
-        // Find the accused player of each villager.
-        const mayorVotes: Array<Player | undefined> = [];
-        let accusedPlayers = players.map(player => {
-            // Count the mayor twice.
-            if (player.role && player.role instanceof Mayor && player.accusing) {
-                mayorVotes.push(player.accusing);
-            }
-            return player.accusing;
-        });
+    async send(content: unknown): Promise<void> {
+        await this._member.send(content);
+    }
 
-        accusedPlayers = accusedPlayers.concat(mayorVotes);
-        accusedPlayers = accusedPlayers.filter(accused => accused !== undefined) as Array<Player>;
-
-        // Find which accused player was targeted the most.
-        if (accusedPlayers.length > 0) {
-            const most = getMostDuplicates(accusedPlayers as Array<Player>);
-
-            // If only 1 accused had the most, return that player. Otherwise, do not return a player.
-            if (most.length === 1) {
-                return most[0];
-            }
+    get id():       string {
+        return this._member.id;
+    }
+    get user():     Discord.User {
+        return this._member.user;
+    }
+    get tag():      string {
+        return this._member.user.tag;
+    }
+    get name():     string {
+        return this._member.displayName;
+    }
+    get role():     Role {
+        return this._role;
+    }
+    set role(value: Role) {
+        this._role = value;
+    }
+    get game():     Game {
+        return this._game;
+    }
+    get alive():    boolean {
+        return this._alive;
+    }
+    set alive(value: boolean) {
+        if (!value) {
+            Manager.mutePlayer(this);
+        } else {
+            Manager.unmutePlayer(this);
         }
+
+        this._alive = value;
+    }
+    get accusing(): Player | null {
+        return this._accusing;
+    }
+    set accusing(value: Player | null) {
+        this._accusing = value;
     }
 }
