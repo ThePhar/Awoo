@@ -33,7 +33,7 @@ export default class Game {
     schedule?:           Schedule.Job;
     reminder?:           Schedule.Job;
 
-    private readonly _players         = new Map<string, Player>();
+    readonly _players         = new Map<string, Player>();
     private          _active          = false;
     private          _phase:  Phase   = Phase.Waiting;
 
@@ -170,6 +170,9 @@ export default class Game {
             this.processSeerInspection(player);
             this.processSorceressInspection(player);
             this.processInsomniacInspection(player);
+
+            // Reset accusations.
+            player.accusing = null;
         });
 
         const nextNight = Time.getNextNight();
@@ -177,7 +180,7 @@ export default class Game {
         this.send(Embeds.dayEmbed(this, nextNight));
         this.schedule = Schedule.scheduleJob(nextNight.toDate(), () => this.startNightPhase());
         this.reminder = Schedule.scheduleJob(nextNight.subtract("1", "hours").toDate(), () => {
-            const playersWithNoLynch = this.players.alive.filter((p) => !p.accuse).map((p) => p.toString()).join(" ");
+            const playersWithNoLynch = this.players.alive.filter((p) => !p.accusing).map((p) => p.toString()).join(" ");
 
             if (playersWithNoLynch.length > 0) {
                 this.send(
@@ -701,6 +704,9 @@ export default class Game {
     }
     get phase():        Phase {
         return this._phase;
+    }
+    set phase(value: Phase) {
+        this._phase = value;
     }
 }
 

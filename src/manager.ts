@@ -47,25 +47,6 @@ export default class Manager {
             }
         })();
 
-        // DEBUG Commands. TODO: Remove.
-        // if (message.content.startsWith("#!init")) {
-        //     if (game) game.initializeGame();
-        // } else if (message.content.startsWith("#!day")) {
-        //     if (game) game.startDayPhase();
-        // } else if (message.content.startsWith("#!night")) {
-        //     if (game) game.startNightPhase();
-        // } else if (message.content.startsWith("#!seer")) {
-        //     if (player) player.role = new Seer(player);
-        // } else if (message.content.startsWith("#!were")) {
-        //     if (player) player.role = new Werewolf(player);
-        // } else if (message.content.startsWith("#!vill")) {
-        //     if (player) player.role = new Villager(player);
-        // } else if (message.content.startsWith("#!kill")) {
-        //     if (player) player.alive = false;
-        // } else if (message.content.startsWith("#!rez")) {
-        //     if (player) player.alive = true;
-        // }
-
         // Watch for commands.
         if (message.content.startsWith(Command.prefix)) {
             log(`Received command, \`${message.content}\` from ${message.author.tag}.`);
