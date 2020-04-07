@@ -12,5 +12,5 @@ if (result.error) {
 const client = new Discord.Client();
 client.login(process.env.DISCORD_BOT_TOKEN)
   .then(() => Manager.initialize(client))
-  .then(() => Logging.log('Manager is online and ready to begin.'))
+  .then(() => Logging.log('Manager is online and is now listening.'))
   .catch((err) => Logging.error(`Error connecting to Discord: ${err}`));

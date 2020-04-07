@@ -13,7 +13,5 @@ export default class Manager {
 
     Logging.log(`${client.user.username} has logged into Discord successfully.`);
     await client.user.setPresence({ activity: { name: 'Ready!' }, status: 'online' });
-
-    Logging.log('Now listening for messages.');
   }
 }
