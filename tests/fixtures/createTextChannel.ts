@@ -7,7 +7,7 @@ export default function createTextChannel(): Discord.TextChannel {
   return {
     id: '1234',
     name: 'mock-channel',
-    send: jest.fn(),
+    send: jest.fn().mockResolvedValue('Test'),
     guild: {
       name: 'Test Guild',
       id: '4321',

@@ -1,9 +1,13 @@
 import * as Discord from 'discord.js';
 import Player from './player';
+import Phase from './phase';
 
 export default class Game {
   private channel: Discord.TextChannel;
   private players = new Map<string, Player>();
+
+  public phase = Phase.Waiting;
+  public day = 0;
 
   constructor(channel: Discord.TextChannel) {
     this.channel = channel;
@@ -80,5 +84,28 @@ export default class Game {
     });
 
     return { error: null, players: playerArray };
+  }
+
+  /**
+   * Change the phase to day and process any night eliminations and actions.
+   */
+  startDayPhase(): void {
+    // Initialize the phase values.
+    this.phase = Phase.Day;
+
+    // TODO: Change to Embed instead of hardcoded string.
+    this.announce('Day Phase Start');
+  }
+
+  /**
+   * Change the phase to night and process any lynch eliminations and day actions.
+   */
+  startNightPhase(): void {
+    // Initialize the phase values.
+    this.day += 1;
+    this.phase = Phase.Night;
+
+    // TODO: Change to Embed instead of hardcoded string.
+    this.announce('Night Phase Start');
   }
 }

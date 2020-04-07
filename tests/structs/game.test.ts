@@ -3,6 +3,7 @@ import Game from '../../src/structs/game';
 import Player from '../../src/structs/player';
 import createTextChannel from '../fixtures/createTextChannel';
 import createMember from '../fixtures/createMember';
+import Phase from '../../src/structs/phase';
 
 let channel: Discord.TextChannel;
 let game: Game;
@@ -95,5 +96,25 @@ describe('removePlayer(id)', () => {
     } else {
       fail('Player is undefined!');
     }
+  });
+});
+
+describe('startDayPhase()', () => {
+  test('game state should update phase', () => {
+    const expectedState = { day: game.day, phase: Phase.Day };
+
+    game.startDayPhase();
+    expect(game.phase).toBe(expectedState.phase);
+    expect(game.day).toBe(game.day);
+  });
+});
+
+describe('startNightPhase()', () => {
+  test('game state should update phase', () => {
+    const expectedState = { day: game.day + 1, phase: Phase.Night };
+
+    game.startNightPhase();
+    expect(game.phase).toBe(expectedState.phase);
+    expect(game.day).toBe(game.day);
   });
 });
