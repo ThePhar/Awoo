@@ -23,4 +23,6 @@ export default class Player {
   message(content: unknown): Promise<Discord.Message> {
     return this.member.send(content);
   }
+
+  get tag(): string { return this.member.user.tag; }
 }

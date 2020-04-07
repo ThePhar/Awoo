@@ -23,3 +23,9 @@ describe('message(content)', () => {
     expect(member.send).toHaveBeenLastCalledWith(testMessage);
   });
 });
+
+describe('get tag()', () => {
+  test('return the user tag on the inner member object', () => {
+    expect(player.tag).toBe(member.user.tag);
+  });
+});
