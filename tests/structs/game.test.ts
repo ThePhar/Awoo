@@ -71,3 +71,29 @@ describe('findPlayers(tag)', () => {
     expect(result.players.length).toBe(6);
   });
 });
+
+describe('removePlayer(id)', () => {
+  const players: Player[] = [];
+  beforeEach(() => {
+    for (let n = 0; n < 2; n += 1) {
+      players.push(game.addPlayer(createMember(n.toString(), `Test User ${n}`, `000${n}`)));
+    }
+  });
+
+  test('should return undefined if player does not exist under a specified id', () => {
+    const player = game.removePlayer('4444');
+
+    expect(player).toBeUndefined();
+    expect(game.findPlayers('#').players.length).toBe(2);
+  });
+  test('should return removed player ', () => {
+    const player = game.removePlayer('1');
+
+    if (player) {
+      expect(player.tag).toBe(players[1].tag);
+      expect(game.findPlayers('#').players.length).toBe(1);
+    } else {
+      fail('Player is undefined!');
+    }
+  });
+});

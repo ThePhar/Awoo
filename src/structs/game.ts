@@ -33,6 +33,24 @@ export default class Game {
   }
 
   /**
+   * Removes and returns the player associated with a particular Discord Member Id; returns
+   * undefined if they don't exist.
+   * @param id The Discord Member id to remove.
+   */
+  removePlayer(id: string): Player | undefined {
+    const player = this.getPlayer(id);
+
+    // Remove this player from this game if they exist.
+    if (player) {
+      this.players.delete(id);
+      return player;
+    }
+
+    // If player doesn't exist.
+    return undefined;
+  }
+
+  /**
    * Attempt to get the player object associated with this game.
    * @param id The Discord member id for this player.
    */
