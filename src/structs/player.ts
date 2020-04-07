@@ -16,6 +16,10 @@ export default class Player {
     return `<@${this.member.id}>`;
   }
 
+  /**
+   * Send a private message to this member via a Discord DM.
+   * @param content The message to send.
+   */
   message(content: unknown): Promise<Discord.Message> {
     return this.member.send(content);
   }
