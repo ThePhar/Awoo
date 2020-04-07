@@ -1,6 +1,6 @@
 {
   "name": "awoo.io",
-  "version": "0.4.0",
+  "version": "0.5.0-alpha",
   "description": "A realtime Werewolf moderator and game manager for Discord.",
   "main": "dist/index.js",
   "repository": "https://github.com/ThePhar/awoo.git",
@@ -9,36 +9,61 @@
   "private": true,
   "scripts": {
     "build": "rimraf dist && tsc",
-    "start": "yarn build && node dist/index.js",
+    "start": "npm run build && node dist/index.js",
     "dev": "nodemon --exec ts-node src/index.ts --watch src",
     "test": "jest",
     "test:watch": "jest --watch",
     "coverage": "jest --coverage",
-    "coveralls": "yarn coverage && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "npm run coverage && cat ./coverage/lcov.info | coveralls"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run coverage"
+    }
+  },
+  "jest": {
+    "testMatch": [
+      "**/tests/**/?(*.)+(spec|test).+(ts|tsx|js|jsx)"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": -10
+      }
+    }
   },
   "devDependencies": {
     "@types/dedent": "^0.7.0",
     "@types/jest": "^24.0.25",
     "@types/moment": "^2.13.0",
-    "@types/node": "^13.1.2",
+    "@types/node": "^13.11.0",
     "@types/node-schedule": "^1.3.0",
     "@types/random-item": "^2.0.0",
     "@types/redux": "^3.6.0",
-    "@typescript-eslint/eslint-plugin": "^2.14.0",
-    "@typescript-eslint/parser": "^2.14.0",
+    "@typescript-eslint/eslint-plugin": "^2.27.0",
+    "@typescript-eslint/parser": "^2.27.0",
     "coveralls": "^3.0.9",
     "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jest": "^23.8.2",
+    "husky": "^4.2.3",
     "jest": "^24.9.0",
     "nodemon": "^2.0.2",
     "rimraf": "^3.0.0",
     "ts-jest": "^24.2.0",
-    "ts-node": "^8.5.4",
+    "ts-node": "^8.8.2",
     "typescript": "^3.7.4"
   },
   "dependencies": {
     "chalk": "^3.0.0",
     "dedent": "^0.7.0",
-    "discord.js": "^11.5.1",
+    "discord.js": "^12.1.1",
     "dotenv": "^8.2.0",
     "moment": "^2.24.0",
     "node-schedule": "^1.3.2",
