@@ -1,4 +1,4 @@
-# Awoo ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/ThePhar/awoo/test-refactor) [![Coverage Status](https://coveralls.io/repos/github/ThePhar/awoo/badge.svg?branch=test-refactor)](https://coveralls.io/github/ThePhar/awoo?branch=test-refactor) [![Build Status](https://travis-ci.com/ThePhar/awoo.svg?branch=master)](https://travis-ci.com/ThePhar/awoo)
+# Awoo ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/ThePhar/awoo/test-refactor) [![Coverage Status](https://coveralls.io/repos/github/ThePhar/awoo/badge.svg?branch=test-refactor)](https://coveralls.io/github/ThePhar/awoo?branch=test-refactor) [![Build Status](https://travis-ci.com/ThePhar/awoo.svg?branch=test-refactor)](https://travis-ci.com/ThePhar/awoo)
 
 An automated real-time Werewolf game manager and moderator for Discord servers.
 
