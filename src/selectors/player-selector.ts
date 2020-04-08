@@ -32,3 +32,19 @@ export function getAllLivingVillagers(players: Map<string, Player>): Player[] {
 
   return livingVillagers;
 }
+
+/**
+ * Get an array of all living players given a map of players.
+ * @param players A map of all players in a particular game.
+ */
+export function getAllLivingPlayers(players: Map<string, Player>): Player[] {
+  const livingPlayers: Player[] = [];
+
+  players.forEach((player) => {
+    if (player.alive) {
+      livingPlayers.push(player);
+    }
+  });
+
+  return livingPlayers;
+}

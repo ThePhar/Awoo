@@ -1,14 +1,17 @@
 import * as Discord from 'discord.js';
-import Roles from '../roles';
 import IRole from '../interfaces/i-role';
+import Roles from '../roles';
+import Game from './game';
 
 export default class Player {
   public alive = true;
   public role: IRole;
+  public game: Game;
   private member: Discord.GuildMember;
 
-  constructor(member: Discord.GuildMember) {
+  constructor(member: Discord.GuildMember, game: Game) {
     this.member = member;
+    this.game = game;
     this.role = new Roles.Villager(this);
   }
 

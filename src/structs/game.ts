@@ -8,8 +8,11 @@ export default class Game {
 
   public players = new Map<string, Player>();
   public accusations = new Map<string, Player>();
+  public active = false;
   public phase = Phase.Waiting;
   public day = 0;
+
+  public commandPrefix = '!';
 
   constructor(channel: Discord.TextChannel) {
     this.channel = channel;
@@ -32,7 +35,7 @@ export default class Game {
     let player = this.getPlayer(member.id);
     if (player) { return player; }
 
-    player = new Player(member);
+    player = new Player(member, this);
     this.players.set(member.id, player);
 
     return player;
