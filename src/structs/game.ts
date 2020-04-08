@@ -1,11 +1,12 @@
 import * as Discord from 'discord.js';
+import * as PlayerSelector from '../selectors/player-selector';
 import Player from './player';
 import Phase from './phase';
 
 export default class Game {
   private channel: Discord.TextChannel;
-  private players = new Map<string, Player>();
 
+  public players = new Map<string, Player>();
   public accusations = new Map<string, Player>();
   public phase = Phase.Waiting;
   public day = 0;
@@ -117,6 +118,18 @@ export default class Game {
   }
 
   /**
+   * Find the player's accusation and remove it from the accusations map.
+   * @param player The player who made the accusation to be cleared.
+   */
+  clearAccusation(player: Player): void {
+    const deleted = this.accusations.delete(player.id);
+
+    if (deleted) {
+      this.announce(`${player} is no longer voting to lynch anyone.`);
+    }
+  }
+
+  /**
    * Clear all accusations and create a new Map for storing living player's accusations.
    */
   resetAccusations(): void {
@@ -131,8 +144,10 @@ export default class Game {
     // Initialize the phase values.
     this.phase = Phase.Day;
 
-    // TODO: Change to Embed instead of hardcoded string.
-    this.announce('Day Phase Start');
+    if (!this.hasWinConditionBeenMet()) {
+      // TODO: Change to Embed instead of hardcoded string.
+      this.announce('Day Phase Start');
+    }
   }
 
   /**
@@ -143,10 +158,37 @@ export default class Game {
     this.day += 1;
     this.phase = Phase.Night;
 
-    // TODO: Process accusations and lynching.
-    this.resetAccusations();
+    if (!this.hasWinConditionBeenMet()) {
+      // TODO: Process accusations and lynching.
+      this.resetAccusations();
 
-    // TODO: Change to Embed instead of hardcoded string.
-    this.announce('Night Phase Start');
+      // TODO: Change to Embed instead of hardcoded string.
+      this.announce('Night Phase Start');
+    }
+  }
+
+  /**
+   * Checks if a win condition has been met and prints an announcement out.
+   * @returns True if a win condition is met, false otherwise.
+   */
+  hasWinConditionBeenMet(): boolean {
+    const livingVillagers = PlayerSelector.getAllLivingVillagers(this.players);
+    const livingWerewolves = PlayerSelector.getAllLivingWerewolves(this.players);
+
+    // Check Werewolf Win Condition
+    if (livingWerewolves.length >= livingVillagers.length) {
+      // TODO: Change to Embed.
+      this.announce('Werewolves win!');
+      return true;
+    }
+
+    // Check Villager Win Condition
+    if (livingWerewolves.length === 0) {
+      // TODO: Change to Embed.
+      this.announce('Villagers win!');
+      return true;
+    }
+
+    return false;
   }
 }

@@ -1,11 +1,15 @@
 import * as Discord from 'discord.js';
+import Roles from '../roles';
+import IRole from '../interfaces/i-role';
 
 export default class Player {
   public alive = true;
+  public role: IRole;
   private member: Discord.GuildMember;
 
   constructor(member: Discord.GuildMember) {
     this.member = member;
+    this.role = new Roles.Villager(this);
   }
 
   /**
@@ -22,6 +26,14 @@ export default class Player {
    */
   message(content: unknown): Promise<Discord.Message> {
     return this.member.send(content);
+  }
+
+  /**
+   * Assign a role to this player.
+   * @param Role The role to assign to this player.
+   */
+  assignRole<T extends IRole>(Role: { new(player: Player): T }) {
+    this.role = new Role(this);
   }
 
   get tag(): string { return this.member.user.tag; }

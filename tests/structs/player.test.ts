@@ -1,5 +1,6 @@
 import * as Discord from 'discord.js';
 import Player from '../../src/structs/player';
+import Roles from '../../src/roles';
 import createMember from '../fixtures/createMember';
 
 let member: Discord.GuildMember;
@@ -21,6 +22,13 @@ describe('message(content)', () => {
 
     player.message(testMessage);
     expect(member.send).toHaveBeenLastCalledWith(testMessage);
+  });
+});
+
+describe('assignRole', () => {
+  test('should assign role', () => {
+    player.assignRole(Roles.Werewolf);
+    expect(player.role.name).toBe('werewolf');
   });
 });
 

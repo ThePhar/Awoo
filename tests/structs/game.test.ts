@@ -1,9 +1,10 @@
 import * as Discord from 'discord.js';
 import Game from '../../src/structs/game';
 import Player from '../../src/structs/player';
+import Phase from '../../src/structs/phase';
+import Roles from '../../src/roles';
 import createTextChannel from '../fixtures/createTextChannel';
 import createMember from '../fixtures/createMember';
-import Phase from '../../src/structs/phase';
 
 let channel: Discord.TextChannel;
 let game: Game;
@@ -168,5 +169,70 @@ describe('accuse(accuser, accused)', () => {
     const result = game.accuse(players[0], players[1]);
 
     expect(result.error).toBe('Already accusing accused player');
+  });
+});
+
+describe('clearAccusation(player)', () => {
+  const players: Player[] = [];
+  beforeAll(() => {
+    for (let n = 0; n < 2; n += 1) {
+      players.push(game.addPlayer(createMember(n.toString(), `Test User ${n}`, `000${n}`)));
+    }
+  });
+  beforeEach(() => {
+    game.resetAccusations();
+  });
+
+  test('clear an accusation if already accusing', () => {
+    game.accuse(players[0], players[1]);
+    game.clearAccusation(players[0]);
+
+    expect(game.accusations.size).toBe(0);
+    expect(channel.send).toHaveBeenCalledTimes(2);
+  });
+  test('clear an accusation if not already accusing', () => {
+    game.clearAccusation(players[0]);
+
+    expect(game.accusations.size).toBe(0);
+    expect(channel.send).toHaveBeenCalledTimes(0);
+  });
+});
+
+describe('hasWinConditionBeenMet()', () => {
+  beforeEach(() => {
+    game.players = new Map<string, Player>();
+
+    for (let i = 0; i < 6; i += 1) {
+      const member = createMember(i.toString(), `Test User ${i}`, `#000${i}`);
+      const player = game.addPlayer(member);
+
+      if (i >= 4) { player.assignRole(Roles.Werewolf); }
+    }
+  });
+
+  test('return false if no win condition has been met', () => {
+    expect(game.hasWinConditionBeenMet()).toBe(false);
+  });
+  test('return true if villagers win by all werewolves being eliminated', () => {
+    (game.getPlayer('4') as Player).alive = false;
+    (game.getPlayer('5') as Player).alive = false;
+
+    expect(game.hasWinConditionBeenMet()).toBe(true);
+  });
+  test('return true if werewolves win by outnumbering villagers', () => {
+    (game.getPlayer('2') as Player).alive = false;
+    (game.getPlayer('3') as Player).alive = false;
+
+    expect(game.hasWinConditionBeenMet()).toBe(true);
+  });
+  test('return true if werewolves win by everyone dying', () => {
+    (game.getPlayer('0') as Player).alive = false;
+    (game.getPlayer('1') as Player).alive = false;
+    (game.getPlayer('2') as Player).alive = false;
+    (game.getPlayer('3') as Player).alive = false;
+    (game.getPlayer('4') as Player).alive = false;
+    (game.getPlayer('5') as Player).alive = false;
+
+    expect(game.hasWinConditionBeenMet()).toBe(true);
   });
 });
