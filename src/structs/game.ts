@@ -6,6 +6,7 @@ export default class Game {
   private channel: Discord.TextChannel;
   private players = new Map<string, Player>();
 
+  public accusations = new Map<string, Player>();
   public phase = Phase.Waiting;
   public day = 0;
 
@@ -87,6 +88,43 @@ export default class Game {
   }
 
   /**
+   * Log and announce lynch votes for lynching elimination logic.
+   * @param accuser The player who is voting to lynch.
+   * @param accused The player being accused.
+   */
+  accuse(accuser: Player, accused: Player): { error: string | null } {
+    // Ensure the accuser and accused are alive.
+    if (!accuser.alive) { return { error: 'Accuser is eliminated' }; }
+    if (!accused.alive) { return { error: 'Accused is eliminated' }; }
+
+    const currentAccusation = this.accusations.get(accuser.id);
+
+    // Trying to accuse the same player.
+    if (currentAccusation === accused) {
+      return { error: 'Already accusing accused player' };
+    }
+
+    // Set and announce accusation state change.
+    this.accusations.set(accuser.id, accused);
+    if (currentAccusation) {
+      this.announce(`${accuser} has changed their mind and voted to lynch ${accused}!`);
+    } else {
+      this.announce(`${accuser} has voted to lynch ${accused}!`);
+    }
+
+    // Everything is good!
+    return { error: null };
+  }
+
+  /**
+   * Clear all accusations and create a new Map for storing living player's accusations.
+   */
+  resetAccusations(): void {
+    // Clear current accusations.
+    this.accusations = new Map<string, Player>();
+  }
+
+  /**
    * Change the phase to day and process any night eliminations and actions.
    */
   startDayPhase(): void {
@@ -104,6 +142,9 @@ export default class Game {
     // Initialize the phase values.
     this.day += 1;
     this.phase = Phase.Night;
+
+    // TODO: Process accusations and lynching.
+    this.resetAccusations();
 
     // TODO: Change to Embed instead of hardcoded string.
     this.announce('Night Phase Start');

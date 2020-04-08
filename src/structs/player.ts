@@ -25,4 +25,5 @@ export default class Player {
   }
 
   get tag(): string { return this.member.user.tag; }
+  get id(): string { return this.member.id; }
 }

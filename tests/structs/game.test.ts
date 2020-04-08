@@ -118,3 +118,55 @@ describe('startNightPhase()', () => {
     expect(game.day).toBe(game.day);
   });
 });
+
+describe('accuse(accuser, accused)', () => {
+  const players: Player[] = [];
+  beforeAll(() => {
+    for (let n = 0; n < 4; n += 1) {
+      players.push(game.addPlayer(createMember(n.toString(), `Test User ${n}`, `000${n}`)));
+    }
+  });
+  beforeEach(() => {
+    // eslint-disable-next-line no-param-reassign
+    players.forEach((player) => { player.alive = true; });
+    game.resetAccusations();
+  });
+
+  test('set an accusation', () => {
+    const result = game.accuse(players[0], players[1]);
+
+    expect(result.error).toBeNull();
+    expect(channel.send).toHaveBeenCalledTimes(1);
+    expect(game.accusations.get(players[0].id)).toBe(players[1]);
+  });
+  test('change an accusation', () => {
+    game.accuse(players[0], players[1]);
+    const result = game.accuse(players[0], players[2]);
+
+    expect(result.error).toBeNull();
+    expect(channel.send).toHaveBeenCalledTimes(2);
+    expect(game.accusations.get(players[0].id)).toBe(players[2]);
+  });
+  test('return an error if accuser is dead', () => {
+    players[0].alive = false;
+    const result = game.accuse(players[0], players[1]);
+
+    expect(result.error).toBe('Accuser is eliminated');
+    expect(channel.send).toHaveBeenCalledTimes(0);
+    expect(game.accusations.get(players[0].id)).toBeUndefined();
+  });
+  test('return an error if accused is dead', () => {
+    players[1].alive = false;
+    const result = game.accuse(players[0], players[1]);
+
+    expect(result.error).toBe('Accused is eliminated');
+    expect(channel.send).toHaveBeenCalledTimes(0);
+    expect(game.accusations.get(players[0].id)).toBeUndefined();
+  });
+  test('return an error if attempting to target the same player', () => {
+    game.accuse(players[0], players[1]);
+    const result = game.accuse(players[0], players[1]);
+
+    expect(result.error).toBe('Already accusing accused player');
+  });
+});

@@ -29,3 +29,9 @@ describe('get tag()', () => {
     expect(player.tag).toBe(member.user.tag);
   });
 });
+
+describe('get id()', () => {
+  test('return the id on the inner member object', () => {
+    expect(player.id).toBe(member.id);
+  });
+});
