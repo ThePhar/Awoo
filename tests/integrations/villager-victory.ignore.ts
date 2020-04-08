@@ -5,7 +5,7 @@ import Phase from '../../src/structs/phase';
 import Command from '../../src/structs/command';
 import Roles from '../../src/roles';
 import Player from '../../src/structs/player';
-import * as PlayerSelector from '../../src/selectors/player-selector';
+import aggregate from '../../src/util/aggregate';
 
 describe('INTEGRATION - A Villager Test Game', () => {
   test('Test Game', () => {
@@ -47,7 +47,7 @@ describe('INTEGRATION - A Villager Test Game', () => {
     game.startDayPhase();
 
     // No player is eliminated.
-    expect(PlayerSelector.getAllLivingPlayers(game.players).length).toBe(6);
+    expect(aggregate(game.players).alive.length).toBe(6);
 
     // Cainsith receives his check.
     if (pCainsith.role instanceof Roles.Seer) {
@@ -68,7 +68,7 @@ describe('INTEGRATION - A Villager Test Game', () => {
 
     // Phar is eliminated by lynching.
     expect(pPhar.alive).toBe(false);
-    expect(PlayerSelector.getAllLivingPlayers(game.players).length).toBe(5);
+    expect(aggregate(game.players).alive.length).toBe(5);
 
     // Mika attempts to target someone, but nothing happens as they aren't a werewolf.
     pMika.role.action(Command.parse('!target cain', game) as Command);
@@ -83,7 +83,7 @@ describe('INTEGRATION - A Villager Test Game', () => {
 
     // StealthFox is eliminated by werewolves.
     expect(pStealthFox.alive).toBe(false);
-    expect(PlayerSelector.getAllLivingPlayers(game.players).length).toBe(4);
+    expect(aggregate(game.players).alive.length).toBe(4);
 
     // Cainsith receives his check.
     if (pCainsith.role instanceof Roles.Seer) {
@@ -103,7 +103,7 @@ describe('INTEGRATION - A Villager Test Game', () => {
     game.startNightPhase();
 
     // Nobody is eliminated by lynching.
-    expect(PlayerSelector.getAllLivingPlayers(game.players).length).toBe(4);
+    expect(aggregate(game.players).alive.length).toBe(4);
 
     // Cainsith targets a player for inspection.
     pCainsith.role.action(Command.parse('!target mika', game) as Command);
@@ -118,7 +118,7 @@ describe('INTEGRATION - A Villager Test Game', () => {
 
     // Cainsith is eliminated by werewolves.
     expect(pCainsith.alive).toBe(false);
-    expect(PlayerSelector.getAllLivingPlayers(game.players).length).toBe(3);
+    expect(aggregate(game.players).alive.length).toBe(3);
 
     // Cainsith does not receive his check, since he died.
     if (pCainsith.role instanceof Roles.Seer) {
@@ -142,7 +142,7 @@ describe('INTEGRATION - A Villager Test Game', () => {
 
     // Sinsorium is eliminated by lynching.
     expect(pSinsorium.alive).toBe(false);
-    expect(PlayerSelector.getAllLivingPlayers(game.players).length).toBe(2);
+    expect(aggregate(game.players).alive.length).toBe(2);
 
     // Game is finished and victory is announced.
     expect(pPhar.alive).toBe(false);
