@@ -1,5 +1,6 @@
 import * as Discord from 'discord.js';
 import Player from '../../src/structs/player';
+import Game from '../../src/structs/game';
 import Roles from '../../src/roles';
 import createMember from '../fixtures/createMember';
 
@@ -7,7 +8,7 @@ let member: Discord.GuildMember;
 let player: Player;
 beforeEach(() => {
   member = createMember('1234567890', 'TestUser');
-  player = new Player(member);
+  player = new Player(member, {} as Game);
 });
 
 describe('toString()', () => {
