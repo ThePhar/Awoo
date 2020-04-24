@@ -1,121 +1,136 @@
-import * as Discord from "discord.js";
-
-import PlayerState from "../interfaces/player-state";
-import Role        from "../interfaces/role";
-import Villager    from "../roles/villager";
-import Game        from "./game";
-import Phase       from "./phase";
-
-import AccusationTemplate from "../templates/accusation-templates";
-
-import Manager from "../manager";
+import dedent from 'dedent';
+import * as Discord from 'discord.js';
+import * as Roles from '../roles';
+import Role from '../interfaces/role';
+import Game from './game';
+import Phase from './phase';
+import AccusationTemplate from '../templates/accusation-templates';
 
 export default class Player {
-    private readonly _member: Discord.GuildMember;
-    private          _role:   Role;
-    private readonly _game:   Game;
+  readonly member: Discord.GuildMember;
+  readonly game: Game;
 
-    private _alive                   = true;
-    private _accusing: Player | null = null;
+  role: Role;
+  alive = true;
+  accusing: Player | null = null;
 
-    constructor(member: Discord.GuildMember, game: Game, state?: PlayerState) {
-        this._member = member;
-        this._role   = new Villager(this);
-        this._game   = game;
+  constructor(member: Discord.GuildMember, game: Game) {
+    this.member = member;
+    this.role = new Roles.Villager(this);
+    this.game = game;
+  }
 
-        if (state) {
-            this._alive    = state.alive;
-            this._accusing = state.accusing;
-        }
-    }
+  /**
+   * Returns a player name string in Discord's mention format.
+   */
+  toString(): string {
+    return `<@${this.member.id}>`;
+  }
 
-    /**
-     * Returns a player name string in Discord's mention format.
-     */
-    toString(): string {
-        return `<@!${this._member.id}>`;
-    }
+  /**
+   * Send a message to this user privately.
+   * @param content The message to send.
+   */
+  send(content: unknown): Promise<Discord.Message> {
+    return this.member.send(content) as Promise<Discord.Message>;
+  }
 
-    /**
-     * Accuse a player of being a werewolf and bring them closer to being lynched. Does not set accusation if the
-     * player or game state does not allow it.
-     * @param accusing The player to vote to be lynched.
-     * @return Returns true if successfully set accusing flag; returns false otherwise.
-     */
-    accuse(accusing: Player): boolean {
-        // Game is not active.
-        if (!this.game.active) {
-            this.send(AccusationTemplate.inactiveLynch());
-            return false;
-        }
-        // Player is dead.
-        if (!this.alive) {
-            this.send(AccusationTemplate.ghostLynch());
-            return false;
-        }
-        // Not the Day Phase
-        if (this.game.phase !== Phase.Day) {
-            this.send(AccusationTemplate.nonDayLynch());
-            return false;
-        }
-        // Player is targeting themselves.
-        if (accusing.id === this.id) {
-            this.send(AccusationTemplate.selfLynch());
-            return false;
-        }
-        // Accusing player is dead.
-        if (!accusing.alive) {
-            this.send(AccusationTemplate.deadLynch());
-            return false;
-        }
-
-        // All else is good!
-        this._accusing = accusing;
-        this.send(AccusationTemplate.success(accusing));
-        return true;
+  /**
+   * Accuse a player of being a werewolf and bring them closer to being lynched. Does not set accusation if the
+   * player or game state does not allow it.
+   * @param accusing The player to vote to be lynched.
+   * @return Returns true if successfully set accusing flag; returns false otherwise.
+   */
+  accuse(accusing: string): boolean {
+    // Player is dead.
+    if (!this.alive) {
+      this.game.send(AccusationTemplate.ghostLynch());
+      return false;
     }
 
-    async send(content: unknown): Promise<void> {
-        await this._member.send(content);
+    // Find the player associated with this string.
+    let accused: Player[] = [];
+
+    // Check if it's a Discord Mention string.
+    const regex = /<@!?([0-9]+)>/;
+    if (regex.test(accusing)) {
+      const id = (regex.exec(accusing) as RegExpExecArray)[1]; // Get the id from the mention string.
+      const player = this.game.getPlayer(id);
+
+      // Only use this if player is not undefined.
+      accused = player ? [player] : [];
+    } else {
+      accused = this.game.findPlayersByTag(accusing);
     }
 
-    get id():       string {
-        return this._member.id;
+    // No players found.
+    if (accused.length === 0) {
+      this.game.send('I was unable to find any player under that name.');
+      return false;
     }
-    get user():     Discord.User {
-        return this._member.user;
-    }
-    get tag():      string {
-        return this._member.user.tag;
-    }
-    get name():     string {
-        return this._member.displayName;
-    }
-    get role():     Role {
-        return this._role;
-    }
-    set role(value: Role) {
-        this._role = value;
-    }
-    get game():     Game {
-        return this._game;
-    }
-    get alive():    boolean {
-        return this._alive;
-    }
-    set alive(value: boolean) {
-        if (!value) {
-            Manager.mutePlayer(this);
-        } else {
-            Manager.unmutePlayer(this);
-        }
 
-        this._alive = value;
+    // Multiple players found.
+    if (accused.length > 1) {
+      this.game.send(dedent(`
+        ${this}, I found multiple players under that name. Can you try again and be more specific?
+        
+        Possible Targets:
+        \`\`\`
+        ${accused.map((player) => `${player.name} (${player.tag})`).join('\n')}
+        \`\`\`
+      `));
+      return false;
     }
-    get accusing(): Player | null {
-        return this._accusing;
+
+    const [accusedPlayer] = accused;
+
+    // Not the Day Phase
+    if (this.game.phase !== Phase.Day) {
+      this.game.send(AccusationTemplate.nonDayLynch());
+      return false;
     }
-    set accusing(value: Player | null) {
-        this._accusing = value;
+
+    // Player is targeting themselves.
+    if (accusedPlayer.id === this.id) {
+      this.game.send(AccusationTemplate.selfLynch());
+      return false;
     }
+
+    // Accusing player is dead.
+    if (!accusedPlayer.alive) {
+      this.game.send(AccusationTemplate.deadLynch());
+      return false;
+    }
+
+    // All else is good!
+    this.accusing = accusedPlayer;
+    this.game.send(AccusationTemplate.success(accusedPlayer));
+    return true;
+  }
+
+  /**
+   * Clear any accusations this player has made.
+   */
+  clearAccusation(): void {
+    this.accusing = null;
+  }
+  /**
+   * Eliminate this player from the game.
+   */
+  eliminate(): void {
+    this.alive = false;
+  }
+
+  get id(): string {
+    return this.member.id;
+  }
+  get user(): Discord.User {
+    return this.member.user;
+  }
+  get tag(): string {
+    return this.member.user.tag;
+  }
+  get name(): string {
+    return this.member.displayName;
+  }
 }

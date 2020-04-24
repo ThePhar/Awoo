@@ -1,286 +1,199 @@
-import * as Discord from "discord.js";
+import dedent from 'dedent';
+import * as Discord from 'discord.js';
+import * as Logger from './util/logging';
+import * as LogTemplate from './templates/log';
 
-import Game from "./structs/game";
-import Player from "./structs/player";
-import Command from "./structs/command";
-import Phase from "./structs/phase";
-import { error, log } from "./util/logging";
+import Game from './structs/game';
+import RecognisedCommand, { getCommand } from './structs/recognised-command';
+import Command from './structs/command';
+import Prompt from './structs/prompt';
 
-import RecognisedCommands from "./structs/recognised-commands";
-import ActionTemplate     from "./templates/action-templates";
-
-import { lobbyEmbed } from "./templates/embed-templates";
-
+/**
+ * The object that will listen for all events fired by the Discord API and call the appropriate functions on
+ * the associated game and player objects.
+ */
 export default class Manager {
-    static games = new Map<string, Game>();
-    static players = new Map<string, Player>();
+  static readonly prefix = '/awoo ';
+  static games = new Map<string, Game>();
+  static prompts = new Map<string, Prompt>();
 
-    static readonly readonlyChannelPerms = { 'SEND_MESSAGES': false };
-    static readonly playerChannelPerms = { 'SEND_MESSAGES': true };
+  /**
+   * Prepare the Manager object for listening to Discord events.
+   * @param client The bot client object.
+   */
+  static initialize(client: Discord.Client): void {
+    // Log our connection.
+    Logger.log(LogTemplate.ManagerInitialize(client));
 
-    static mutePlayer(player: Player): void {
-        // player.game.channel.overwritePermissions(player.user, this.readonlyChannelPerms);
+    // Start listening for events.
+    client.on('message', (message) => this.onMessageHandler(client, message));
+    client.on('messageReactionAdd', Manager.onReactionHandler);
+    client.on('messageReactionRemove', Manager.onReactionHandler);
+  }
+
+  /**
+   * Checks an incoming message event to see if it can be parsed as a Command.
+   * @param message The message associated with this event.
+   */
+  private static isValidCommand(message: Discord.Message): boolean {
+    // Do not allow command messages from bots.
+    if (message.author.bot) return false;
+
+    // Do not allow commands outside of guild channels.
+    if (!(message.channel instanceof Discord.TextChannel)) return false;
+
+    // Only allow messages that start with the prefix.
+    return message.content.startsWith(Manager.prefix);
+  }
+
+  /**
+   * Parses messages for commands and fires associated functions for the underlying game objects.
+   * @param client The bot client object.
+   * @param message The message to parse.
+   */
+  private static onMessageHandler(client: Discord.Client, message: Discord.Message): void {
+    const { member, content, channel } = message;
+
+    // Only continue if we received a command.
+    if (!Manager.isValidCommand(message)) return;
+    // Do not allow messages that have no member objects.
+    if (!member) return;
+
+    const command = Command.parse(message);
+
+    // Get the game object associated with this channel.
+    const game = this.games.get(channel.id);
+
+    // Get the player object associated with this game and user.
+    let player;
+    if (game) {
+      player = game.players.get(member.id);
     }
-    static unmutePlayer(player: Player): void {
-        // player.game.channel.overwritePermissions(player.user, this.playerChannelPerms);
+
+    // Process the appropriate commands.
+    switch (command.type) {
+      case RecognisedCommand.Join:
+        // Ignore join commands if no game object is available.
+        if (!game) {
+          message.reply('There is no game associated with this channel to join.');
+          return;
+        }
+
+        game.addPlayer(member);
+        break;
+
+      case RecognisedCommand.Leave:
+        // Ignore leave commands if no game object is available.
+        if (!game) {
+          message.reply('There is no game associated with this channel to leave.');
+          return;
+        }
+
+        game.removePlayer(member);
+        break;
+
+      case RecognisedCommand.Accuse:
+        // Ignore accusation commands if no game object is available.
+        if (!game) {
+          return;
+        }
+
+        // Ignore accusation commands if user is not a player in this game.
+        if (!player) {
+          message.reply('Only players can make accusations.');
+          return;
+        }
+
+        player.accuse(command.joined);
+        break;
+
+      case RecognisedCommand.Rules:
+        // TODO: Write rules embeds.
+        break;
+
+      case RecognisedCommand.Help:
+        // TODO: Write help embeds.
+        break;
+
+      case RecognisedCommand.NewGame:
+        // Ignore new game command if a game is already in progress.
+        if (game) {
+          message.reply('I cannot start a new game, as a game is already in progress!');
+          return;
+        }
+
+        // TODO: Add administrator check.
+        Manager.games.set(channel.id, new Game(channel as Discord.TextChannel));
+        break;
+
+      case RecognisedCommand.EndGame:
+        if (!game) {
+          message.reply('I cannot end a game as there is no game currently running.');
+          return;
+        }
+
+        // TODO: Add administrator check.
+        break;
+
+      case RecognisedCommand.Eval:
+        if (member.id !== '196473225268428804') return;
+        try {
+          // eslint-disable-next-line no-eval
+          eval(content.slice(11));
+        } catch (err) {
+          Logger.error(`Error during EVAL: \n\t${err}`);
+        }
+        break;
+
+      default:
+        // Invalid command.
+        message.reply(`I do not understand that command. For help, type ${getCommand(RecognisedCommand.Help)}.`)
+          .catch(Manager.genericErrorLog);
+        return; // Return as we do not want to log invalid commands.
     }
 
-    static async initialize(client: Discord.Client): Promise<void> {
-        log(`${client.user.username} has logged into Discord successfully.`);
+    // Log this command.
+    Manager.commandLog(member, content);
+  }
 
-        client.on("message", (message) => this.onMessageHandler(client, message));
-        await client.user.setActivity("Ready!");
-        log(`Now listening for messages.`);
+  /**
+   * Listen for reaction events in DMs to change the state of players.
+   * @param react The Reaction event.
+   * @param user The Discord User.
+   */
+  private static onReactionHandler(react: Discord.MessageReaction, user: Discord.User | Discord.PartialUser): void {
+    // Ignore bot reactions.
+    if (user.bot) return;
+    // Ignore partial users.
+    if (user.partial) return;
+
+    // Get the prompt and start handling the event.
+    const prompt = Manager.prompts.get(react.message.id);
+    if (prompt) {
+      prompt.handleEvent(react, user);
     }
+  }
 
-    static async onMessageHandler(client: Discord.Client, message: Discord.Message): Promise<void> {
-        if (message.author.bot) return;
-
-        const player = this.players.get(message.author.id);
-        const game = ((): Game | undefined => {
-            if (player) {
-                return player.game;
-            } else if (message.channel instanceof Discord.TextChannel) {
-                return this.games.get(message.guild.id);
-            } else {
-                return undefined;
-            }
-        })();
-
-        // Watch for commands.
-        if (message.content.startsWith(Command.prefix)) {
-            log(`Received command, \`${message.content}\` from ${message.author.tag}.`);
-
-            // Player     + Game     Command Handler
-            if (player && game) this.playerHandler(message, player);
-            // Non-Player + Game     Command Handler
-            else if (game) await this.noPlayerHandler(message, game);
-            // Non-Player + Non-Game Command Handler
-            else this.noGameHandler(message);
-        } else if (game && message.channel.id === game.channelId) {
-            if (!player && game && game.phase !== Phase.Waiting) {
-                await message.delete();
-                await message.author.send(`You are not a player, ${message.author}. I have removed your message.`);
-            } else if (player && !player.alive) {
-                await message.delete();
-                await message.author.send(`You are eliminated, ${player}. I have removed your message.`);
-            }
-        }
-    }
-
-    private static async noGameHandler(message: Discord.Message): Promise<void> {
-        // Only listen in text channels.
-        if (!(message.channel instanceof Discord.TextChannel)) {
-            message.channel.send("Sorry, I can only accept commands from a server's text channel if you are not a player.");
-            return;
-        }
-
-        const pseudoCommand = message.content.split(" ")[0].replace(Command.prefix, "");
-        const command = new Command(pseudoCommand, "", undefined);
-
-        switch (command.type) {
-            case RecognisedCommands.StartNewGame:
-                // Only administrators can start a new game.
-                if (!message.member.hasPermission("ADMINISTRATOR")) {
-                    message.channel.send("Only server administrators can start a new game.");
-                    return;
-                }
-
-                const guild = message.guild;
-                const channel = message.channel;
-
-                log(`Starting a new game in ${guild.name} in channel #${channel.name}.`);
-                const game = new Game(channel);
-                this.games.set(guild.id, game);
-
-                // const lobbyMsg = await game.send(lobbyEmbed(game)) as Discord.Message;
-                // game.lobbyMessage = lobbyMsg;
-
-                // Clear all old permissions.
-                try {
-                    game.active = true;
-                    log(`Game in ${guild.name} is now accepting players. Minimum players required is 6.`);
-                    return;
-                } catch {
-                    message.channel.send("Sorry, I need permissions to change permissions for this channel to start a game.");
-                    error(`Unable to set permissions in channel ${channel.name}. Am I an admin?`);
-                    return;
-                }
-            case RecognisedCommands.Rules:
-                // TODO: Write this.
-                return;
-            default:
-                message.channel.send("I'm sorry, I can't process any commands because there is no game running. Ask a server administrator to start a game.");
-                return;
-        }
-    }
-    private static async noPlayerHandler(message: Discord.Message, game: Game): Promise<void> {
-        // Only listen in specified text channels.
-        if (!(message.channel instanceof Discord.TextChannel)) {
-            message.channel.send("Sorry, I can only accept commands from a server's text channel if you are not a player.");
-            return;
-        }
-        if (message.channel.id !== game.channelId) {
-            message.author.send(`I can only accept commands in <#${game.channelId}>.`);
-            return;
-        }
-        if (game.phase !== Phase.Waiting) {
-            message.author.send("Sorry, you cannot interact with a game that's in progress.");
-            return;
-        }
-
-        const command = Command.parse(message.content, game);
-        if (!command) return;
-
-        switch (command.type) {
-            case RecognisedCommands.Rules:
-                // TODO: Write this.
-                return;
-            case RecognisedCommands.Join:
-                // Attempt to send the player a message to ensure they're allowing DMs.
-                try {
-                    await message.author.send(`You have signed up for the next game in ${message.guild.name}. You will receive a notification and DM from this bot when the game begins with your role and any additional actions you may take. Do not disable DMs with this bot or you will not receive future notifications.`);
-                    const player = game.addPlayer(message.member);
-
-                    if (player) {
-                        this.players.set(player.id, player);
-                        game.send(`${player} has joined the next game!`);
-                        if (game.lobbyMessage) {
-                            await game.lobbyMessage.edit(lobbyEmbed(game));
-                        }
-                    } else {
-                        error(`Error adding ${message.author.tag} to game in ${message.guild.name}.`);
-                    }
-                } catch (err) {
-                    message.channel.send("I'm sorry, but you need to enable DMs from users in this server to join the next game.");
-                }
-                return;
-            case RecognisedCommands.Leave:
-                message.channel.send(`You are not signed up ${message.member}.`);
-                return;
-        }
-    }
-    private static async playerHandler(message: Discord.Message, player: Player): Promise<void> {
-        const game = player.game;
-
-        const command = Command.parse(message.content, game);
-        if (!command) return;
-
-        // Public command handler.
-        log(`Command from player ${player.name}.`);
-        if (message.channel.id === game.channelId) {
-            log(`Command from player ${player.name}.`);
-            if (!player.alive) {
-                await message.delete();
-                await player.send(`You are eliminated, ${player}. I have removed your message.`);
-                return;
-            }
-
-            if (game.phase === Phase.Waiting) {
-                switch (command.type) {
-                    case RecognisedCommands.Rules:
-                        // TODO: Write this.
-                        return;
-                    case RecognisedCommands.Join:
-                        game.send(`You are already signed up, ${player}.`);
-                        return;
-                    case RecognisedCommands.Leave:
-                        game.removePlayer(player.id);
-                        this.players.delete(player.id);
-                        game.send(`${player} is no longer signed up for the next game.`);
-                        if (game.lobbyMessage) {
-                            await game.lobbyMessage.edit(lobbyEmbed(game));
-                        }
-                        return;
-                }
-            } else {
-                switch (command.type) {
-                    case RecognisedCommands.Role:
-                        player.role.sendRole();
-                        game.send(`I have sent you your role again, ${player}.`);
-                        return;
-                    case RecognisedCommands.Rules:
-                        // TODO: Write this.
-                        return;
-                    case RecognisedCommands.Join:
-                        game.send(`You are already signed up, ${player}.`);
-                        return;
-                    case RecognisedCommands.Leave:
-                        game.send(`You cannot leave a game that's in progress ${player}.`);
-                        return;
-                    case RecognisedCommands.Lynch:
-                        const accused = command.target;
-                        if (accused instanceof Player) {
-                            const success = player.accuse(accused);
-                            if (success) {
-                                game.send(`${player} has publicly accused ${accused}.`);
-                            }
-                            return;
-                        } else if (accused instanceof Array) {
-                            game.send(ActionTemplate.accuse.multipleTargetsFound(accused, command.args));
-                            return;
-                        } else {
-                            game.send(ActionTemplate.accuse.noTarget());
-                            return;
-                        }
-                }
-            }
-        }
-        // Private command handler.
-        else if (message.channel.type === "dm") {
-            if (!player.alive) {
-                await player.send("You are eliminated and cannot interact with the game, so I have not processed your command.");
-                return;
-            }
-
-            if (game.phase === Phase.Waiting) {
-                switch (command.type) {
-                    case RecognisedCommands.Rules:
-                        // TODO: Write this.
-                        return;
-                    case RecognisedCommands.Join:
-                        await player.send(`You are already signed up, ${player}.`);
-                        return;
-                    case RecognisedCommands.Leave:
-                        game.removePlayer(player.id);
-                        this.players.delete(player.id);
-                        game.send(`${player} is no longer signed up for the next game.`);
-                        return;
-                }
-            } else {
-                switch (command.type) {
-                    case RecognisedCommands.Role:
-                        player.role.sendRole();
-                        return;
-                    case RecognisedCommands.Rules:
-                        // TODO: Write this.
-                        return;
-                    case RecognisedCommands.Join:
-                        await player.send(`You are already playing, ${player}.`);
-                        return;
-                    case RecognisedCommands.Leave:
-                        await player.send(`You cannot leave a game that's in progress ${player}.`);
-                        return;
-                    case RecognisedCommands.Lynch:
-                        const accused = command.target;
-                        if (accused instanceof Player) {
-                            const success = player.accuse(accused);
-                            if (success) {
-                                game.send(`${player} has privately accused another player.`);
-                            }
-                            return;
-                        } else if (accused instanceof Array) {
-                            await player.send(ActionTemplate.accuse.multipleTargetsFound(accused, command.args));
-                            return;
-                        } else {
-                            await player.send(ActionTemplate.accuse.noTarget());
-                            return;
-                        }
-                    default:
-                        player.role.action(command);
-                        return;
-                }
-            }
-        }
-    }
+  /**
+   * Print a generic error message pertaining to this Manager class.
+   * @param error The error object.
+   */
+  private static genericErrorLog(error: any): void {
+    Logger.error(dedent(`
+      Error while attempting to do async task in Manager.
+        Error: ${error}
+    `));
+  }
+  /**
+   * Log the command fired by this member.
+   * @param member The Discord member that sent the command.
+   * @param content The message content string.
+   */
+  private static commandLog(member: Discord.GuildMember, content: string) {
+    Logger.log(dedent(`
+      Received a command from a user.
+        User: ${member.user.tag}
+        Command: ${content}
+    `));
+  }
 }

@@ -7,7 +7,7 @@ import Player             from "../structs/player";
 import Command            from "../structs/command";
 import RoleTemplate       from "../templates/role-templates";
 import ActionTemplate     from "../templates/action-templates";
-import RecognisedCommands from "../structs/recognised-commands";
+import RecognisedCommands from "../structs/recognised-command";
 
 export default class Insomniac implements Role {
     readonly player: Player;

@@ -1,41 +1,43 @@
-import Player             from "./player";
-import Game               from "./game";
-import RecognisedCommands from "./recognised-commands";
+import * as Discord from 'discord.js';
 
 export default class Command {
-    readonly type: string | RecognisedCommands;
-    readonly target?: Player | Player[];
-    readonly args: string;
+  readonly type: string;
+  readonly args: string[];
+  readonly executor: Discord.GuildMember;
 
-    static readonly prefix = "!";
+  get joined() { return this.args.join(' '); }
 
-    constructor(command: string, args: string, target?: Player | Player[]) {
-        this.type = command;
-        this.args = args;
-        this.target = target;
+  private constructor(type: string, args: string[], executor: Discord.GuildMember) {
+    this.type = type;
+    this.args = args;
+    this.executor = executor;
+  }
+
+  /**
+   * Take an valid message object and create a Command object out of it.
+   * @param message The discord message object associated with this command.
+   */
+  static parse({ content, member }: Discord.Message): Command {
+    // Ensure member is not null.
+    if (!member) {
+      throw new Error('Member not defined in parse function!');
     }
 
-    static parse(string: string, game: Game): Command | undefined {
-        // Check for the prefix.
-        if (string.startsWith(Command.prefix)) {
-            const splitString = string.toLowerCase().trim().split(" ");
-            let command = splitString.shift() as string;
+    // Make the command case-insensitive and split the array into arguments.
+    const string = content.toLowerCase().trim().split(' ');
 
-            string = splitString.join(" ");
-            command = command.replace(Command.prefix, "");
+    // Remove prefix.
+    string.shift();
 
-            // Regex for checking for player strings.
-            const regex = /<@!?([0-9]+)>/;
+    const type = string.shift();
+    const args = string;
 
-            if (regex.test(string)) {
-                string = (regex.exec(string) as RegExpExecArray)[1];
-
-                return new Command(command, string, game.getPlayer(string));
-            } else {
-                return new Command(command, string, game.getPlayerByTag(string));
-            }
-        }
-
-        return undefined;
+    // Must have a type after the prefix.
+    if (!type) {
+      return new Command('null', [], member);
     }
+
+    // Create our command.
+    return new Command(type, args, member);
+  }
 }

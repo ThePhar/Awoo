@@ -1,35 +1,19 @@
-import * as Embeds  from "../templates/embed-templates";
+import * as Discord from 'discord.js';
+import * as Embed from '../templates/role';
+import Role from '../interfaces/role';
+import Appearance from '../structs/appearance';
+import Team from '../structs/team';
 
-import Role         from "../interfaces/role";
-import Player       from "../structs/player";
-import Team         from "../structs/team";
-import Command      from "../structs/command";
-import RoleTemplate from "../templates/role-templates";
+/**
+ * Villagers are standard VILLAGER team roles with no special actions.
+ */
+export class Villager extends Role {
+  readonly name = 'Villager';
+  readonly pluralName = 'Villagers';
+  readonly appearance = Appearance.Villager;
+  readonly team = Team.Villagers;
 
-export default class Villager implements Role {
-    readonly player: Player;
-
-    readonly name       = RoleTemplate.villager.name;
-    readonly pluralName = RoleTemplate.villager.pluralName;
-    readonly appearance = RoleTemplate.villager.appearance;
-    readonly team       = Team.Villagers;
-
-    usedAction = false;
-
-    constructor(player: Player) {
-        this.player = player;
-    }
-
-    sendRole(): void {
-        this.player.send(Embeds.villagerRoleEmbed(this.player.game.guild));
-    }
-
-    // Villagers do not have actions, so do nothing.
-    sendActionReminder(): void {
-        return;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    action(command: Command): boolean {
-        return false;
-    }
+  protected roleDescriptionEmbed(): Discord.MessageEmbed {
+    return Embed.RoleVillager(this);
+  }
 }

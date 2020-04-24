@@ -1,100 +1,110 @@
-import * as Embeds from "../templates/embed-templates";
+import * as Discord from 'discord.js';
+import * as Embed from '../templates/role';
+import Role from '../interfaces/role';
+import Team from '../structs/team';
+import Player from '../structs/player';
+import Appearance from '../structs/appearance';
+import Prompt from '../structs/prompt';
 
-import Role               from "../interfaces/role";
-import Team               from "../structs/team";
-import Phase              from "../structs/phase";
-import Player             from "../structs/player";
-import Command            from "../structs/command";
-import RoleTemplate       from "../templates/role-templates";
-import ActionTemplate     from "../templates/action-templates";
-import RecognisedCommands from "../structs/recognised-commands";
+/**
+ * Werewolves are WEREWOLF team roles that can, once per night, collectively choose a player to eliminate.
+ */
+export class Werewolf extends Role {
+  readonly name = 'Werewolf';
+  readonly pluralName = 'Werewolves';
+  readonly appearance = Appearance.Werewolf;
+  readonly team = Team.Werewolves;
 
-export default class Werewolf implements Role {
-    readonly player: Player;
+  target: Player | null = null;
+  availableToTarget: Player[] = [];
+  targetIndex = 0;
 
-    readonly name       = RoleTemplate.werewolf.name;
-    readonly pluralName = RoleTemplate.werewolf.pluralName;
-    readonly appearance = RoleTemplate.werewolf.appearance;
-    readonly team       = Team.Werewolves;
+  startAction(): void {
+    this.resetActionState();
 
-    usedAction = false;
-    target?: Player;
+    // Get all players we can target.
+    this.availableToTarget = this.game.playersArray.alive.filter((player) => {
+      // Do not target werewolves.
+      return !(player.role instanceof Werewolf);
+    });
 
-    constructor(player: Player) {
-        this.player = player;
+    // Send the action prompt and start listening for reaction events.
+    this.player.send(this.actionEmbed())
+      .then((message) => {
+        message.react('⬆️');
+        message.react('⬇️');
+        message.react('✅');
+
+        // Create a prompt for this message.
+        this.prompt = new Prompt(message, this, this.reactionHandler);
+      });
+  }
+  resetActionState(): void {
+    this.target = null;
+    this.availableToTarget = [];
+    this.targetIndex = 0;
+
+    if (this.prompt) {
+      this.prompt.destroy();
+    }
+  }
+
+  protected roleDescriptionEmbed(): Discord.MessageEmbed {
+    return Embed.RoleWerewolf(this);
+  }
+  protected actionEmbed(): Discord.MessageEmbed {
+    return Embed.ActionWerewolf(this);
+  }
+
+  private reactionHandler(react: Discord.MessageReaction, _: Discord.User): void {
+    const emoji = react.emoji.name;
+    const max = this.availableToTarget.length - 1;
+
+    // If our prompt suddenly disappeared, do not proceed.
+    if (!this.prompt) return;
+
+    // No point in asking for input if there's no one to inspect.
+    if (max < 0) {
+      this.prompt.destroy();
     }
 
-    sendRole(): void {
-        this.player.send(Embeds.werewolfRoleEmbed(this.player.game.guild, this.player.game.players.aliveWerewolves));
-    }
-
-    sendActionReminder(): void {
-        // Reset target.
-        this.target = undefined;
-        this.usedAction = false;
-
-        // Do not send an action reminder on the first night.
-        if (this.player.game.day === 1) return;
-
-        this.player.send(Embeds.werewolfActionEmbed(this.player.game.guild, this.player.game.players.aliveVillagers));
-    }
-
-    action(command: Command): boolean {
-        if (command.type === RecognisedCommands.Kill) {
-            // Player cannot target others on the first night.
-            if (this.player.game.phase === Phase.Night && this.player.game.day === 1) {
-                this.player.send(ActionTemplate.werewolf.firstNight());
-                return false;
-            }
-            // Player cannot make a target outside of the night phase.
-            if (this.player.game.phase !== Phase.Night) {
-                this.player.send(ActionTemplate.werewolf.nonNightPhase());
-                return false;
-            }
-            // Player did not have a target.
-            if (command.target === undefined && command.args === "") {
-                this.player.send(ActionTemplate.werewolf.noTarget());
-                return false;
-            }
-            // Could not find that target.
-            if (command.target === undefined) {
-                this.player.send(ActionTemplate.werewolf.noTargetFound(command.args));
-                return false;
-            }
-            // Multiple players were found under that name.
-            if (command.target instanceof Array) {
-                this.player.send(ActionTemplate.werewolf.multipleTargetsFound(command.target, command.args));
-                return false;
-            }
-            // Player targeting themselves.
-            if (command.target.id === this.player.id) {
-                this.player.send(ActionTemplate.werewolf.selfTarget());
-                return false;
-            }
-            // Target is dead.
-            if (!command.target.alive) {
-                this.player.send(ActionTemplate.werewolf.deadTarget(command.target));
-                return false;
-            }
-            // Player is attempting to target another werewolf.
-            if (command.target.role instanceof Werewolf) {
-                this.player.send(ActionTemplate.werewolf.werewolfTarget(command.target));
-                return false;
-            }
-
-            // All is good!
-            const target = command.target;
-            const player = this.player;
-
-            this.target = target;
-            this.player.game.players.aliveWerewolves.forEach((werewolf) => {
-                werewolf.send(ActionTemplate.werewolf.success(player, target));
-            });
-            this.usedAction = true;
-            return true;
+    switch (emoji) {
+      // Previous selection.
+      case '⬆️':
+        this.targetIndex -= 1;
+        if (this.targetIndex < 0) {
+          this.targetIndex = max;
         }
+        break;
 
-        // Not a command I understand, ignore it.
-        return false;
+      // Next selection.
+      case '⬇️':
+        this.targetIndex += 1;
+        if (this.targetIndex > max) {
+          this.targetIndex = 0;
+        }
+        break;
+
+      // Confirm selection.
+      case '✅':
+        this.target = this.availableToTarget[this.targetIndex];
+
+        // Send a message to all werewolves saying their target changed.
+        this.game.playersArray.aliveWerewolves.forEach((werewolf) => {
+          werewolf.send(`${this.player} has targeted ${this.target}.`);
+        });
+        break;
+
+      // Invalid reaction.
+      default:
+        return;
     }
+
+    // Update the prompt message for all living werewolves.
+    this.game.playersArray.aliveWerewolves.forEach((werewolf) => {
+      if (werewolf.role.prompt) {
+        werewolf.role.prompt.message.edit(this.actionEmbed());
+      }
+    });
+  }
 }

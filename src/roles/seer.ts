@@ -1,85 +1,106 @@
-import * as Embeds from "../templates/embed-templates";
+import * as Discord from 'discord.js';
+import * as Embed from '../templates/role';
+import Role from '../interfaces/role';
+import Team from '../structs/team';
+import Player from '../structs/player';
+import Appearance from '../structs/appearance';
+import Prompt from '../structs/prompt';
 
-import Role               from "../interfaces/role";
-import Team               from "../structs/team";
-import Phase              from "../structs/phase";
-import Player             from "../structs/player";
-import Command            from "../structs/command";
-import RoleTemplate       from "../templates/role-templates";
-import ActionTemplate     from "../templates/action-templates";
-import RecognisedCommands from "../structs/recognised-commands";
+/**
+ * Seers are VILLAGER team roles that can, once per night, inspect another living villager to see if they are a
+ * Werewolf or Villager.
+ */
+export class Seer extends Role {
+  readonly name = 'Seer';
+  readonly pluralName = 'Seers';
+  readonly appearance = Appearance.Villager;
+  readonly team = Team.Villagers;
 
-export default class Seer implements Role {
-    readonly player: Player;
+  inspected = new Map<string, Player>();
+  target: Player | null = null;
+  availableToInspect: Player[] = [];
+  inspectIndex = 0;
 
-    readonly name       = RoleTemplate.seer.name;
-    readonly pluralName = RoleTemplate.seer.pluralName;
-    readonly appearance = RoleTemplate.villager.appearance;
-    readonly team       = Team.Villagers;
+  startAction(): void {
+    this.resetActionState();
 
-    usedAction = false;
-    target?: Player;
+    // Get all players we can inspect.
+    this.availableToInspect = this.game.playersArray.alive.filter((player) => {
+      // Do not target ourselves.
+      if (player.id === this.player.id) return false;
 
-    constructor(player: Player) {
-        this.player = player;
+      // Do not target players that we've already inspected.
+      return !this.inspected.has(player.id);
+    });
+
+    // Send the action prompt and start listening for reaction events.
+    this.player.send(this.actionEmbed())
+      .then((message) => {
+        message.react('⬆️');
+        message.react('⬇️');
+        message.react('✅');
+
+        // Create prompt for this message.
+        this.prompt = new Prompt(message, this, this.reactionHandler);
+      });
+  }
+  resetActionState(): void {
+    this.target = null;
+    this.availableToInspect = [];
+    this.inspectIndex = 0;
+
+    if (this.prompt) {
+      this.prompt.destroy();
+    }
+  }
+
+  protected roleDescriptionEmbed(): Discord.MessageEmbed {
+    return Embed.RoleSeer(this);
+  }
+  protected actionEmbed(): Discord.MessageEmbed {
+    return Embed.ActionSeer(this);
+  }
+
+  private reactionHandler(react: Discord.MessageReaction, _: Discord.User): void {
+    const emoji = react.emoji.name;
+    const max = this.availableToInspect.length - 1;
+
+    // If our prompt suddenly disappeared, do not proceed.
+    if (!this.prompt) return;
+
+    // No point in asking for input if there's no one to inspect.
+    if (max < 0) {
+      this.prompt.destroy();
     }
 
-    sendRole(): void {
-        this.player.send(Embeds.seerRoleEmbed(this.player.game.guild));
-    }
-
-    sendActionReminder(): void {
-        // Reset active.
-        this.target = undefined;
-        this.usedAction = false;
-
-        this.player.send(Embeds.seerActionEmbed(
-            this.player.game.guild,
-            this.player.game.players.alive,
-            this.player));
-    }
-
-    action(command: Command): boolean {
-        if (command.type === RecognisedCommands.Inspect) {
-            // Player cannot make a target outside of the night phase.
-            if (this.player.game.phase !== Phase.Night) {
-                this.player.send(ActionTemplate.seer.nonNightPhase());
-                return false;
-            }
-            // Player did not have a target.
-            if (command.target === undefined && command.args === "") {
-                this.player.send(ActionTemplate.seer.noTarget());
-                return false;
-            }
-            // Could not find that target.
-            if (command.target === undefined) {
-                this.player.send(ActionTemplate.seer.noTargetFound(command.args));
-                return false;
-            }
-            // Multiple players were found under that name.
-            if (command.target instanceof Array) {
-                this.player.send(ActionTemplate.seer.multipleTargetsFound(command.target, command.args));
-                return false;
-            }
-            // Player targeting themselves.
-            if (command.target.id === this.player.id) {
-                this.player.send(ActionTemplate.seer.selfTarget());
-                return false;
-            }
-            // Target is dead.
-            if (!command.target.alive) {
-                this.player.send(ActionTemplate.seer.deadTarget(command.target));
-                return false;
-            }
-
-            // All is good!
-            this.target = command.target;
-            this.player.send(ActionTemplate.seer.success(this.target));
-            this.usedAction = true;
-            return true;
+    switch (emoji) {
+      // Previous selection.
+      case '⬆️':
+        this.inspectIndex -= 1;
+        if (this.inspectIndex < 0) {
+          this.inspectIndex = max;
         }
+        break;
 
-        // Not a command I understand, ignore it.
-        return false;
+      // Next selection.
+      case '⬇️':
+        this.inspectIndex += 1;
+        if (this.inspectIndex > max) {
+          this.inspectIndex = 0;
+        }
+        break;
+
+      // Confirm selection.
+      case '✅':
+        this.target = this.availableToInspect[this.inspectIndex];
+        break;
+
+      // Invalid reaction.
+      default:
+        return;
     }
+
+    // Update the prompt message.
+    this.prompt.message.edit(this.actionEmbed());
+  }
 }
