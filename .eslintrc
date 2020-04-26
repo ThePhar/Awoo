@@ -33,7 +33,8 @@
     "no-underscore-dangle": "off",
     "no-console": "off",
     "class-methods-use-this": "off",
-    "arrow-body-style": "off"
+    "arrow-body-style": "off",
+    "object-curly-newline": "off"
   },
   "settings": {
     "import/resolver": {

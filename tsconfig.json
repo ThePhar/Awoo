@@ -8,21 +8,14 @@
     "sourceMap": false,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    "forceConsistentCasingInFileNames": true,
-    "paths": {
-      "*": [
-        "node_modules/"
-      ],
-      "typings/*": [
-        "src/typings/*"
-      ]
-    }
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "src/**/*.ts"
+    "**/*.ts"
   ],
   "exclude": [
     "test/**/*.test.ts",
-    "src/**/*.example.ts"
+    "src/**/*.example.ts",
+    "node_modules/**"
   ]
 }
