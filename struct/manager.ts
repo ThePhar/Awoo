@@ -81,7 +81,7 @@ export default class Manager {
   private commandNewGame(member: D.GuildMember, channel: D.TextChannel, reply: Function) {
     if (Manager.isAdministrator(member)) {
       Game.createGame(channel, this)
-        .then((game) => this.games.set(channel.id, game));
+        .then((game) => (game ? this.games.set(channel.id, game) : ''));
       return;
     }
 

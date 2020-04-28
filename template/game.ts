@@ -8,7 +8,19 @@ import Tip from './tips';
 import Player from '../struct/player';
 import Team from '../enum/team';
 
-const dateFormat = 'dddd, MMMM Do [at] H:mm A [CST-6:00]';
+const dateFormat = 'dddd, MMMM Do';
+
+const rules = 'Werewolf is an interactive game of deception and deduction for two teams: Villagers and Werewolves. '
+  + 'The villagers do not know who the werewolves are, and the werewolves are trying to remain undiscovered while '
+  + 'they slowly eliminate the villagers, one at a time. This specific version of Werewolf was written to allow '
+  + 'players the opportunity to play via Discord, unlike a traditional werewolf game with everyone in the same room '
+  + 'at the same time.\n\n'
+  + 'This game takes place over a series of real life days and nights. Each day, the players can discuss in the game '
+  + 'channel who among them is a werewolf and vote to eliminate them (via lynching). Each night, the werewolves '
+  + 'choose a player to eliminate, while the Seer learns if one player is a werewolf or not. The game is over when '
+  + 'either all the werewolves are eliminated or the living werewolves outnumber the living villagers.\n\n'
+  + 'There are also a number of additional roles that may come into play that could change the dynamic as the nights '
+  + 'continue, but that is the gist of it.';
 
 function safeArray(array: any[]): any[] {
   if (array.length === 0) {
@@ -23,19 +35,48 @@ export function lobby(game?: Game): Discord.MessageEmbed {
   const embed = new Discord.MessageEmbed()
     .setTitle('Ready for a new Game')
     .setDescription(dedent(`
-      Welcome to Awoo v0.9 prebuild.
+      Welcome to Awoo v0.9.1 prebuild written by Phar.
       
-      TODO: Write this section.
+      ${rules}
+      
       Type \`/awoo join\` to join. Type \`/awoo leave\` to leave.
     `))
     .setFooter(Tip())
     .setColor(Color.Information);
 
   if (game) {
-    embed.addField('Signed Up Players', safeArray(game.playersArray.all));
+    embed.addField('Signed Up Players', safeArray(game.playersArray.all), true);
+
+    if (game.players.size >= 6) {
+      const players = game.players.size;
+
+      const werewolfCount = Math.floor(players / 4);
+      const seerCount = 1;
+      const mayorCount = 1;
+      const lycanCount = players >= 12 ? 1 : 0;
+      const bodyguardCount = players >= 12 ? 1 : 0;
+      const tannerCount = players >= 12 ? 1 : 0;
+      const villagerCount = players - (werewolfCount + seerCount + mayorCount + lycanCount + bodyguardCount + tannerCount);
+
+      const roles = dedent(`
+        \`\`\`
+        Villagers  : ${villagerCount}
+        Werewolves : ${werewolfCount}
+        Seers      : ${seerCount}
+        Mayors     : ${mayorCount}
+        Lycans     : ${lycanCount}
+        Bodyguards : ${bodyguardCount}
+        Tanners    : ${tannerCount}
+        \`\`\`
+        
+        To learn what these roles are, click [here](https://awoo.io).
+      `);
+
+      embed.addField('Roles In Next Game', roles, true);
+    }
 
     if (game.schedule) {
-      embed.addField('Game Start', Moment(game.schedule.nextInvocation()).format(dateFormat));
+      embed.addField('Game Start', `${Moment(game.schedule.nextInvocation()).format(dateFormat)} @ 8:00 PM [CST-6:00]`);
     }
   }
 
@@ -47,9 +88,9 @@ export function day(game: Game): Discord.MessageEmbed {
     .setDescription(dedent(`
       > The newborn sun greets all those fortunate enough to survive the night.
                 
-      You have until sundown to decide on a villager to lynch. To vote to lynch a player, type \`!accuse <name>\`
+      You have until sundown to decide on a villager to lynch. To vote to lynch a player, type \`/awoo accuse <name>\`
       
-      **Night will begin at ${game.schedule ? Moment(game.schedule.nextInvocation()).format(dateFormat) : 'unknown time'}.**
+      **Night will begin at ${game.schedule ? `${Moment(game.schedule.nextInvocation()).format(dateFormat)} @ 8:00 PM [CST-6:00]` : 'unknown time'}.**
     `))
     .setColor(Color.Information)
     .setImage('https://cdn.discordapp.com/attachments/668777649211965450/669332922725171231/village.png')
@@ -65,7 +106,7 @@ export function night(game: Game): Discord.MessageEmbed {
       
       During the night, you will not be allowed to vote to lynch any players, but you can continue discussion in this channel. If you have a role with actions you can take at night, you will receive a notification via DM. 
       
-      **Day will begin at ${game.schedule ? Moment(game.schedule.nextInvocation()).format(dateFormat) : 'unknown time'}.**
+      **Day will begin at ${game.schedule ? `${Moment(game.schedule.nextInvocation()).format(dateFormat)} @ 8:00 AM [CST-6:00]` : 'unknown time'}.**
     `))
     .setColor(Color.Information)
     .setImage('https://cdn.discordapp.com/attachments/668777649211965450/669336328072331284/night.png')
@@ -173,7 +214,7 @@ export function villagerWin(game: Game): Discord.MessageEmbed {
   return new Discord.MessageEmbed()
     .setTitle('Villagers Win')
     .setDescription(
-      'The last of the werewolves were completely eliminated along with those who allied with them. The first calm night in what feels like forever, has finally come.'
+      'The last of the werewolves were completely eliminated along with those who allied with them. The first calm night in what feels like forever, has finally come.',
     )
     .setThumbnail('https://cdn.discordapp.com/attachments/663423717753225227/666427023765536799/villager_t.png')
     .setColor(Color.VillagerBlue)
@@ -201,7 +242,7 @@ export function werewolfWin(game: Game): Discord.MessageEmbed {
   return new Discord.MessageEmbed()
     .setTitle('Werewolves Win')
     .setDescription(
-      'The villagers have been whittled down to the point where the werewolves can take complete control of the village. All of your screens fall on deaf ears as you all meet a gruesome fate.'
+      'The villagers have been whittled down to the point where the werewolves can take complete control of the village. All of your screens fall on deaf ears as you all meet a gruesome fate.',
     )
     .setThumbnail('https://cdn.discordapp.com/attachments/663423717753225227/666427025887854596/werewolf_t.png')
     .setColor(Color.WerewolfRed)
@@ -213,6 +254,34 @@ export function werewolfWin(game: Game): Discord.MessageEmbed {
     )
     .addField(
       'Losing Teams',
+      safeArray(losers),
+      true,
+    );
+}
+
+export function tannerWin(game: Game): Discord.MessageEmbed {
+  const winners = game.playersArray.all
+    .filter((player) => player.role.team === Team.Tanner)
+    .map((player) => `${player} \`${player.role.name}\``);
+  const losers = game.playersArray.all
+    .filter((player) => player.role.team !== Team.Tanner)
+    .map((player) => `${player} \`${player.role.name}\``);
+
+  return new Discord.MessageEmbed()
+    .setTitle('Tanner Wins')
+    .setDescription(
+      'The madlad did it. The death of the tanner stuns all of you that you can\'t even focus on chasing out the werewolves and you all decide to give up on everything.',
+    )
+    .setThumbnail('https://cdn.discordapp.com/attachments/663423717753225227/666427021949141035/tanner.png')
+    .setColor(Color.TannerBrown)
+    .setFooter(Tip())
+    .addField(
+      'Winner',
+      safeArray(winners),
+      true,
+    )
+    .addField(
+      'Losers',
       safeArray(losers),
       true,
     );

@@ -1,6 +1,6 @@
 {
   "name": "awoo",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A realtime Werewolf moderator and game manager for Discord.",
   "main": "./index.js",
   "repository": "https://github.com/ThePhar/awoo.git",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "build": "rimraf dist_dorrie && tsc",
     "start": "yarn build && node index.js",
     "dev": "nodemon --exec ts-node index.ts --watch ."
   },

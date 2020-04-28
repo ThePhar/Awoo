@@ -65,7 +65,7 @@ export default class Player {
 
     // No players found.
     if (accused.length === 0) {
-      this.game.announce('I was unable to find any player under that name.');
+      this.game.announce(`${this}, I was unable to find any player under the name \`${accusing}\`.`);
       return false;
     }
 

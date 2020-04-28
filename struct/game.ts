@@ -1,4 +1,5 @@
 import Schedule from 'node-schedule';
+import dedent from 'dedent';
 import * as Discord from 'discord.js';
 import * as Time from '../util/date';
 import * as Roles from '../role';
@@ -9,6 +10,7 @@ import Manager from './manager';
 import shuffle from '../util/shuffle';
 
 const MINIMUM_PLAYERS = 6;
+const MAXIMUM_PLAYERS = 50;
 
 export default class Game {
   readonly channel: Discord.TextChannel;
@@ -20,15 +22,50 @@ export default class Game {
   phase: Phase = Phase.Waiting;
   day = 0;
 
-  static async createGame(channel: Discord.TextChannel, manager: Manager): Promise<Game> {
-    const message = await channel.send(Embed.lobby());
-    return new Game(channel, manager, message);
+  static async createGame(channel: Discord.TextChannel, manager: Manager): Promise<Game | undefined> {
+    if (!manager.client.user) return undefined;
+
+    const perms = channel.permissionsFor(manager.client.user);
+
+    if (perms && perms.has([
+      'MANAGE_CHANNELS',
+      'EMBED_LINKS',
+      'SEND_MESSAGES',
+      'MANAGE_ROLES',
+      'READ_MESSAGE_HISTORY',
+      'ADD_REACTIONS',
+      'MANAGE_MESSAGES',
+      'USE_EXTERNAL_EMOJIS',
+    ])) {
+      const message = await channel.send(Embed.lobby());
+      return new Game(channel, manager, message);
+    }
+
+    await channel.send(dedent(`
+      Sorry, but I need a minimum level of permissions to manage a game in this channel.
+      
+      \`\`\`
+      Required Permissions:
+      Manage Channel
+      Manage Permissions
+      Read Messages
+      Send Messages
+      Manage Messages
+      Embed Links
+      Read Message History
+      Use External Emojis
+      Add Reactions
+      \`\`\`
+    `));
+    return undefined;
   }
 
   private constructor(channel: Discord.TextChannel, manager: Manager, lobbyMessage: Discord.Message) {
     this.channel = channel;
     this.manager = manager;
     this.lobbyMessage = lobbyMessage;
+
+    this.channel.setTopic(`Waiting For Players - [ ${this.players.size}/50 Signed Up ]`);
   }
 
   toString(): string {
@@ -51,6 +88,7 @@ export default class Game {
 
     // Mute all non-players.
     this.channel.updateOverwrite(this.channel.guild.roles.everyone, { SEND_MESSAGES: false });
+    this.channel.setRateLimitPerUser(5);
 
     // Send everyone their role.
     this.players.forEach((player) => {
@@ -80,6 +118,8 @@ export default class Game {
       this.handleWin();
       return;
     }
+
+    this.channel.setTopic(`<:werewolf:667194685374332969> Day ${this.day} - [ ${this.playersArray.alive.length} Remaining Alive ]`);
 
     // Process inspections.
     this.playersArray.all.forEach((player) => {
@@ -112,6 +152,8 @@ export default class Game {
       return;
     }
 
+    this.channel.setTopic(`<:werewolf:667194685374332969> Night ${this.day} - [ ${this.playersArray.alive.length} Remaining Alive ]`);
+
     // Clear all accusations and send night action reminders.
     this.players.forEach((player) => {
       player.clearAccusation();
@@ -132,6 +174,11 @@ export default class Game {
    * @param member The Discord member to associate with the new player.
    */
   addPlayer(member: Discord.GuildMember): void {
+    if (this.players.size >= MAXIMUM_PLAYERS) {
+      this.announce(`Sorry, ${member}, but we already have the max number of allowed players (50).`);
+      return;
+    }
+
     const player = this.players.get(member.id);
 
     // Player already exists! Abort!
@@ -149,7 +196,6 @@ export default class Game {
     member.send(`You have joined the next game in ${this}!`)
       .then(() => {
         this.players.set(member.id, new Player(member, this));
-        this.lobbyMessage.edit(Embed.lobby(this));
         this.announce(`${member} has signed up for the next game.`);
 
         // Schedule the game to begin if we surpassed the minimum threshold of players.
@@ -157,6 +203,9 @@ export default class Game {
           this.schedule = Schedule.scheduleJob(Time.getNextNight().toDate(), () => this.initializeGame());
           this.announce('We have enough players to begin the next game. Scheduling to start next night.');
         }
+
+        this.lobbyMessage.edit(Embed.lobby(this));
+        this.channel.setTopic(`<:werewolf:667194685374332969> Waiting For Players - [ ${this.players.size}/50 Signed Up ]`);
       })
       .catch(() => {
         this.announce(`${member}, you must allow DMs from users in this server to join this game.`);
@@ -172,6 +221,7 @@ export default class Game {
     if (player) {
       this.players.delete(member.id);
       this.lobbyMessage.edit(Embed.lobby(this));
+      this.channel.setTopic(`<:werewolf:667194685374332969> Waiting For Players - [ ${this.players.size}/50 Signed Up ]`);
       this.announce(`${member} is no longer signed up for the next game.`);
 
       // Unschedule the game to begin if we went under the threshold again.
@@ -225,17 +275,21 @@ export default class Game {
 
     shuffled[0].role = new Roles.Seer(shuffled[0]);
     shuffled[1].role = new Roles.Werewolf(shuffled[1]);
-    shuffled[4].role = new Roles.Mayor(shuffled[4]);
+    shuffled[2].role = new Roles.Mayor(shuffled[2]);
 
-    // Chance for role?
-    if (shuffled.length >= 9) {
-      shuffled[8].role = new Roles.Werewolf(shuffled[8]);
+    if (shuffled.length >= 12) {
+      shuffled[3].role = new Roles.Lycan(shuffled[3]);
+      shuffled[4].role = new Roles.Bodyguard(shuffled[4]);
+      shuffled[5].role = new Roles.Tanner(shuffled[5]);
     }
-    if (shuffled.length >= 15) {
-      shuffled[14].role = new Roles.Werewolf(shuffled[14]);
-    }
-    if (shuffled.length >= 21) {
-      shuffled[20].role = new Roles.Werewolf(shuffled[20]);
+    // shuffled[6].role Hunter
+    // shuffled[17].role Mason
+    // shuffled[18].role Mason
+
+    // Chance for werewolf role?
+    const werewolfCount = Math.floor(shuffled.length / 4) - 1;
+    for (let w = werewolfCount; w > 0; w -= 1) {
+      shuffled[6 + w].role = new Roles.Werewolf(shuffled[6 + w]);
     }
   }
 
@@ -256,15 +310,23 @@ export default class Game {
     const vCount = this.playersArray.aliveVillagers.length;
     const wCount = this.playersArray.aliveWerewolves.length;
 
+    if (this.playersArray.dead.filter((player) => player.role instanceof Roles.Tanner).length > 0) {
+      // Tanner wins.
+      this.announce(Embed.tannerWin(this));
+      this.channel.setTopic('<:werewolf:667194685374332969> Tanner Wins');
+      return true;
+    }
+
     if (vCount === 0 || wCount >= vCount) {
       // Werewolves win.
       this.announce(Embed.werewolfWin(this));
+      this.channel.setTopic('<:werewolf:667194685374332969> Werewolves Win');
       return true;
     }
 
     if (wCount === 0) {
       // Villagers win.
-      this.announce(Embed.villagerWin(this));
+      this.channel.setTopic('<:werewolf:667194685374332969> Villagers Win');
       return true;
     }
 
@@ -352,21 +414,35 @@ export default class Game {
     const sorted = [...votes.entries()].sort((a, b) => b[1] - a[1]);
 
     if (sorted.length === 1) {
-      sorted[0][0].eliminate();
-      this.announce(Embed.werewolf(sorted[0][0])); // TODO: Create embed
-      return true;
+      if (this.handleWerewolfElimination(sorted)) return true;
     }
     if (sorted.length > 1) {
       if (sorted[0][1] > sorted[1][1]) {
-        sorted[0][0].eliminate();
-        this.announce(Embed.werewolf(sorted[0][0])); // TODO: Create embed
-        return true;
+        if (this.handleWerewolfElimination(sorted)) return true;
       }
     }
 
     this.announce(Embed.noNightElim());
     return false;
   }
+
+  private handleWerewolfElimination(sorted: [ Player, number ][]) {
+    // Check for bodyguard protection.
+    // eslint-disable-next-line no-restricted-syntax
+    for (const bodyguard of this.playersArray.aliveBodyguards) {
+      if (bodyguard.role instanceof Roles.Bodyguard
+        && bodyguard.role.target
+        && bodyguard.role.target.id === sorted[0][0].id) {
+        return false;
+      }
+    }
+
+
+    sorted[0][0].eliminate();
+    this.announce(Embed.werewolf(sorted[0][0]));
+    return true;
+  }
+
   /**
    * Inspect a player if the seer survived the night.
    * @param player
@@ -401,12 +477,17 @@ export default class Game {
     const dead: Player[] = [];
     const aliveWerewolves: Player[] = [];
     const aliveVillagers: Player[] = [];
+    const aliveBodyguards: Player[] = [];
 
     this.players.forEach((player) => {
       all.push(player);
 
       if (player.alive) {
         alive.push(player);
+
+        if (player.role instanceof Roles.Bodyguard) {
+          aliveBodyguards.push(player);
+        }
 
         if (player.role instanceof Roles.Werewolf) {
           aliveWerewolves.push(player);
@@ -424,6 +505,7 @@ export default class Game {
       alive,
       aliveVillagers,
       aliveWerewolves,
+      aliveBodyguards,
     };
   }
 }
@@ -434,4 +516,5 @@ type Players = {
   dead: Player[];
   aliveWerewolves: Player[];
   aliveVillagers: Player[];
+  aliveBodyguards: Player[];
 }

@@ -12,16 +12,22 @@ const villagerThumbnail = 'https://cdn.discordapp.com/attachments/66342371775322
 const seerThumbnail = 'https://cdn.discordapp.com/attachments/663423717753225227/666427035228307493/seer.png';
 const werewolfThumbnail = 'https://cdn.discordapp.com/attachments/663423717753225227/666427025887854596/werewolf_t.png';
 const mayorThumbnail = 'https://cdn.discordapp.com/attachments/663423717753225227/666427033936592924/mayor.png';
+const lycanThumbnail = 'https://cdn.discordapp.com/attachments/663423717753225227/666427032007344149/lycan.png';
+const bodyguardThumbnail = 'https://cdn.discordapp.com/attachments/663423717753225227/666427028823605258/bodyguard.png';
+const tannerThumbnail = 'https://cdn.discordapp.com/attachments/663423717753225227/666427021949141035/tanner.png';
 
 /* Helper Functions */
 function generateObjectiveFields(role: Role) {
-  const team = `**${role.team}**`;
+  let team = `**${role.team}**`;
   let objective;
 
   if (role.team === Team.Villagers) {
     objective = 'Find the werewolves and eliminate them.';
   } else if (role.team === Team.Werewolves) {
     objective = 'Eliminate the villagers until living werewolves outnumber the remaining villagers.';
+  } else if (role.team === Team.Tanner) {
+    objective = 'Get eliminated to win.';
+    team = 'You are your own team.';
   }
 
   return [
@@ -128,6 +134,8 @@ export function ActionSeer(role: Roles.Seer) {
 
 /* Werewolf */
 export function RoleWerewolf(role: Roles.Werewolf) {
+  const werewolves = role.game.playersArray.aliveWerewolves;
+
   return new Discord.MessageEmbed()
     .setTitle('You are a Werewolf')
     .setDescription(dedent(`
@@ -139,6 +147,10 @@ export function RoleWerewolf(role: Roles.Werewolf) {
     .setColor(Color.WerewolfRed)
     .setAuthor(role.game)
     .setFooter(Tip())
+    .addField(
+      'Werewolves',
+      safeArray(werewolves),
+    )
     .addFields(generateObjectiveFields(role))
     .addField(
       'During the Night Phase',
@@ -201,4 +213,80 @@ export function RoleMayor(role: Roles.Mayor) {
     .setAuthor(role.game)
     .setFooter(Tip())
     .addFields(generateObjectiveFields(role));
+}
+
+/* Lycan */
+export function RoleLycan(role: Roles.Lycan) {
+  return new Discord.MessageEmbed()
+    .setTitle('You are a Lycan')
+    .setDescription(dedent(`
+      You are a villager that has been cursed with mild lycanthropy and will appear to the seer as a werewolf, even though you are a villager.
+    `))
+    .setThumbnail(lycanThumbnail)
+    .setColor(Color.VillagerBlue)
+    .setAuthor(role.game)
+    .setFooter(Tip())
+    .addFields(generateObjectiveFields(role));
+}
+
+/* Tanner */
+export function RoleTanner(role: Roles.Tanner) {
+  return new Discord.MessageEmbed()
+    .setTitle('You are the Tanner')
+    .setDescription(dedent(`
+      You hate your job and your life. Find a way to be eliminated to win.
+    `))
+    .setThumbnail(tannerThumbnail)
+    .setColor(Color.TannerBrown)
+    .setAuthor(role.game)
+    .setFooter(Tip())
+    .addFields(generateObjectiveFields(role));
+}
+
+
+/* Bodyguard */
+export function RoleBodyguard(role: Roles.Bodyguard) {
+  return new Discord.MessageEmbed()
+    .setTitle('You are a Bodyguard')
+    .setDescription(dedent(`
+      You are a bodyguard and can protect a player from the werewolves at night.
+    `))
+    .setThumbnail(bodyguardThumbnail)
+    .setColor(Color.VillagerBlue)
+    .setAuthor(role.game)
+    .setFooter(Tip())
+    .addFields(generateObjectiveFields(role))
+    .addField(
+      'During the Night Phase',
+      dedent(`
+        During the night, you will receive a prompt via DM to select a player to protect. You can change your selection at any point during the night, but you must confirm a selection or you will forfeit your action.
+            
+        The player you select will be protected from elimination by the werewolves. You can even target yourself if you so choose.
+      `),
+    );
+}
+export function ActionBodyguard(role: Roles.Bodyguard) {
+  const target = role.target ? role.target : '*You are not protecting any player.*';
+  const prompts = [
+    '⬆️ `Previous Player`',
+    '⬇️ `Next Player`',
+    '✅ `Target Selected Player`',
+  ];
+
+  const available = role.availableToProtect;
+
+  return new Discord.MessageEmbed()
+    .setTitle('Raise Your Shield')
+    .setDescription(dedent(`
+      Choose a player to protect. If they are picked by the werewolves for elimination, they will not be eliminated. You can protect yourself.
+    `))
+    .setThumbnail(bodyguardThumbnail)
+    .setColor(Color.VillagerBlue)
+    .setAuthor(role.game)
+    .setFooter(Tip())
+    .addFields([
+      { name: 'Currently Protecting', value: target },
+      { name: 'Available To Protect', value: safeArray(available), inline: true },
+      { name: 'Prompts', value: prompts, inline: true },
+    ]);
 }
