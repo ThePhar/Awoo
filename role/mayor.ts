@@ -1,19 +1,16 @@
-import * as Discord from 'discord.js';
-import * as Embed from '../template/role';
-import Role from '../interface/role';
-import Appearance from '../enum/appearance';
-import Team from '../enum/team';
+import * as D       from 'discord.js';
+import * as Embed   from '../template/role';
+import Appearance   from '../enum/appearance';
+import Team         from '../enum/team';
+import { Villager } from './villager';
 
-/**
- * Mayors are standard VILLAGER team role with that get counted twice for the purposes of lynching others.
- */
-export class Mayor extends Role {
-  readonly name = 'Mayor';
-  readonly pluralName = 'Mayors';
-  readonly appearance = Appearance.Villager;
-  readonly team = Team.Villagers;
+export class Mayor extends Villager {
+  public name       = 'Mayor';
+  public pluralName = 'Mayors';
+  public appearance = Appearance.Villager;
+  public team       = Team.Villagers;
 
-  protected roleDescriptionEmbed(): Discord.MessageEmbed {
+  protected roleDescriptionEmbed(): D.MessageEmbed {
     return Embed.RoleMayor(this);
   }
 }

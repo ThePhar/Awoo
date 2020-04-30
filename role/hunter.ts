@@ -6,58 +6,58 @@ import Prompt       from '../struct/prompt'
 import Team         from '../enum/team'
 import { Villager } from './villager'
 
-export class Bodyguard extends Villager {
-  public name       = 'Bodyguard'
-  public pluralName = 'Bodyguards'
+export class Hunter extends Villager {
+  public name       = 'Hunter'
+  public pluralName = 'Hunters'
   public appearance = Appearance.Villager
   public team       = Team.Villagers
 
-  /* Bodyguard Specific Fields */
-  public availableToProtect: Player[] = []
-  public protectIndex = 0
+  /* Hunter Specific Fields */
+  public availableToTarget: Player[] = []
+  public targetIndex = 0
   public target?: Player
+  public fired = false
 
   public async startAction(): Promise<void> {
-    this.resetActionState()
+    // Get all players we can inspect.
+    this.availableToTarget = this.game.players.alive.filter((player) => player.id !== this.player.id)
+    this.targetIndex = 0
 
-    // Ignore this on the first night.
-    if (this.game.day === 1) {
-      return
+    if (this.target && !this.target.alive && this.player.alive) {
+      await this.player.send(`${this.target.toTextString()} was eliminated, you will need to update your target.`)
+      this.target = undefined
     }
 
-    // Get all players we can inspect.
-    this.availableToProtect = this.game.players.alive
+    // Update prompt.
+    if (!this.prompt) {
+      const message = await this.player.send(this.actionEmbed())
+      await message.react('⬆️')
+      await message.react('⬇️')
+      await message.react('✅')
 
-    // Send the action prompt and start listening for reaction events.
-    const message = await this.player.send(this.actionEmbed())
-    await message.react('⬆️')
-    await message.react('⬇️')
-    await message.react('✅')
-
-    // Create prompt for this message.
-    this.prompt = new Prompt(message, this, this.reactionHandler.bind(this))
-  }
-
-  public resetActionState(): void {
-    this.availableToProtect = []
-    this.protectIndex = 0
-    this.target = undefined
-
-    if (this.prompt) {
-      this.prompt.destroy()
+      this.prompt = new Prompt(message, this, this.reactionHandler.bind(this))
+    } else {
+      await this.prompt.message.edit(this.actionEmbed())
     }
   }
 
   protected roleDescriptionEmbed(): D.MessageEmbed {
-    return Embed.RoleBodyguard(this)
+    return Embed.RoleHunter(this)
   }
   protected actionEmbed(): D.MessageEmbed {
-    return Embed.ActionBodyguard(this)
+    return Embed.ActionHunter(this)
   }
 
   private async reactionHandler(react: D.MessageReaction, _: D.User): Promise<void> {
+    if (this.fired) {
+      if (this.prompt) {
+        this.prompt.destroy()
+      }
+      return
+    }
+
     const emoji = react.emoji.name
-    const max = this.availableToProtect.length - 1
+    const max = this.availableToTarget.length - 1
 
     // If our prompt suddenly disappeared, do not proceed.
     if (!this.prompt) return
@@ -70,23 +70,23 @@ export class Bodyguard extends Villager {
     switch (emoji) {
       // Previous selection.
       case '⬆️':
-        this.protectIndex -= 1
-        if (this.protectIndex < 0) {
-          this.protectIndex = max
+        this.targetIndex -= 1
+        if (this.targetIndex < 0) {
+          this.targetIndex = max
         }
         break
 
       // Next selection.
       case '⬇️':
-        this.protectIndex += 1
-        if (this.protectIndex > max) {
-          this.protectIndex = 0
+        this.targetIndex += 1
+        if (this.targetIndex > max) {
+          this.targetIndex = 0
         }
         break
 
       // Confirm selection.
       case '✅':
-        this.target = this.availableToProtect[this.protectIndex]
+        this.target = this.availableToTarget[this.targetIndex]
         break
 
       // Invalid reaction.

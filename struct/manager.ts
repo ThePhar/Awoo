@@ -1,18 +1,19 @@
+import dedent from 'dedent';
 import * as D from 'discord.js';
 import Game from './game';
-import RecognisedCommand from '../enum/recognised-command';
 import Command from './command';
 import Prompt from './prompt';
+import RecognisedCommand from '../enum/recognised-command';
 
 type Identifier = string;
 type User = D.User | D.PartialUser;
 
 export default class Manager {
-  client: D.Client;
-  games = new Map<Identifier, Game>();
-  prompts = new Map<Identifier, Prompt>();
+  public client: D.Client;
+  public games = new Map<Identifier, Game>();
+  public prompts = new Map<Identifier, Prompt>();
 
-  constructor(client: D.Client) {
+  public constructor(client: D.Client) {
     this.client = client;
 
     client.on('message', this.onMessageHandler.bind(this));
@@ -23,7 +24,7 @@ export default class Manager {
   /**
    * If a message event was fired, parse it for a command and fire it or ignore it if invalid.
    */
-  private onMessageHandler(message: D.Message): void {
+  private async onMessageHandler(message: D.Message): Promise<void> {
     const { channel, content, member, reply } = message;
 
     // Ignore messages not made in TextChannels or do not have an associated member object.
@@ -49,11 +50,20 @@ export default class Manager {
       case RecognisedCommand.Accuse:
         this.commandAccuse(member, channel, reply, command);
         break;
+      case RecognisedCommand.RemoveAccusation:
+        this.commandRemoveAccusation(member, channel, reply);
+        break;
+      case RecognisedCommand.Help:
+        this.commandHelp(member, channel, reply);
+        break;
+      case RecognisedCommand.Tally:
+        this.commandTally(member, channel, reply);
+        break;
       default:
         break;
     }
 
-    message.delete();
+    await message.delete();
   }
   /**
    * If a reaction event was fired on an active prompt message, fire the event assigned to that prompt.
@@ -80,7 +90,7 @@ export default class Manager {
   /* Command Handlers */
   private commandNewGame(member: D.GuildMember, channel: D.TextChannel, reply: Function) {
     if (Manager.isAdministrator(member)) {
-      Game.createGame(channel, this)
+      Game.generateGame(channel, this)
         .then((game) => (game ? this.games.set(channel.id, game) : ''));
       return;
     }
@@ -116,10 +126,72 @@ export default class Manager {
     }
 
     if (!player) {
-      reply('Only players cannot make accusations.');
+      reply('Only players can make accusations.');
       return;
     }
 
     player.accuse(command.joined);
+  }
+  private commandRemoveAccusation(member: D.GuildMember, channel: D.TextChannel, reply: Function) {
+    const game = this.games.get(channel.id);
+    const player = game ? game.getPlayer(member.id) : undefined;
+
+    if (!game) {
+      reply('There is no game in progress.');
+      return;
+    }
+
+    if (!player) {
+      reply('Only players can clear accusations.');
+      return;
+    }
+
+    player.clearAccusationUserDriven();
+  }
+  private commandHelp(_: D.GuildMember, channel: D.TextChannel, reply: Function) {
+    const game = this.games.get(channel.id);
+    if (game) {
+      reply(dedent(`
+        For information about roles, go to https://awoo.io
+        
+        Command help:
+        \`\`\`
+        /awoo join          - Join a game that's waiting for players.
+        /awoo leave         - Leave a game you've already signed up for. (Cannot leave if a game is in progress.)
+        /awoo help          - This message! :)
+        /awoo accuse <name> - Accuse a player of being a werewolf and vote to lynch them at the end of the day phase.
+        /awoo tally         - See a list of all accusation votes that have been made currently.
+        /awoo clear         - Clear your accusation vote.
+        \`\`\`
+      `))
+    }
+
+    reply(
+      'There is no game running right now. If you are an administrator, you can run `/awoo newgame` to configure this '
+    + 'channel to start a game',
+    );
+  }
+  private commandTally(member: D.GuildMember, channel: D.TextChannel, reply: Function) {
+    const game = this.games.get(channel.id);
+    if (game) {
+      const lynchVotes = game.players.alive
+        .map((player) => {
+          if (player.accusing) {
+            return `${player.name} voted to lynch ${player.accusing.name}.`
+          }
+
+          return null
+        })
+        .filter((value) => value !== null)
+
+      if (lynchVotes.length > 0) {
+        reply(new D.MessageEmbed()
+          .setDescription('Here are the list of current votes.')
+          .addField('Lynch Votes', lynchVotes))
+        return
+      }
+
+      reply(`${member}, there are no accusation as of right now.`)
+    }
   }
 }

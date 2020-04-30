@@ -1,18 +1,15 @@
-import * as Discord from 'discord.js';
-import Role from '../interface/role';
+import * as D from 'discord.js';
+import Role   from '../interface/role';
 
-/**
- * Handles reaction events tied to a particular message.
- */
 export default class Prompt {
-  readonly message: Discord.Message;
-  readonly role: Role;
-  readonly handleEvent: (react: Discord.MessageReaction, user: Discord.User) => void;
+  public readonly message: D.Message;
+  public readonly role: Role;
+  public readonly handleEvent: (react: D.MessageReaction, user: D.User) => void;
 
-  constructor(
-    message: Discord.Message,
+  public constructor(
+    message: D.Message,
     role: Role,
-    handleEvent: (react: Discord.MessageReaction, user: Discord.User) => void,
+    handleEvent: (react: D.MessageReaction, user: D.User) => void,
   ) {
     this.message = message;
     this.role = role;
@@ -26,7 +23,7 @@ export default class Prompt {
    */
   destroy(): void {
     if (this.role.prompt) {
-      this.role.prompt = null;
+      this.role.prompt = undefined;
     }
 
     this.role.game.manager.prompts.delete(this.message.id);

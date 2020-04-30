@@ -1,36 +1,36 @@
-import * as Discord from 'discord.js';
-import Player from '../struct/player';
-import Team from '../enum/team';
-import Prompt from '../struct/prompt';
+import * as D     from 'discord.js'
+import Appearance from '../enum/appearance'
+import Player     from '../struct/player'
+import Prompt     from '../struct/prompt'
+import Team       from '../enum/team'
 
 export default abstract class Role {
-  readonly player: Player;
-  prompt: Prompt | null;
+  public readonly player:  Player
+  public          prompt?: Prompt
 
-  abstract readonly name: string;
-  abstract readonly pluralName: string;
-  abstract readonly appearance: string;
-  abstract readonly team: Team;
+  public abstract name:       string
+  public abstract pluralName: string
+  public abstract appearance: Appearance
+  public abstract team:       Team
 
-  constructor(player: Player) {
-    this.player = player;
-    this.prompt = null;
+  public constructor(player: Player) {
+    this.player = player
   }
 
-  startRole(): void {
-    this.player.send(this.roleDescriptionEmbed());
+  public async startRole(): Promise<void> {
+    await this.player.send(this.roleDescriptionEmbed())
+  }
+  public async startAction(): Promise<void> { /* Do Nothing By Default */ }
+  public resetActionState(): void { /* Do Nothing By Default */ }
+
+  protected roleDescriptionEmbed(): D.MessageEmbed {
+    throw new Error('Role description not implemented.')
+  }
+  protected actionEmbed(): D.MessageEmbed {
+    throw new Error('Action description not implemented.')
   }
 
-  startAction(): void {}
-  resolveAction(): void {}
-  resetActionState(): void {}
-
-  protected roleDescriptionEmbed(): Discord.MessageEmbed {
-    throw new Error('Role description not implemented.');
+  get game() {
+    return this.player.game
   }
-  protected actionEmbed(): Discord.MessageEmbed {
-    throw new Error('Action description not implemented.');
-  }
-
-  get game() { return this.player.game; }
 }

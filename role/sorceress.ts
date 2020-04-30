@@ -3,16 +3,16 @@ import * as Embed   from '../template/role'
 import Appearance   from '../enum/appearance'
 import Player       from '../struct/player'
 import Prompt       from '../struct/prompt'
+import Role         from '../interface/role';
 import Team         from '../enum/team'
-import { Villager } from './villager';
 
-export class Seer extends Villager {
-  public name       = 'Seer'
-  public pluralName = 'Seers'
+export class Sorceress extends Role {
+  public name       = 'Sorceress'
+  public pluralName = 'Sorceresses'
   public appearance = Appearance.Villager
-  public team       = Team.Villagers
+  public team       = Team.Werewolves
 
-  /* Seer Specific Fields */
+  /* Sorceress Specific Fields */
   public availableToInspect: Player[] = []
   public inspected = new Map<string, Player>()
   public inspectIndex = 0
@@ -59,10 +59,10 @@ export class Seer extends Villager {
   }
 
   protected roleDescriptionEmbed(): D.MessageEmbed {
-    return Embed.RoleSeer(this)
+    return Embed.RoleSorceress(this)
   }
   protected actionEmbed(): D.MessageEmbed {
-    return Embed.ActionSeer(this)
+    return Embed.ActionSorceress(this)
   }
 
   private async reactionHandler(react: D.MessageReaction, _: D.User): Promise<void> {

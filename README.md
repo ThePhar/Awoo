@@ -47,6 +47,31 @@ Bodyguards are Villager team roles that, once per night, can protect a villager 
 
 The Tanner hates his job and hates his life. He only wins if he is eliminated. Take care not to eliminate him, werewolf or villager!
 
+### Princes
+![Prince](https://cdn.discordapp.com/attachments/429907716165730308/705540425573859378/prince.png)
+
+The Prince is a Villager team role that for all intents and purposes is a normal villager, but if they are voted to get lynched, they reveal their role and are not eliminated.
+
+### Sorceresses
+![Sorceress](https://media.discordapp.net/attachments/663423717753225227/666427037384441856/sorceress.png)
+
+The Sorceress is a Werewolf team villager that is aiming to assist the Werewolves. They, like the seer, can inspect a player each night to determine if they are the Seer. They WANT the werewolves to win! 
+
+### Masons
+![Mason](https://cdn.discordapp.com/attachments/429907716165730308/668771401028861962/mason.png)
+
+The Masons are Villager team roles that are a part of a secret society that know who each other are. They are the only villagers they can trust.
+
+### Hunters
+![Hunter](https://media.discordapp.net/attachments/663423717753225227/666427030245736472/hunter.png)
+
+The Hunter is a Villager team role that can take a player out with them if they get eliminated. Better be careful who you lynch or eliminate.
+
+### Witches
+![Witch](https://media.discordapp.net/attachments/663423717753225227/666427027389415444/witch.png)
+
+The witch is a Villager team role that can, once per game, save any player targeted by werewolf elimination or kill any player of their choosing.
+
 ## Features
 
 I am currently in the process of refactoring this application, but I plan for all of these features in the **1.0** release of this build:

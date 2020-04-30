@@ -6,3 +6,8 @@ export * from './mayor';
 export * from './lycan';
 export * from './bodyguard';
 export * from './tanner';
+export * from './prince';
+export * from './sorceress';
+export * from './mason';
+export * from './hunter';
+export * from './witch';

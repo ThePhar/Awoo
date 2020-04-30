@@ -1,98 +1,100 @@
-import * as Discord from 'discord.js';
-import * as Embed from '../template/role';
-import Role from '../interface/role';
-import Team from '../enum/team';
-import Player from '../struct/player';
-import Appearance from '../enum/appearance';
-import Prompt from '../struct/prompt';
+import * as D       from 'discord.js'
+import * as Embed   from '../template/role'
+import Appearance   from '../enum/appearance'
+import Player       from '../struct/player'
+import Prompt       from '../struct/prompt'
+import Team         from '../enum/team'
+import { Villager } from './villager'
 
-/**
- * Bodyguards are VILLAGER team role that can, once per night, protect a player from night elimination.
- */
-export class Bodyguard extends Role {
-  readonly name = 'Bodyguard';
-  readonly pluralName = 'Bodyguards';
-  readonly appearance = Appearance.Villager;
-  readonly team = Team.Villagers;
+export class Bodyguard extends Villager {
+  public name       = 'Bodyguard'
+  public pluralName = 'Bodyguards'
+  public appearance = Appearance.Villager
+  public team       = Team.Villagers
 
-  target: Player | null = null;
-  availableToProtect: Player[] = [];
-  protectIndex = 0;
+  /* Bodyguard Specific Fields */
+  public availableToProtect: Player[] = []
+  public protectIndex = 0
+  public target?: Player
 
-  startAction(): void {
-    this.resetActionState();
+  public async startAction(): Promise<void> {
+    this.resetActionState()
+
+    // Ignore this on the first night.
+    if (this.game.day === 1) {
+      return
+    }
 
     // Get all players we can inspect.
-    this.availableToProtect = this.game.playersArray.alive;
+    this.availableToProtect = this.game.players.alive
 
     // Send the action prompt and start listening for reaction events.
-    this.player.send(this.actionEmbed())
-      .then((message) => {
-        message.react('⬆️');
-        message.react('⬇️');
-        message.react('✅');
+    const message = await this.player.send(this.actionEmbed())
+    await message.react('⬆️')
+    await message.react('⬇️')
+    await message.react('✅')
 
-        // Create prompt for this message.
-        this.prompt = new Prompt(message, this, (r, u) => this.reactionHandler(r, u));
-      });
+    // Create prompt for this message.
+    this.prompt = new Prompt(message, this, this.reactionHandler.bind(this))
   }
-  resetActionState(): void {
-    this.target = null;
-    this.availableToProtect = [];
-    this.protectIndex = 0;
+
+  public resetActionState(): void {
+    this.availableToProtect = []
+    this.protectIndex = 0
+    this.target = undefined
 
     if (this.prompt) {
-      this.prompt.destroy();
+      this.prompt.destroy()
     }
   }
 
-  protected roleDescriptionEmbed(): Discord.MessageEmbed {
-    return Embed.RoleBodyguard(this);
+  protected roleDescriptionEmbed(): D.MessageEmbed {
+    return Embed.RoleBodyguard(this)
   }
-  protected actionEmbed(): Discord.MessageEmbed {
-    return Embed.ActionBodyguard(this);
+  protected actionEmbed(): D.MessageEmbed {
+    return Embed.ActionBodyguard(this)
   }
 
-  private reactionHandler(react: Discord.MessageReaction, _: Discord.User): void {
-    const emoji = react.emoji.name;
-    const max = this.availableToProtect.length - 1;
+  private async reactionHandler(react: D.MessageReaction, _: D.User): Promise<void> {
+    const emoji = react.emoji.name
+    const max = this.availableToProtect.length - 1
 
     // If our prompt suddenly disappeared, do not proceed.
-    if (!this.prompt) return;
+    if (!this.prompt) return
 
     // No point in asking for input if there's no one to inspect.
     if (max < 0) {
-      this.prompt.destroy();
+      this.prompt.destroy()
     }
 
     switch (emoji) {
       // Previous selection.
       case '⬆️':
-        this.protectIndex -= 1;
+        this.protectIndex -= 1
         if (this.protectIndex < 0) {
-          this.protectIndex = max;
+          this.protectIndex = max
         }
-        break;
+        break
 
       // Next selection.
       case '⬇️':
-        this.protectIndex += 1;
+        this.protectIndex += 1
         if (this.protectIndex > max) {
-          this.protectIndex = 0;
+          this.protectIndex = 0
         }
-        break;
+        break
 
       // Confirm selection.
       case '✅':
-        this.target = this.availableToProtect[this.protectIndex];
-        break;
+        this.target = this.availableToProtect[this.protectIndex]
+        break
 
       // Invalid reaction.
       default:
-        return;
+        return
     }
 
     // Update the prompt message.
-    this.prompt.message.edit(this.actionEmbed());
+    await this.prompt.message.edit(this.actionEmbed())
   }
 }

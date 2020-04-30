@@ -7,8 +7,9 @@ import Color from '../enum/color';
 import Tip from './tips';
 import Player from '../struct/player';
 import Team from '../enum/team';
+import { Hunter } from '../role';
 
-const dateFormat = 'dddd, MMMM Do';
+const dateFormat = 'dddd, MMMM Do [at] hh:mm:ss Z';
 
 const rules = 'Werewolf is an interactive game of deception and deduction for two teams: Villagers and Werewolves. '
   + 'The villagers do not know who the werewolves are, and the werewolves are trying to remain undiscovered while '
@@ -30,12 +31,11 @@ function safeArray(array: any[]): any[] {
   return array;
 }
 
-// TODO: Write section description.
 export function lobby(game?: Game): Discord.MessageEmbed {
   const embed = new Discord.MessageEmbed()
     .setTitle('Ready for a new Game')
     .setDescription(dedent(`
-      Welcome to Awoo v0.9.1 prebuild written by Phar.
+      Welcome to Awoo v0.10.0 prebuild written by Phar.
       
       ${rules}
       
@@ -45,59 +45,38 @@ export function lobby(game?: Game): Discord.MessageEmbed {
     .setColor(Color.Information);
 
   if (game) {
-    embed.addField('Signed Up Players', safeArray(game.playersArray.all), true);
+    embed.addField('Signed Up Players', safeArray(game.players.all), true);
 
-    if (game.players.size >= 6) {
-      const players = game.players.size;
-
-      const werewolfCount = Math.floor(players / 4);
-      const seerCount = 1;
-      const mayorCount = 1;
-      const lycanCount = players >= 12 ? 1 : 0;
-      const bodyguardCount = players >= 12 ? 1 : 0;
-      const tannerCount = players >= 12 ? 1 : 0;
-      const villagerCount = players - (werewolfCount + seerCount + mayorCount + lycanCount + bodyguardCount + tannerCount);
-
-      const roles = dedent(`
-        \`\`\`
-        Villagers  : ${villagerCount}
-        Werewolves : ${werewolfCount}
-        Seers      : ${seerCount}
-        Mayors     : ${mayorCount}
-        Lycans     : ${lycanCount}
-        Bodyguards : ${bodyguardCount}
-        Tanners    : ${tannerCount}
-        \`\`\`
-        
-        To learn what these roles are, click [here](https://awoo.io).
-      `);
-
-      embed.addField('Roles In Next Game', roles, true);
-    }
-
-    if (game.schedule) {
-      embed.addField('Game Start', `${Moment(game.schedule.nextInvocation()).format(dateFormat)} @ 8:00 PM [CST-6:00]`);
+    if (game.scheduleTime) {
+      embed.addField('Game Start', game.scheduleTime.format(dateFormat));
     }
   }
 
   return embed;
 }
+
 export function day(game: Game): Discord.MessageEmbed {
   return new Discord.MessageEmbed()
     .setTitle(`Day ${game.day}`)
     .setDescription(dedent(`
       > The newborn sun greets all those fortunate enough to survive the night.
                 
-      You have until sundown to decide on a villager to lynch. To vote to lynch a player, type \`/awoo accuse <name>\`
+      You have until sundown to decide on a villager to lynch, but you are not required to make lynch accusations if you desire. 
+      ***NOTE: 1 Hour before the day ends, all accusations made will be final and unable to be changed, including ones already made. You can make new accusations if you haven't, but they will be final once made.***
       
-      **Night will begin at ${game.schedule ? `${Moment(game.schedule.nextInvocation()).format(dateFormat)} @ 8:00 PM [CST-6:00]` : 'unknown time'}.**
+      To vote to lynch a player, type \`/awoo accuse <name>\`. 
+      To clear a accusation, type \`/awoo clear\`. 
+      To get current lynch votes, type \`/awoo tally\`
+      
+      **Night will begin at ${game.scheduleTime ? game.scheduleTime.format(dateFormat) : 'unknown time'}.**
     `))
     .setColor(Color.Information)
     .setImage('https://cdn.discordapp.com/attachments/668777649211965450/669332922725171231/village.png')
     .setFooter(Tip())
-    .addField('Alive Players', safeArray(game.playersArray.alive), true)
-    .addField('Eliminated Players', safeArray(game.playersArray.dead), true);
+    .addField('Alive Players', safeArray(game.players.alive), true)
+    .addField('Eliminated Players', safeArray(game.players.eliminated), true);
 }
+
 export function night(game: Game): Discord.MessageEmbed {
   return new Discord.MessageEmbed()
     .setTitle(`Night ${game.day}`)
@@ -106,68 +85,59 @@ export function night(game: Game): Discord.MessageEmbed {
       
       During the night, you will not be allowed to vote to lynch any players, but you can continue discussion in this channel. If you have a role with actions you can take at night, you will receive a notification via DM. 
       
-      **Day will begin at ${game.schedule ? `${Moment(game.schedule.nextInvocation()).format(dateFormat)} @ 8:00 AM [CST-6:00]` : 'unknown time'}.**
+      **Day will begin at ${game.scheduleTime ? game.scheduleTime.format(dateFormat) : 'unknown time'}.**
     `))
     .setColor(Color.Information)
     .setImage('https://cdn.discordapp.com/attachments/668777649211965450/669336328072331284/night.png')
     .setFooter(Tip())
-    .addField('Alive Players', safeArray(game.playersArray.alive), true)
-    .addField('Eliminated Players', safeArray(game.playersArray.dead), true);
+    .addField('Alive Players', safeArray(game.players.alive), true)
+    .addField('Eliminated Players', safeArray(game.players.eliminated), true);
 }
 
-export function lynch(game: Game, eliminated: Player, votes: Array<Array<Player | number>>): Discord.MessageEmbed {
+export function lynch(game: Game, votes: { player: Player, count: number }[]): Discord.MessageEmbed {
   return new Discord.MessageEmbed()
-    .setTitle(`${eliminated.name} has Been Lynched`)
+    .setTitle(`${votes[0].player.name} has Been Lynched`)
     .setDescription(dedent(`
-      > The village has made their decision and it was decided that ${eliminated} must be lynched. They are forced into the gallows, where they hang for whatever crimes they may have committed.
-      
-      ${eliminated} has been eliminated with ${votes[0][1]} votes.
+      > The village has made their decision and it was decided that ${votes[0].player} must be lynched. They are forced into the gallows, where they hang for whatever crimes they may have committed.
+
+      ${votes[0].player} has been eliminated with ${votes[0].count} votes. They were a ${votes[0].player.role.appearance}.
     `))
     .setColor(Color.WerewolfRed)
     .addField(
-      'Total Lynch Votes',
-      votes.map((value) => `\`${value[1]}\` ${value[0]}`),
+      'Tallied Lynch Votes',
+      votes.map((value) => `\`${value.count}\` ${value.player}`),
       true,
     )
     .addField(
       'Lynch Votes',
-      game.playersArray.all
+      game.players.alive
         .map((player) => {
-          if (player.alive) {
-            if (player.accusing) {
-              return `${player} voted to lynch ${player.accusing}`;
-            }
-
-            return `${player} did not vote to lynch anyone.`;
+          if (player.accusing) {
+            return `${player} voted to lynch ${player.accusing}`;
           }
 
-          return null;
-        })
-        .filter((value) => value !== null),
+          return `${player} did not vote to lynch anyone.`;
+        }),
       true,
     );
 }
-export function noLynch(votes: Array<Array<Player | number>>, game: Game): Discord.MessageEmbed {
-  const totalLynchVotes = votes.map((value) => `\`${value[1]}\` ${value[0]}`);
-  const lynchVotes = game.playersArray.all
-    .map((player) => {
-      if (player.alive) {
-        if (player.accusing) {
-          return `${player} voted to lynch ${player.accusing}`;
-        }
 
-        return `${player} did not vote to lynch anyone.`;
+export function noLynch(game: Game, votes: { player: Player, count: number }[]): Discord.MessageEmbed {
+  const totalLynchVotes = votes.map((value) => `\`${value.count}\` ${value.player}`);
+  const lynchVotes = game.players.alive
+    .map((player) => {
+      if (player.accusing) {
+        return `${player} voted to lynch ${player.accusing}`;
       }
 
-      return null;
+      return `${player} did not vote to lynch anyone.`;
     })
-    .filter((value) => value !== null);
 
   return new Discord.MessageEmbed()
     .setTitle('Nobody Was Lynched')
     .setDescription(dedent(`
-      > The village was unable to make a decision on who to lynch before the day ended. 
-      
+      > The village was unable to make a decision on who to lynch before the day ended.
+
       Only one player can be lynched at a time. In the event of any ties, no one will be lynched.
     `))
     .setColor(Color.VillagerBlue)
@@ -182,13 +152,67 @@ export function noLynch(votes: Array<Array<Player | number>>, game: Game): Disco
       true,
     );
 }
+
+export function princeLynch(game: Game, votes: { player: Player, count: number }[]): Discord.MessageEmbed {
+  const totalLynchVotes = votes.map((value) => `\`${value.count}\` ${value.player}`);
+  const lynchVotes = game.players.alive
+    .map((player) => {
+      if (player.accusing) {
+        return `${player} voted to lynch ${player.accusing}`;
+      }
+
+      return `${player} did not vote to lynch anyone.`;
+    })
+
+  return new Discord.MessageEmbed()
+    .setTitle('Lynching Was Overruled')
+    .setDescription(dedent(`
+      > Just as the village was about to lynch ${votes[0].player}, the king's men arrive to declare it unlawful to lynch the Royal Prince. You are all horrified that you almost lynched the prince. What is wrong with you people?
+
+      ${votes[0].player} is a Prince and therefore cannot be lynched.
+    `))
+    .setColor(Color.VillagerBlue)
+    .addField(
+      'Total Lynch Votes',
+      safeArray(totalLynchVotes),
+      true,
+    )
+    .addField(
+      'Lynch Votes',
+      safeArray(lynchVotes),
+      true,
+    );
+}
+
 export function werewolf(eliminated: Player): Discord.MessageEmbed {
   return new Discord.MessageEmbed()
     .setTitle(`${eliminated.name} has Been Eaten By Werewolves`)
     .setDescription(dedent(`
       > You all awaken to find the mangled corpse of ${eliminated} strung about the village square. It would seem they met quite a gruesome end by some wild beast last night.
-      
-      ${eliminated} has been eliminated by the werewolves.
+
+      ${eliminated} has been eliminated by the werewolves. They were a ${eliminated.role.appearance}.
+    `))
+    .setColor(Color.WerewolfRed);
+}
+export function hunterElim(hunter: Player): Discord.MessageEmbed {
+  const target = (hunter.role as Hunter).target as Player;
+
+  return new Discord.MessageEmbed()
+    .setTitle(`${target.name} has Been Shot By The Hunter`)
+    .setDescription(dedent(`
+      > When ${hunter} was about to die, they quickly pulled out their trusty gun and immediately shot ${target}. The suddenness of this event shocked everyone.
+
+      ${target} has been eliminated by the hunter. They were a ${target.role.appearance}.
+    `))
+    .setColor(Color.WerewolfRed);
+}
+export function witchElim(eliminated: Player): Discord.MessageEmbed {
+  return new Discord.MessageEmbed()
+    .setTitle(`${eliminated.name} has Been Poisoned By The Witch`)
+    .setDescription(dedent(`
+      > You all awake to find the deceased body of ${eliminated} lying in their house. The village doctor rules the death as poisoning by some witch.
+
+      ${eliminated.name} has been eliminated by the witch. They were a ${eliminated.role.appearance}.
     `))
     .setColor(Color.WerewolfRed);
 }
@@ -197,17 +221,17 @@ export function noNightElim(): Discord.MessageEmbed {
     .setTitle('A Peaceful Night')
     .setDescription(dedent(`
       > Despite everyone's fears, there were no casualties last night, but the village cannot rest as the next night may not be so peaceful.
-      
+
       For an unknown reason, no one was eliminated.
     `))
     .setColor(Color.VillagerBlue);
 }
 
 export function villagerWin(game: Game): Discord.MessageEmbed {
-  const winners = game.playersArray.all
+  const winners = game.players.all
     .filter((player) => player.role.team === Team.Villagers)
     .map((player) => `${player} \`${player.role.name}\``);
-  const losers = game.playersArray.all
+  const losers = game.players.all
     .filter((player) => player.role.team !== Team.Villagers)
     .map((player) => `${player} \`${player.role.name}\``);
 
@@ -232,10 +256,10 @@ export function villagerWin(game: Game): Discord.MessageEmbed {
 }
 
 export function werewolfWin(game: Game): Discord.MessageEmbed {
-  const winners = game.playersArray.all
+  const winners = game.players.all
     .filter((player) => player.role.team === Team.Werewolves)
     .map((player) => `${player} \`${player.role.name}\``);
-  const losers = game.playersArray.all
+  const losers = game.players.all
     .filter((player) => player.role.team !== Team.Werewolves)
     .map((player) => `${player} \`${player.role.name}\``);
 
@@ -260,10 +284,10 @@ export function werewolfWin(game: Game): Discord.MessageEmbed {
 }
 
 export function tannerWin(game: Game): Discord.MessageEmbed {
-  const winners = game.playersArray.all
+  const winners = game.players.all
     .filter((player) => player.role.team === Team.Tanner)
     .map((player) => `${player} \`${player.role.name}\``);
-  const losers = game.playersArray.all
+  const losers = game.players.all
     .filter((player) => player.role.team !== Team.Tanner)
     .map((player) => `${player} \`${player.role.name}\``);
 

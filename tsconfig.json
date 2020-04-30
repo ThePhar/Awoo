@@ -4,7 +4,7 @@
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "outDir" : "dist_dorrie",
+    "outDir" : "build",
     "sourceMap": false,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",

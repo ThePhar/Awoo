@@ -4,13 +4,13 @@ import Appearance   from '../enum/appearance';
 import Team         from '../enum/team';
 import { Villager } from './villager';
 
-export class Mayor extends Villager {
-  public name       = 'Mayor';
-  public pluralName = 'Mayors';
+export class Prince extends Villager {
+  public name       = 'Prince';
+  public pluralName = 'Princes';
   public appearance = Appearance.Villager;
   public team       = Team.Villagers;
 
   protected roleDescriptionEmbed(): D.MessageEmbed {
-    return Embed.RoleMayor(this);
+    return Embed.RolePrince(this);
   }
 }

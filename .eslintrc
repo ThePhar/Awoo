@@ -34,7 +34,9 @@
     "no-console": "off",
     "class-methods-use-this": "off",
     "arrow-body-style": "off",
-    "object-curly-newline": "off"
+    "object-curly-newline": "off",
+    "no-multi-spaces": "off",
+    "semi": "off"
   },
   "settings": {
     "import/resolver": {

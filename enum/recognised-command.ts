@@ -1,5 +1,3 @@
-import Manager from '../struct/manager';
-
 enum RecognisedCommand {
   // Public Commands
   Join = 'join',
@@ -7,13 +5,13 @@ enum RecognisedCommand {
   Rules = 'rules',
   Help = 'help',
   Accuse = 'accuse',
+  Tally = 'tally',
+  RemoveAccusation = 'clear',
+  Commands = 'commands',
 
   // Administrator Commands
   NewGame = 'newgame',
   EndGame = 'endgame',
-
-  // Developer Commands
-  Eval = 'eval',
 }
 
 export default RecognisedCommand;

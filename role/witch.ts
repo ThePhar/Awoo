@@ -6,52 +6,57 @@ import Prompt       from '../struct/prompt'
 import Team         from '../enum/team'
 import { Villager } from './villager';
 
-export class Seer extends Villager {
-  public name       = 'Seer'
-  public pluralName = 'Seers'
+export class Witch extends Villager {
+  public name       = 'Witch'
+  public pluralName = 'Witches'
   public appearance = Appearance.Villager
   public team       = Team.Villagers
 
-  /* Seer Specific Fields */
-  public availableToInspect: Player[] = []
-  public inspected = new Map<string, Player>()
-  public inspectIndex = 0
+  /* Witch Specific Fields */
+  public availableToTarget: Player[] = []
+  public targetIndex = 0
   public target?: Player
+  public doSave = false
+  public usedSavePotion = false
+  public usedKillPotion = false
 
   public async startAction(): Promise<void> {
     this.resetActionState()
 
-    // Get all players we can inspect.
-    this.availableToInspect = this.game.players.alive.filter((player) => {
-      // Do not target ourselves.
-      if (player.id === this.player.id) return false
-
-      // Do not target players that we've already inspected.
-      return !this.inspected.has(player.id)
-    })
-
-    // If we have no more targets to inspect, just short circuit us out.
-    if (this.availableToInspect.length === 0) {
-      await this.player.send(this.actionEmbed())
+    if (this.usedKillPotion && this.usedSavePotion) {
       return
     }
+
+    if (this.game.day === 1) {
+      return
+    }
+
+    // Get all players we can inspect.
+    this.availableToTarget = this.game.players.alive.filter((player) => player.id !== this.player.id)
 
     // Send the action prompt and start listening for reaction events.
     const message = await this.player.send(this.actionEmbed())
 
     // Set the reaction images.
-    await message.react('⬆️')
-    await message.react('⬇️')
-    await message.react('✅')
+    if (!this.usedKillPotion) {
+      await message.react('⬆️')
+      await message.react('⬇️')
+      await message.react('☠️')
+    }
+
+    if (this.usedSavePotion) {
+      await message.react('⚕️')
+    }
 
     // Create our prompt.
     this.prompt = new Prompt(message, this, this.reactionHandler.bind(this))
   }
 
   public resetActionState(): void {
-    this.availableToInspect = []
-    this.inspectIndex = 0
+    this.availableToTarget = []
+    this.targetIndex = 0
     this.target = undefined
+    this.doSave = false
 
     if (this.prompt) {
       this.prompt.destroy()
@@ -59,15 +64,15 @@ export class Seer extends Villager {
   }
 
   protected roleDescriptionEmbed(): D.MessageEmbed {
-    return Embed.RoleSeer(this)
+    return Embed.RoleWitch(this)
   }
   protected actionEmbed(): D.MessageEmbed {
-    return Embed.ActionSeer(this)
+    return Embed.ActionWitch(this)
   }
 
   private async reactionHandler(react: D.MessageReaction, _: D.User): Promise<void> {
     const emoji = react.emoji.name
-    const max = this.availableToInspect.length - 1
+    const max = this.availableToTarget.length - 1
 
     // If our prompt suddenly disappeared, do not proceed.
     if (!this.prompt) return
@@ -80,23 +85,41 @@ export class Seer extends Villager {
     switch (emoji) {
       // Previous selection.
       case '⬆️':
-        this.inspectIndex -= 1
-        if (this.inspectIndex < 0) {
-          this.inspectIndex = max
+        if (this.usedKillPotion) return
+
+        this.targetIndex -= 1
+        if (this.targetIndex < 0) {
+          this.targetIndex = max
         }
         break
 
       // Next selection.
       case '⬇️':
-        this.inspectIndex += 1
-        if (this.inspectIndex > max) {
-          this.inspectIndex = 0
+        if (this.usedKillPotion) return
+
+        this.targetIndex += 1
+        if (this.targetIndex > max) {
+          this.targetIndex = 0
         }
         break
 
-      // Confirm selection.
-      case '✅':
-        this.target = this.availableToInspect[this.inspectIndex]
+      // Kill/unkill someone.
+      case '☠️':
+        if (this.usedKillPotion) return
+
+        if (this.target && this.target.id === this.availableToTarget[this.targetIndex].id) {
+          this.target = undefined
+        } else {
+          this.target = this.availableToTarget[this.targetIndex]
+        }
+        break
+
+      // Save People
+      case '⚕️':
+        if (this.usedSavePotion) return
+
+        this.doSave = !this.doSave
+
         break
 
       // Invalid reaction.

@@ -1,114 +1,110 @@
-import * as Discord from 'discord.js';
-import * as Embed from '../template/role';
-import Role from '../interface/role';
-import Team from '../enum/team';
-import Player from '../struct/player';
-import Appearance from '../enum/appearance';
-import Prompt from '../struct/prompt';
+import * as D     from 'discord.js'
+import * as Embed from '../template/role'
+import Appearance from '../enum/appearance'
+import Player     from '../struct/player'
+import Prompt     from '../struct/prompt'
+import Role       from '../interface/role'
+import Team       from '../enum/team'
 
-/**
- * Werewolves are WEREWOLF team role that can, once per night, collectively choose a player to eliminate.
- */
 export class Werewolf extends Role {
-  readonly name = 'Werewolf';
-  readonly pluralName = 'Werewolves';
-  readonly appearance = Appearance.Werewolf;
-  readonly team = Team.Werewolves;
+  public name       = 'Werewolf'
+  public pluralName = 'Werewolves'
+  public appearance = Appearance.Werewolf
+  public team       = Team.Werewolves
 
-  target: Player | null = null;
-  availableToTarget: Player[] = [];
-  targetIndex = 0;
+  /* Werewolf Specific Fields */
+  availableToTarget: Player[] = []
+  targetIndex = 0
+  target?: Player
 
-  startAction(): void {
-    this.resetActionState();
+  public async startAction(): Promise<void> {
+    this.resetActionState()
 
+    // Ignore werewolf actions on the first night.
     if (this.game.day === 1) {
-      return;
+      return
     }
 
     // Get all players we can target.
-    this.availableToTarget = this.game.playersArray.alive.filter((player) => {
+    this.availableToTarget = this.game.players.alive.filter((player) => {
       // Do not target werewolves.
-      return !(player.role instanceof Werewolf);
-    });
+      return !(player.role instanceof Werewolf)
+    })
 
     // Send the action prompt and start listening for reaction events.
-    this.player.send(this.actionEmbed())
-      .then((message) => {
-        message.react('⬆️');
-        message.react('⬇️');
-        message.react('✅');
+    const message = await this.player.send(this.actionEmbed())
 
-        // Create a prompt for this message.
-        this.prompt = new Prompt(message, this, (react, user) => this.reactionHandler(react, user));
-      });
+    // Set the reaction images.
+    await message.react('⬆️')
+    await message.react('⬇️')
+    await message.react('✅')
+
+    // Create our prompt.
+    this.prompt = new Prompt(message, this, this.reactionHandler.bind(this))
   }
-  resetActionState(): void {
-    this.target = null;
-    this.availableToTarget = [];
-    this.targetIndex = 0;
+
+  public resetActionState(): void {
+    this.availableToTarget = []
+    this.targetIndex = 0
+    this.target = undefined
 
     if (this.prompt) {
-      this.prompt.destroy();
+      this.prompt.destroy()
     }
   }
 
-  protected roleDescriptionEmbed(): Discord.MessageEmbed {
-    return Embed.RoleWerewolf(this);
+  protected roleDescriptionEmbed(): D.MessageEmbed {
+    return Embed.RoleWerewolf(this)
   }
-  protected actionEmbed(): Discord.MessageEmbed {
-    return Embed.ActionWerewolf(this);
+  protected actionEmbed(): D.MessageEmbed {
+    return Embed.ActionWerewolf(this)
   }
 
-  private reactionHandler(react: Discord.MessageReaction, _: Discord.User): void {
-    const emoji = react.emoji.name;
-    const max = this.availableToTarget.length - 1;
+  private async reactionHandler(react: D.MessageReaction, _: D.User): Promise<void> {
+    const emoji = react.emoji.name
+    const max = this.availableToTarget.length - 1
 
     // If our prompt suddenly disappeared, do not proceed.
-    if (!this.prompt) return;
-
-    // No point in asking for input if there's no one to inspect.
-    if (max < 0) {
-      this.prompt.destroy();
-    }
+    if (!this.prompt) return
 
     switch (emoji) {
       // Previous selection.
       case '⬆️':
-        this.targetIndex -= 1;
+        this.targetIndex -= 1
         if (this.targetIndex < 0) {
-          this.targetIndex = max;
+          this.targetIndex = max
         }
-        break;
+        break
 
       // Next selection.
       case '⬇️':
-        this.targetIndex += 1;
+        this.targetIndex += 1
         if (this.targetIndex > max) {
-          this.targetIndex = 0;
+          this.targetIndex = 0
         }
-        break;
+        break
 
       // Confirm selection.
       case '✅':
-        this.target = this.availableToTarget[this.targetIndex];
-
+        this.target = this.availableToTarget[this.targetIndex]
         // Send a message to all werewolves saying their target changed.
-        this.game.playersArray.aliveWerewolves.forEach((werewolf) => {
-          werewolf.send(`${this.player} has targeted ${this.target}.`);
-        });
-        break;
+        this.game.players.alive.forEach((player) => {
+          if (player.role instanceof Werewolf) {
+            player.send(`${this.player} has targeted ${this.target}.`)
+          }
+        })
+        break
 
       // Invalid reaction.
       default:
-        return;
+        return
     }
 
     // Update the prompt message for all living werewolves.
-    this.game.playersArray.aliveWerewolves.forEach((werewolf) => {
-      if (werewolf.role.prompt) {
-        werewolf.role.prompt.message.edit(this.actionEmbed());
+    this.game.players.alive.forEach((player) => {
+      if (player.role instanceof Werewolf && player.role.prompt) {
+        player.role.prompt.message.edit(this.actionEmbed())
       }
-    });
+    })
   }
 }
