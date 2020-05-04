@@ -147,7 +147,7 @@ export default class Game {
 
       // If we passed the threshold of minimum players, schedule the game to start.
       if (this.playerCount >= this.playerMin && !this.schedule) {
-        this.schedule = Schedule.scheduleJob(Time.getNextNight().toDate(), this.startNewGame.bind(this))
+        this.schedule = Schedule.scheduleJob(Time.getNextNight().add(1, 'day').toDate(), this.startNewGame.bind(this))
         await this.announce('Minimum number of players signed up reached. Scheduling to start the game...')
       }
 
@@ -351,7 +351,7 @@ export default class Game {
 
     // Mute all non-players and set rate limit.
     await this.channel.updateOverwrite(this.channel.guild.roles.everyone, { SEND_MESSAGES: false })
-    await this.channel.setRateLimitPerUser(3)
+    await this.channel.setRateLimitPerUser(5)
 
     // Send everyone their role and unmute them.
     this.playerMap.forEach((player) => {

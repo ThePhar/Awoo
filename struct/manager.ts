@@ -39,31 +39,32 @@ export default class Manager {
     // Process the appropriate commands.
     switch (command.type) {
       case RecognisedCommand.NewGame:
-        this.commandNewGame(member, channel, reply);
+        this.commandNewGame(member, channel);
         break;
       case RecognisedCommand.Join:
-        this.commandJoin(member, channel, reply);
+        this.commandJoin(member, channel);
         break;
       case RecognisedCommand.Leave:
-        this.commandLeave(member, channel, reply);
+        this.commandLeave(member, channel);
         break;
       case RecognisedCommand.Accuse:
-        this.commandAccuse(member, channel, reply, command);
+        this.commandAccuse(member, channel, command);
         break;
       case RecognisedCommand.RemoveAccusation:
-        this.commandRemoveAccusation(member, channel, reply);
+        this.commandRemoveAccusation(member, channel);
         break;
       case RecognisedCommand.Help:
-        this.commandHelp(member, channel, reply);
+        this.commandHelp(member, channel);
         break;
       case RecognisedCommand.Tally:
-        this.commandTally(member, channel, reply);
+        this.commandTally(member, channel);
         break;
       default:
         break;
     }
 
-    await message.delete();
+    // Delete the message after 5 seconds.
+    setTimeout(() => message.delete(), 5000);
   }
   /**
    * If a reaction event was fired on an active prompt message, fire the event assigned to that prompt.
@@ -88,7 +89,7 @@ export default class Manager {
   }
 
   /* Command Handlers */
-  private commandNewGame(member: D.GuildMember, channel: D.TextChannel, reply: Function) {
+  private commandNewGame(member: D.GuildMember, channel: D.TextChannel) {
     if (Manager.isAdministrator(member)) {
       Game.generateGame(channel, this)
         .then((game) => (game ? this.games.set(channel.id, game) : ''));
@@ -96,62 +97,62 @@ export default class Manager {
     }
 
     // User is not an administrator.
-    reply('Only administrators of this server are allowed to create new games.');
+    channel.send('Only administrators of this server are allowed to create new games.');
   }
-  private commandJoin(member: D.GuildMember, channel: D.TextChannel, reply: Function) {
+  private commandJoin(member: D.GuildMember, channel: D.TextChannel) {
     const game = this.games.get(channel.id);
     if (game) {
       game.addPlayer(member);
       return;
     }
 
-    reply('There is no game to join.');
+    channel.send('There is no game to join.');
   }
-  private commandLeave(member: D.GuildMember, channel: D.TextChannel, reply: Function) {
+  private commandLeave(member: D.GuildMember, channel: D.TextChannel) {
     const game = this.games.get(channel.id);
     if (game) {
       game.removePlayer(member);
       return;
     }
 
-    reply('There is no game to leave.');
+    channel.send('There is no game to leave.');
   }
-  private commandAccuse(member: D.GuildMember, channel: D.TextChannel, reply: Function, command: Command) {
+  private commandAccuse(member: D.GuildMember, channel: D.TextChannel, command: Command) {
     const game = this.games.get(channel.id);
     const player = game ? game.getPlayer(member.id) : undefined;
 
     if (!game) {
-      reply('There is no game in progress.');
+      channel.send('There is no game in progress.');
       return;
     }
 
     if (!player) {
-      reply('Only players can make accusations.');
+      channel.send('Only players can make accusations.');
       return;
     }
 
     player.accuse(command.joined);
   }
-  private commandRemoveAccusation(member: D.GuildMember, channel: D.TextChannel, reply: Function) {
+  private commandRemoveAccusation(member: D.GuildMember, channel: D.TextChannel) {
     const game = this.games.get(channel.id);
     const player = game ? game.getPlayer(member.id) : undefined;
 
     if (!game) {
-      reply('There is no game in progress.');
+      channel.send('There is no game in progress.');
       return;
     }
 
     if (!player) {
-      reply('Only players can clear accusations.');
+      channel.send('Only players can clear accusations.');
       return;
     }
 
     player.clearAccusationUserDriven();
   }
-  private commandHelp(_: D.GuildMember, channel: D.TextChannel, reply: Function) {
+  private commandHelp(_: D.GuildMember, channel: D.TextChannel) {
     const game = this.games.get(channel.id);
     if (game) {
-      reply(dedent(`
+      channel.send(dedent(`
         For information about roles, go to https://awoo.io
         
         Command help:
@@ -166,12 +167,12 @@ export default class Manager {
       `))
     }
 
-    reply(
+    channel.send(
       'There is no game running right now. If you are an administrator, you can run `/awoo newgame` to configure this '
     + 'channel to start a game',
     );
   }
-  private commandTally(member: D.GuildMember, channel: D.TextChannel, reply: Function) {
+  private commandTally(member: D.GuildMember, channel: D.TextChannel) {
     const game = this.games.get(channel.id);
     if (game) {
       const lynchVotes = game.players.alive
@@ -185,13 +186,13 @@ export default class Manager {
         .filter((value) => value !== null)
 
       if (lynchVotes.length > 0) {
-        reply(new D.MessageEmbed()
+        channel.send(new D.MessageEmbed()
           .setDescription('Here are the list of current votes.')
           .addField('Lynch Votes', lynchVotes))
         return
       }
 
-      reply(`${member}, there are no accusation as of right now.`)
+      channel.send(`${member}, there are no accusation as of right now.`)
     }
   }
 }

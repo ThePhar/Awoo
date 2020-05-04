@@ -10,4 +10,10 @@ if (result.error) {
 const client = new Discord.Client();
 
 client.login(process.env.DISCORD_BOT_TOKEN)
-  .then(() => new Manager(client));
+  .then((message) => {
+    console.log(message);
+    console.log('We online!')
+
+    return new Manager(client);
+  })
+  .catch((err) => console.error(err));
