@@ -3,50 +3,35 @@
     "es6": true,
     "node": true
   },
-  "extends": [
-    "airbnb-base"
-  ],
-  "globals": {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly",
-    "fail": "readonly"
-  },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2018,
-    "sourceType": "module"
+    "sourceType": "module",
+    "project": "./tsconfig.json"
   },
-  "plugins": [
-    "@typescript-eslint"
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
-  "rules": {
-    "import/extensions": ["error", "ignorePackages", {
-      "js": "never",
-      "jsx": "never",
-      "ts": "never",
-      "tsx": "never"
-    }],
-    "import/prefer-default-export": "off",
-    "no-unused-vars": "off",
-    "lines-between-class-members": "off",
-    "max-len": ["error", 120],
-    "no-underscore-dangle": "off",
-    "no-console": "off",
-    "class-methods-use-this": "off",
-    "arrow-body-style": "off",
-    "object-curly-newline": "off",
-    "no-multi-spaces": "off",
-    "semi": "off"
-  },
   "settings": {
     "import/resolver": {
       "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+        "extensions": [".ts"]
       }
     }
   },
   "ignorePatterns": [
     "node_modules/",
     "coverage/"
-  ]
+  ],
+  "rules": {
+    "semi": ["error", "never"],
+    "max-len": ["error", 120],
+    "quotes": ["error", "double"],
+    "no-explict-any": "off",
+    "prefer-rest-params": "off"
+  }
 }

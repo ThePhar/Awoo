@@ -1,7 +1,9 @@
 enum Phase {
-    Waiting = "waiting",
-    Day = "day",
-    Night = "night",
+  AwaitingInitialization,
+  WaitingForPlayers,
+  Day,
+  Night,
+  GameOver
 }
 
-export default Phase;
+export default Phase
