@@ -10,7 +10,7 @@ import Color from "../enum/color"
  */
 export function playerAddDMCheck(game: Game, member: D.GuildMember): D.MessageEmbed {
   return createTemplate(game)
-    .setDescription(`Hey ${member}, just shooting you a DM to let you know you joined the game in ${game.channel}!`)
+    .setDescription(`Hey ${member}, just shooting you a DM to let you know you joined the game in ${game.name}!`)
 }
 
 /**
@@ -63,8 +63,8 @@ export function unableToDMPlayer(game: Game, member: D.GuildMember): D.MessageEm
  * @param game The game they joined.
  * @param member The member that joined.
  */
-export function success(game: Game, member: D.GuildMember): D.MessageEmbed {
+export function successfulJoin(game: Game, member: D.GuildMember): D.MessageEmbed {
   return new D.MessageEmbed()
-    .setDescription(`${member}, you have joined the next game in ${game.channel}.`)
+    .setDescription(`${member}, you have joined the next game in ${game.name}.`)
     .setColor(Color.VillagerBlue)
 }

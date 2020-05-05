@@ -9,10 +9,12 @@ import Color from "../enum/color"
  */
 export default function createTemplate(game: Game): D.MessageEmbed {
   return new D.MessageEmbed()
-    .setAuthor(game.name)
+    .setAuthor(`${game.guild} #${game.name}`, game.iconURL)
     .setFooter(getRandomHint())
     .setColor(Color.Default)
 }
 
-export * from "./add-player"
+export * from "./player-join"
+export * from "./player-leave"
+export * from "./elimination"
 export * from "./hint"

@@ -4,15 +4,18 @@ import Phase from "../enum/phase"
 import GameState from "./game-state"
 import Settings from "./settings"
 
-import * as AddPlayerTemplate from "../template/add-player"
+import * as PlayerJoinTemplate from "../template/player-join"
+import * as PlayerLeaveTemplate from "../template/player-leave"
+import Elimination from "../enum/elimination"
+
+type PlayerMap = Map<string, Player>
 
 export default class Game {
-  public gameStates: GameState[] = []
-  public settings: Settings = new Settings()
-  public channel: D.TextChannel
-
-  public get state(): GameState { return this.gameStates[this.gameStates.length - 1] }
   public get name(): string { return this.channel.name }
+  public get playerCount(): number { return this.players.size }
+  public get state(): GameState { return this.gameStates[this.gameStates.length - 1] }
+  public get iconURL(): string { return this.channel.guild.iconURL() || "" }
+  public get guild(): string { return this.channel.guild.name }
 
   public constructor(channel: D.TextChannel) {
     this.channel = channel
@@ -27,45 +30,130 @@ export default class Game {
   }
 
   /**
+   * Find all players that match a particular substring or id
+   * @param identifier A substring of a display name, tag, or discord mention.
+   */
+  public findPlayers(identifier: string): Player[] {
+    const players: Player[] = []
+
+    // Do not attempt to search with an empty string.
+    if (identifier.trim() === "")
+      return []
+
+    // Determine if we were supplied a discord mention identifier or a name.
+    const discordMentionFormat = /^<@!?([0-9]+)>$/
+    if (discordMentionFormat.test(identifier)) {
+      const match = discordMentionFormat.exec(identifier) as RegExpExecArray
+      const player = this.players.get(match[1])
+
+      return player ? [player] : []
+    }
+
+    // Make our substring case-insensitive.
+    const substring = identifier.toLowerCase()
+
+    this.players.forEach((player) => {
+      // More case-insensitive setup.
+      const tag = player.tag.toLowerCase()
+      const displayName = player.name.toLowerCase()
+
+      // Find all players that include the substring in their display name or tag.
+      if (tag.includes(substring) || displayName.includes(substring))
+        players.push(player)
+    })
+
+    return players
+  }
+
+  /**
+   * Find a player associated with a member object.
+   * @param member
+   */
+  public getPlayer(member: D.GuildMember): Player | undefined {
+    return this.players.get(member.id)
+  }
+
+  /**
    * Check if a player is able to join a game and add them to the next upcoming game if allowed.
    * @param member The member attempting to join.
    */
   public async playerJoin(member: D.GuildMember): Promise<void> {
-    const { players, phase, playerCount } = this.state
+    const { phase } = this.state
 
     // Do not add a player if the player already existed in this game.
-    if (players.has(member.id)) {
-      await this.announce(AddPlayerTemplate.playerAlreadyExists(this, member))
+    if (this.players.has(member.id)) {
+      await this.announce(PlayerJoinTemplate.playerAlreadyExists(this, member))
       return
     }
 
     // Do not add a player if a game is in progress.
     if (phase !== Phase.WaitingForPlayers) {
-      await this.announce(AddPlayerTemplate.gameInProgress(this, member))
+      await this.announce(PlayerJoinTemplate.gameInProgress(this, member))
       return
     }
 
     // Do not add a player if we reached the max cap on players.
-    if (playerCount >= this.settings.maxPlayers) {
-      await this.announce(AddPlayerTemplate.maxPlayersReached(this, member))
+    if (this.playerCount >= this.settings.maxPlayers) {
+      await this.announce(PlayerJoinTemplate.maxPlayersReached(this, member))
       return
     }
 
     // Do not add a player if they do not accept DMs.
     try {
-      await member.send(AddPlayerTemplate.playerAddDMCheck(this, member))
+      await member.send(PlayerJoinTemplate.playerAddDMCheck(this, member))
     } catch {
-      await this.announce(AddPlayerTemplate.unableToDMPlayer(this, member))
+      await this.announce(PlayerJoinTemplate.unableToDMPlayer(this, member))
       return
     }
 
-    await this.announce(AddPlayerTemplate.success(this, member))
-
-    // Create our player and add it to our game.
-    const newPlayers = new Map<string, Player>()
-    const player = new Player(member)
-    players.forEach((player, id) => newPlayers.set(id, player))
-    newPlayers.set(member.id, player)
-    this.gameStates.push(...this.gameStates, new GameState({ players: newPlayers }, this.state))
+    // Add our player to the game.
+    await this.announce(PlayerJoinTemplate.successfulJoin(this, member))
+    this.addPlayer(member)
   }
+
+  /**
+   * Remove a player from the game. If they are in an on-going game, forcefully eliminate them.
+   * @param member
+   */
+  public async playerLeave(member: D.GuildMember): Promise<void> {
+    const player = this.players.get(member.id)
+
+    // If we couldn't find a player, it means they were not in the game to begin with.
+    if (!player) {
+      await this.announce(PlayerLeaveTemplate.playerDoesNotExist(this, member))
+      return
+    }
+
+    // Kill this player if they were already alive.
+    if (player.alive) {
+      await player.eliminate(Elimination.ForcedExit)
+    }
+
+    // Remove this player.
+    await this.announce(PlayerLeaveTemplate.successfulLeave(this, member))
+    this.players.delete(member.id)
+  }
+
+  /**
+   * Forcefully add/reset a player to the game.
+   * @param member The discord member object.
+   */
+  private addPlayer(member: D.GuildMember): void {
+    if (this.players.has(member.id)) {
+      this.players.set(member.id, new Player(member, this))
+    }
+  }
+
+  /**
+   * Forcefully delete a player from the game.
+   * @param member The discord member object.
+   */
+  private removePlayer(member: D.GuildMember): void {
+    this.players.delete(member.id)
+  }
+
+  public gameStates: GameState[] = []
+  public settings: Settings = new Settings()
+  private channel: D.TextChannel
+  private players: PlayerMap = new Map<string, Player>();
 }

@@ -11,6 +11,7 @@
     "dev": "nodemon --exec ts-node index.ts --watch ."
   },
   "devDependencies": {
+    "@types/dedent": "^0.7.0",
     "@types/node": "^13.13.4",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
@@ -21,6 +22,7 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
+    "dedent": "^0.7.0",
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0"
   }
