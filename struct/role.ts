@@ -8,9 +8,7 @@ import Game from "./game"
 export default abstract class Role {
   public readonly player:  Player
   public prompt?: Prompt
-
   public abstract name: string
-  public abstract pluralName: string
   public abstract appearance: Appearance
   public abstract team: Team
 
@@ -19,18 +17,17 @@ export default abstract class Role {
     this.player = player
   }
 
-  public async startRole(): Promise<void> {
-    await this.player.member.send(this.roleDescriptionEmbed())
-  }
-  public async startAction(): Promise<void> { /* Do Nothing By Default */ }
-  public resetActionState(): void { /* Do Nothing By Default */ }
+  /**
+   * Send the role embed message associated with this role to the player.
+   */
+  public startRole = async(): Promise<void> => { await this.player.member.send(this.roleEmbed()) }
 
-  protected roleDescriptionEmbed(): D.MessageEmbed {
-    throw new Error("Role description not implemented.")
-  }
-  protected actionEmbed(): D.MessageEmbed {
-    throw new Error("Action description not implemented.")
-  }
+  // These need to be overwritten by actionable roles.
+  public startAction = async(): Promise<void> => { /**/ }
+  public resetActionState = (): void => { /**/ }
+
+  public abstract roleEmbed: () => D.MessageEmbed
+  public abstract actionEmbed: (() => D.MessageEmbed) | undefined
 
   public get game(): Game { return this.player.game }
 }
