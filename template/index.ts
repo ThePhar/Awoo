@@ -7,10 +7,19 @@ import Color from "../enum/color"
  * Default template for larger embed messages.
  * @param game
  */
-export default function createTemplate(game: Game): D.MessageEmbed {
+export default function fullAnnouncementEmbed(game: Game): D.MessageEmbed {
   return new D.MessageEmbed()
     .setAuthor(`${game.guild} #${game.name}`, game.iconURL)
     .setFooter(getRandomHint())
+    .setColor(Color.Default)
+}
+
+/**
+ * Smaller embed for highlighting smaller data.
+ * @param game
+ */
+export function summaryEmbed(game: Game): D.MessageEmbed {
+  return new D.MessageEmbed()
     .setColor(Color.Default)
 }
 

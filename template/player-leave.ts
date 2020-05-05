@@ -1,6 +1,7 @@
 import * as D from "discord.js"
 import Game from "../struct/game"
 import Color from "../enum/color"
+import { summaryEmbed } from "./index"
 
 /**
  * The message to announce in the channel if the user was not already a player.
@@ -8,7 +9,7 @@ import Color from "../enum/color"
  * @param member The member trying to leave.
  */
 export function playerDoesNotExist(game: Game, member: D.GuildMember): D.MessageEmbed {
-  return new D.MessageEmbed()
+  return summaryEmbed(game)
     .setDescription(`Hey ${member}, you are already not in this game.`)
     .setColor(Color.WerewolfRed)
 }
@@ -19,7 +20,7 @@ export function playerDoesNotExist(game: Game, member: D.GuildMember): D.Message
  * @param member The member that left.
  */
 export function successfulLeave(game: Game, member: D.GuildMember): D.MessageEmbed {
-  return new D.MessageEmbed()
+  return summaryEmbed(game)
     .setDescription(`${member} has left the game in ${game.name}.`)
     .setColor(Color.VillagerBlue)
 }

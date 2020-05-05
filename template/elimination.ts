@@ -2,7 +2,7 @@ import dedent from "dedent"
 import * as D from "discord.js"
 import Color from "../enum/color"
 import Player from "../struct/player"
-import createTemplate from "./index"
+import fullAnnouncementEmbed from "./index"
 import RoleReveal from "../enum/role-reveal"
 import Game, { VoteArray } from "../struct/game"
 
@@ -32,7 +32,7 @@ export function forcedElimination(eliminated: Player): D.MessageEmbed {
   const flavorText = `For lore purposes, ${eliminated} has died under mysterious circumstances.`
   const description = `${eliminated} has been forcefully eliminated from the game.`
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.WerewolfRed)
     .setTitle(`${eliminated.name} Was Forcefully Eliminated`)
     .setDescription(dedent(`
@@ -51,7 +51,7 @@ export function werewolfElimination(eliminated: Player): D.MessageEmbed {
     + "would seem they met a quite gruesome end by some wild beasts last night."
   const description = `${eliminated} has been eliminated by the **Werewolves**.`
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.WerewolfRed)
     .setTitle(`${eliminated.name} Was Eaten`)
     .setDescription(dedent(`
@@ -71,7 +71,7 @@ export function hunterElimination(eliminated: Player, hunter: Player): D.Message
     + `at ${eliminated}. Both of them do not survive.`
   const description = `${eliminated} has been eliminated by **Hunter** ${hunter}.`
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.WerewolfRed)
     .setTitle(`${eliminated.name} Was Shot`)
     .setDescription(dedent(`
@@ -91,7 +91,7 @@ export function witchElimination(eliminated: Player): D.MessageEmbed {
     + "last night; most likely poisoned by a witch."
   const description = `${eliminated} has been eliminated by a **Witch**.`
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.WerewolfRed)
     .setTitle(`${eliminated.name} Was Poisoned`)
     .setDescription(dedent(`
@@ -112,7 +112,7 @@ export function cupidElimination(eliminated: Player, lover: Player): D.MessageEm
     + "doctor rules their death from cardiac arrest brought on by the intense depression of losing their lover."
   const description = `${eliminated} has been eliminated by the effects of **Cupid**.`
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.WerewolfRed)
     .setTitle(`${eliminated.name} Was Heartbroken`)
     .setDescription(dedent(`
@@ -138,7 +138,7 @@ export function bomberElimination(bomber: Player, victims: Player[]): D.MessageE
     .map((victim) => `${victim} has been eliminated by the **Mad Bomber**. ${revealRole(victim)}`)
     .join("\n")
 
-  return createTemplate(bomber.game)
+  return fullAnnouncementEmbed(bomber.game)
     .setColor(Color.WerewolfRed)
     .setTitle("The Mad Bomber Exploded")
     .setDescription(dedent(`
@@ -159,7 +159,7 @@ export function huntressElimination(eliminated: Player): D.MessageEmbed {
     + "body in the morning just outside their residence."
   const description = `${eliminated} has been eliminated by a **Huntress**.`
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.WerewolfRed)
     .setTitle(`${eliminated.name} Was Struck Through`)
     .setDescription(dedent(`
@@ -179,7 +179,7 @@ export function teenageWerewolfEffectElimination(eliminated: Player): D.MessageE
     + "them before they could mature. Unfortunately, they failed to say it yesterday and died in the night. Oops."
   const description = `${eliminated} has been eliminated by failing to say "wolf" yesterday.`
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.WerewolfRed)
     .setTitle(`${eliminated.name} Was Too Immature`)
     .setDescription(dedent(`
@@ -201,7 +201,7 @@ export function toughGuyElimination(eliminated: Player): D.MessageEmbed {
   const description = `${eliminated} has been eliminated by the **Werewolves**, but managed to survive an additional `
     + "day because of their toughness."
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.WerewolfRed)
     .setTitle(`${eliminated.name} Succumbed To Their Wounds`)
     .setDescription(dedent(`
@@ -222,7 +222,7 @@ export function vampireElimination(eliminated: Player): D.MessageEmbed {
     + "after feeding on them and it activated the moment they were in the hot-seat."
   const description = `${eliminated} has been eliminated by the **Vampires'** effect.`
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.VampirePurple)
     .setTitle(`${eliminated.name} Collapsed During Accusation`)
     .setDescription(dedent(`
@@ -243,7 +243,7 @@ export function lynchElimination(eliminated: Player, votes: VoteArray): D.Messag
   const description = `${eliminated} has been eliminated by the village mob.`
   const voteTable = votes.map(({ player, count }) => `\`${count}\` ${player}`)
 
-  return createTemplate(eliminated.game)
+  return fullAnnouncementEmbed(eliminated.game)
     .setColor(Color.WerewolfRed)
     .setTitle(`${eliminated.name} Was Lynched`)
     .setDescription(dedent(`
@@ -265,7 +265,7 @@ export function noLynchElimination(game: Game, votes: VoteArray): D.MessageEmbed
     + "hope for the best in the night."
   const voteTable = votes.map(({ player, count }) => `\`${count}\` ${player}`)
 
-  const embed = createTemplate(game)
+  const embed = fullAnnouncementEmbed(game)
     .setColor(Color.VillagerBlue)
     .setTitle("Nobody Was Lynched")
     .setDescription(dedent(`
@@ -289,7 +289,7 @@ export function noNightElimination(game: Game): D.MessageEmbed {
   const flavorText = "Despite everyone's fears, there were no casualties last night. However, the village cannot rest "
     + "quite yet, as the next night may not be as peaceful."
 
-  return createTemplate(game)
+  return fullAnnouncementEmbed(game)
     .setColor(Color.VillagerBlue)
     .setTitle("Nobody Was Eliminated")
     .setDescription(dedent(`

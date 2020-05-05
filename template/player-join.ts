@@ -1,6 +1,6 @@
 import * as D from "discord.js"
 import Game from "../struct/game"
-import createTemplate from "./index"
+import fullAnnouncementEmbed, { summaryEmbed } from "./index"
 import Color from "../enum/color"
 
 /**
@@ -9,7 +9,7 @@ import Color from "../enum/color"
  * @param member The member trying to join.
  */
 export function playerAddDMCheck(game: Game, member: D.GuildMember): D.MessageEmbed {
-  return createTemplate(game)
+  return fullAnnouncementEmbed(game)
     .setDescription(`Hey ${member}, just shooting you a DM to let you know you joined the game in ${game.name}!`)
 }
 
@@ -19,7 +19,7 @@ export function playerAddDMCheck(game: Game, member: D.GuildMember): D.MessageEm
  * @param member The member trying to join.
  */
 export function playerAlreadyExists(game: Game, member: D.GuildMember): D.MessageEmbed {
-  return new D.MessageEmbed()
+  return summaryEmbed(game)
     .setDescription(`${member}, you are already signed up for the next game.`)
     .setColor(Color.WerewolfRed)
 }
@@ -30,7 +30,7 @@ export function playerAlreadyExists(game: Game, member: D.GuildMember): D.Messag
  * @param member The member trying to join.
  */
 export function gameInProgress(game: Game, member: D.GuildMember): D.MessageEmbed {
-  return new D.MessageEmbed()
+  return summaryEmbed(game)
     .setDescription(`${member}, you cannot join a game in progress.`)
     .setColor(Color.WerewolfRed)
 }
@@ -42,7 +42,7 @@ export function gameInProgress(game: Game, member: D.GuildMember): D.MessageEmbe
  * @param member The member trying to join.
  */
 export function maxPlayersReached(game: Game, member: D.GuildMember): D.MessageEmbed {
-  return new D.MessageEmbed()
+  return summaryEmbed(game)
     .setDescription(`${member}, we have reached the maximum allowed players (${game.settings.maxPlayers}).`)
     .setColor(Color.WerewolfRed)
 }
@@ -53,7 +53,7 @@ export function maxPlayersReached(game: Game, member: D.GuildMember): D.MessageE
  * @param member The member trying to join.
  */
 export function unableToDMPlayer(game: Game, member: D.GuildMember): D.MessageEmbed {
-  return new D.MessageEmbed()
+  return summaryEmbed(game)
     .setDescription(`${member}, you must allow Direct Messages from users of this server to join.`)
     .setColor(Color.WerewolfRed)
 }
@@ -64,7 +64,7 @@ export function unableToDMPlayer(game: Game, member: D.GuildMember): D.MessageEm
  * @param member The member that joined.
  */
 export function successfulJoin(game: Game, member: D.GuildMember): D.MessageEmbed {
-  return new D.MessageEmbed()
+  return summaryEmbed(game)
     .setDescription(`${member}, you have joined the next game in ${game.name}.`)
     .setColor(Color.VillagerBlue)
 }

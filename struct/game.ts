@@ -3,20 +3,18 @@ import Player from "./player"
 import Phase from "../enum/phase"
 import GameState from "./game-state"
 import Settings from "./settings"
-
-import * as PlayerJoinTemplate from "../template/player-join"
-import * as PlayerLeaveTemplate from "../template/player-leave"
 import Elimination from "../enum/elimination"
+
+import * as Template from "../template"
 
 export type PlayerMap = Map<string, Player>
 export type VoteArray = { player: Player; count: number }[]
 
 export default class Game {
-  public get name(): string { return this.channel.name }
-  public get playerCount(): number { return this.players.size }
-  public get state(): GameState { return this.gameStates[this.gameStates.length - 1] }
-  public get iconURL(): string { return this.channel.guild.iconURL() || "" }
-  public get guild(): string { return this.channel.guild.name }
+  public gameStates: GameState[] = []
+  public settings: Settings = new Settings()
+  private channel: D.TextChannel
+  private players: PlayerMap = new Map<string, Player>();
 
   public constructor(channel: D.TextChannel) {
     this.channel = channel
@@ -83,32 +81,32 @@ export default class Game {
 
     // Do not add a player if the player already existed in this game.
     if (this.players.has(member.id)) {
-      await this.announce(PlayerJoinTemplate.playerAlreadyExists(this, member))
+      await this.announce(Template.PlayerJoin.playerAlreadyExists(this, member))
       return
     }
 
     // Do not add a player if a game is in progress.
     if (phase !== Phase.WaitingForPlayers) {
-      await this.announce(PlayerJoinTemplate.gameInProgress(this, member))
+      await this.announce(Template.PlayerJoin.gameInProgress(this, member))
       return
     }
 
     // Do not add a player if we reached the max cap on players.
     if (this.playerCount >= this.settings.maxPlayers) {
-      await this.announce(PlayerJoinTemplate.maxPlayersReached(this, member))
+      await this.announce(Template.PlayerJoin.maxPlayersReached(this, member))
       return
     }
 
     // Do not add a player if they do not accept DMs.
     try {
-      await member.send(PlayerJoinTemplate.playerAddDMCheck(this, member))
+      await member.send(Template.PlayerJoin.playerAddDMCheck(this, member))
     } catch {
-      await this.announce(PlayerJoinTemplate.unableToDMPlayer(this, member))
+      await this.announce(Template.PlayerJoin.unableToDMPlayer(this, member))
       return
     }
 
     // Add our player to the game.
-    await this.announce(PlayerJoinTemplate.successfulJoin(this, member))
+    await this.announce(Template.PlayerJoin.successfulJoin(this, member))
     this.addPlayer(member)
   }
 
@@ -121,17 +119,19 @@ export default class Game {
 
     // If we couldn't find a player, it means they were not in the game to begin with.
     if (!player) {
-      await this.announce(PlayerLeaveTemplate.playerDoesNotExist(this, member))
+      await this.announce(Template.PlayerLeave.playerDoesNotExist(this, member))
       return
     }
 
     // Kill this player if they were already alive.
     if (player.alive) {
       await player.eliminate(Elimination.ForcedExit)
+
+      // TODO: Check for win condition.
     }
 
     // Remove this player.
-    await this.announce(PlayerLeaveTemplate.successfulLeave(this, member))
+    await this.announce(Template.PlayerLeave.successfulLeave(this, member))
     this.players.delete(member.id)
   }
 
@@ -153,8 +153,9 @@ export default class Game {
     this.players.delete(member.id)
   }
 
-  public gameStates: GameState[] = []
-  public settings: Settings = new Settings()
-  private channel: D.TextChannel
-  private players: PlayerMap = new Map<string, Player>();
+  public get name(): string { return this.channel.name }
+  public get playerCount(): number { return this.players.size }
+  public get state(): GameState { return this.gameStates[this.gameStates.length - 1] }
+  public get iconURL(): string { return this.channel.guild.iconURL() || "" }
+  public get guild(): string { return this.channel.guild.name }
 }
