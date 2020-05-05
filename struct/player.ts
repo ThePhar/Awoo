@@ -4,7 +4,7 @@ import Elimination, { EliminationContext, EliminationsWithNoContext } from "../e
 import Role from "./role"
 
 import * as EliminationTemplate from "../template/elimination"
-import { Werewolf } from "../role/werewolf"
+import * as Roles from "../role"
 
 export default class Player {
   public readonly game: Game
@@ -15,7 +15,7 @@ export default class Player {
   constructor(member: D.GuildMember, game: Game) {
     this.member = member
     this.game = game
-    this.role = new Werewolf(this)
+    this.role = new Roles.Villager(this)
   }
 
   public toString = (): string => `${this.member}`

@@ -30,23 +30,7 @@ async function start(client: D.Client): Promise<void> {
 
   // Test your embed message here.
   if (member && member2) {
-    // await player.eliminate(Elimination.ForcedExit)
-    // await player.eliminate(Elimination.Werewolf)
-    // await player.eliminate(Elimination.Huntress)
-    // await player.eliminate(Elimination.ToughGuyWerewolf)
-    // await player.eliminate(Elimination.Vampire)
-    // await player.eliminate(Elimination.Witch)
-    // await player.eliminate(Elimination.TeenageWerewolfCondition)
-    // await player.eliminate(Elimination.Hunter, contextPlayer)
-    // await player.eliminate(Elimination.Cupid, contextPlayer)
-    // await player.eliminate(Elimination.Lynching, votes)
-
-    // Bomber
-    // await game.announce(bomberElimination(contextPlayer, [player]))
-
-    // Non-Eliminations
-    await game.announce(Template.Elimination.noLynchElimination(game, votes))
-    await game.announce(Template.Elimination.noNightElimination(game))
+    await player.role.startRole()
   }
 
   // await game.announce(new D.MessageEmbed()

@@ -20,6 +20,8 @@ export default class Game {
     this.channel = channel
   }
 
+  public toString = (): string => this.channel.toString()
+
   /**
    * Send a message to the channel that this game object is assigned in.
    * @param content The message to send.

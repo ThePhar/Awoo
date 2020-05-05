@@ -1,8 +1,10 @@
 import * as D from "discord.js"
-import Role from "../struct/role"
+import * as Template from "../template"
 import Appearance from "../enum/appearance"
+import Color from "../enum/color"
+import Role from "../struct/role"
 import Team from "../enum/team"
-import fullAnnouncementEmbed from "../template"
+import TeamsInPlay from "../enum/teams-in-play"
 
 export class Villager extends Role {
   public name = "Villager"
@@ -10,7 +12,12 @@ export class Villager extends Role {
   public team = Team.Villagers
   public actionEmbed = undefined
 
-  public roleEmbed = (): D.MessageEmbed => fullAnnouncementEmbed(this.game)
+  public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Villager")
-    .setDescription("")
+    .setThumbnail(Template.Role.villagerThumbnail)
+    .setColor(Color.VillagerBlue)
+    .addField("Objective", Template.Objective.villagerObjective(TeamsInPlay.WerewolvesOnly), true)
+    .addField("Team", this.team, true)
+    .addField("During The Day", Template.Actions.lynchingRules(this.game))
+    .setDescription("Villagers' sole purpose is to find the Werewolves and eliminate them.")
 }
