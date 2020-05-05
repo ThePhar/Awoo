@@ -4,7 +4,7 @@ import Color from "../enum/color"
 import Player from "../struct/player"
 import createTemplate from "./index"
 import RoleReveal from "../enum/role-reveal"
-import Game from "../struct/game"
+import Game, { VoteArray } from "../struct/game"
 
 /**
  * Print the role reveal text depending on the game setting.
@@ -127,7 +127,7 @@ export function cupidElimination(eliminated: Player, lover: Player): D.MessageEm
  * @param bomber The bomber player that was eliminated.
  * @param victims A list of players that were killed by the bomber's effect.
  */
-export function bomberEliminations(bomber: Player, victims: Player[]): D.MessageEmbed {
+export function bomberElimination(bomber: Player, victims: Player[]): D.MessageEmbed {
   const victimPlural = victims.length === 1 ? "victim" : "victims"
 
   const flavorText = `With their end coming in, ${bomber} activates their concealed explosives to take out anyone `
@@ -185,7 +185,7 @@ export function teenageWerewolfEffectElimination(eliminated: Player): D.MessageE
     .setDescription(dedent(`
       > ${flavorText}
       
-      ${description} ${revealRole(eliminated)}
+      ${description} They were a **Teenage Werewolf**.
     `))
 }
 
@@ -223,7 +223,7 @@ export function vampireElimination(eliminated: Player): D.MessageEmbed {
   const description = `${eliminated} has been eliminated by the **Vampires'** effect.`
 
   return createTemplate(eliminated.game)
-    .setColor(Color.WerewolfRed)
+    .setColor(Color.VampirePurple)
     .setTitle(`${eliminated.name} Collapsed During Accusation`)
     .setDescription(dedent(`
       > ${flavorText}
@@ -237,7 +237,7 @@ export function vampireElimination(eliminated: Player): D.MessageEmbed {
  * @param eliminated The player being eliminated.
  * @param votes The votes made against a particular player.
  */
-export function lynchElimination(eliminated: Player, votes: { player: Player; count: number }[]): D.MessageEmbed {
+export function lynchElimination(eliminated: Player, votes: VoteArray): D.MessageEmbed {
   const flavorText = `The village has made their decision that ${eliminated} must be lynched for the greater good. `
     + "Despite their pleas, they are forced to the gallows and after a few moments, they are hanged for their crimes."
   const description = `${eliminated} has been eliminated by the village mob.`
@@ -259,7 +259,7 @@ export function lynchElimination(eliminated: Player, votes: { player: Player; co
  * @param game The game in progress.
  * @param votes The votes made against a particular player.
  */
-export function noLynchElimination(game: Game, votes: { player: Player; count: number }[]): D.MessageEmbed {
+export function noLynchElimination(game: Game, votes: VoteArray): D.MessageEmbed {
   const flavorText = "The village was unable to come to a decision before the sunsets. With the danger of being "
     + "outside during the night raising, the village comes to an agreement to go back inside for the time being and "
     + "hope for the best in the night."

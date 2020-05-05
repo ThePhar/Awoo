@@ -1,14 +1,16 @@
 import * as D from "discord.js"
-import Game from "./game"
-import Elimination from "../enum/elimination"
+import Game, { VoteArray } from "./game"
+import Elimination, { EliminationContext, EliminationsWithNoContext } from "../enum/elimination"
 import Role from "./role"
 
 import * as EliminationTemplate from "../template/elimination"
 import { Werewolf } from "../role/werewolf"
 
 export default class Player {
-  public get tag(): string { return this.member.user.tag }
-  public get name(): string { return this.member.displayName }
+  public readonly game: Game
+  public readonly member: D.GuildMember
+  public alive = true
+  public role: Role
 
   constructor(member: D.GuildMember, game: Game) {
     this.member = member
@@ -22,17 +24,48 @@ export default class Player {
    * Eliminate this player with a specified reason.
    * @param eliminationReason The reason this player was eliminated.
    */
-  public async eliminate(eliminationReason: Elimination): Promise<void> {
+  public async eliminate(eliminationReason: EliminationsWithNoContext): Promise<void>
+  public async eliminate(eliminationReason: Elimination.Hunter, hunter: Player): Promise<void>
+  public async eliminate(eliminationReason: Elimination.Cupid, lover: Player): Promise<void>
+  public async eliminate(eliminationReason: Elimination.Lynching, votes: VoteArray): Promise<void>
+  public async eliminate(eliminationReason: Elimination, additionalContext?: EliminationContext): Promise<void> {
     switch (eliminationReason) {
       case Elimination.ForcedExit:
         await this.game.announce(EliminationTemplate.forcedElimination(this))
+        break
+      case Elimination.Werewolf:
+        await this.game.announce(EliminationTemplate.werewolfElimination(this))
+        break
+      case Elimination.Huntress:
+        await this.game.announce(EliminationTemplate.huntressElimination(this))
+        break
+      case Elimination.ToughGuyWerewolf:
+        await this.game.announce(EliminationTemplate.toughGuyElimination(this))
+        break
+      case Elimination.Vampire:
+        await this.game.announce(EliminationTemplate.vampireElimination(this))
+        break
+      case Elimination.Witch:
+        await this.game.announce(EliminationTemplate.witchElimination(this))
+        break
+      case Elimination.TeenageWerewolfCondition:
+        await this.game.announce(EliminationTemplate.teenageWerewolfEffectElimination(this))
+        break
+      case Elimination.Hunter:
+        await this.game.announce(EliminationTemplate.hunterElimination(this, additionalContext as Player))
+        break
+      case Elimination.Cupid:
+        await this.game.announce(EliminationTemplate.cupidElimination(this, additionalContext as Player))
+        break
+      case Elimination.Lynching:
+        await this.game.announce(EliminationTemplate.lynchElimination(this, additionalContext as VoteArray))
+        break
     }
 
+    // They need to die, obviously!
     this.alive = false
   }
 
-  public readonly game: Game
-  public readonly member: D.GuildMember
-  public alive = true
-  public role: Role
+  public get tag(): string { return this.member.user.tag }
+  public get name(): string { return this.member.displayName }
 }

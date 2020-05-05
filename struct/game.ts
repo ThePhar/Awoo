@@ -8,7 +8,8 @@ import * as PlayerJoinTemplate from "../template/player-join"
 import * as PlayerLeaveTemplate from "../template/player-leave"
 import Elimination from "../enum/elimination"
 
-type PlayerMap = Map<string, Player>
+export type PlayerMap = Map<string, Player>
+export type VoteArray = { player: Player; count: number }[]
 
 export default class Game {
   public get name(): string { return this.channel.name }

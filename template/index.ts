@@ -14,7 +14,7 @@ export default function createTemplate(game: Game): D.MessageEmbed {
     .setColor(Color.Default)
 }
 
-export * from "./player-join"
-export * from "./player-leave"
-export * from "./elimination"
-export * from "./hint"
+export * as PlayerJoin from "./player-join"
+export * as PlayerLeave from "./player-leave"
+export * as Elimination from "./elimination"
+export * as Hint from "./hint"
