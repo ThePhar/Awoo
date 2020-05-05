@@ -1,35 +1,28 @@
 import * as D from "discord.js"
+import * as Template from "../template"
 import Appearance from "../enum/appearance"
-import Player from "../struct/player"
+import Color from "../enum/color"
 import Role from "../struct/role"
 import Team from "../enum/team"
-import fullAnnouncementEmbed from "../template"
 
 export class Werewolf extends Role {
   public name = "Werewolf"
   public appearance = Appearance.Werewolf
   public team = Team.Werewolves
-
-  /* Werewolf Specific Fields */
-  availableToTarget: Player[] = []
-  targetIndex = 0
-  target?: Player
-
-  public startAction = async(): Promise<void> => {
-    this.resetActionState()
-
-    // TODO: Write this logic.
-    await new Promise((resolve) => resolve())
-  }
-
-  public resetActionState = (): void => {
-    this.availableToTarget = []
-    this.targetIndex = 0
-    this.target = undefined
-  }
-
-  public roleEmbed = (): D.MessageEmbed => fullAnnouncementEmbed(this.game)
-    .setTitle("You Are A Werewolf")
-    .setDescription("")
   public actionEmbed = undefined
+
+  public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
+    .setTitle("You Are A Werewolf")
+    .setThumbnail(Template.Role.werewolfThumbnail)
+    .setColor(Color.WerewolfRed)
+    .addField("Objective", Template.Objective.werewolfObjective(false), true)
+    .addField("Team", this.team, true)
+    .addField("During The Day", Template.Actions.lynchingRules(this.game))
+    .addField("During The Night", Template.Actions.werewolfRules())
+    .setDescription(
+      "The werewolves learn the identity of the other Werewolves the first night. Every night after the first night, " +
+      "the majority of the Werewolves must agree on a target to eliminate. If the majority of the Werewolves fail to " +
+      "vote for a single target, no player will be eliminated that night. The werewolves may not target another " +
+      "Werewolf at night. Werewolves try and keep their identity a secret during the day."
+    )
 }

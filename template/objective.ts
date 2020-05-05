@@ -23,12 +23,10 @@ export const villagerObjective = (teamsInPlay: TeamsInPlay): string => {
 }
 
 export const werewolfObjective = (vampires: boolean): string =>
-  "Eliminate villagers until the living werewolves outnumber the remaining villagers." +
-  vampires ? eliminateVampires() : ""
+  `Eliminate villagers until the werewolves outnumber the villagers. ${ vampires ? eliminateVampires() : "" }`
 
 export const vampireObjective = (werewolves: boolean): string =>
-  "Eliminate villagers until the living vampires outnumber the remaining villagers." +
-  werewolves ? eliminateWerewolves() : ""
+  `Eliminate villagers until the vampires outnumber the villagers. ${ werewolves ? eliminateWerewolves() : "" }`
 
 export const tannerObjective = (): string =>
   "Get yourself eliminated."

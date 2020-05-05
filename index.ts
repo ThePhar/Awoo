@@ -2,6 +2,7 @@ import * as D from "discord.js"
 import * as Env from "dotenv"
 import Game, { VoteArray } from "./struct/game"
 import Player from "./struct/player"
+import * as Roles from "./role"
 import Elimination from "./enum/elimination"
 import * as Template from "./template"
 import { bomberElimination } from "./template/elimination"
@@ -22,6 +23,8 @@ async function start(client: D.Client): Promise<void> {
   const game = new Game(channel)
   const player = new Player(member, game)
   const contextPlayer = new Player(member2, game)
+
+  player.role = new Roles.Werewolf(player)
 
   const votes: VoteArray = [
     { player: player, count: 3 },
