@@ -20,7 +20,7 @@ export class Werewolf extends Role {
     .addField("During The Day", Template.Actions.lynchingRules(this.game))
     .addField("During The Night", Template.Actions.werewolfRules())
     .setDescription(
-      "The werewolves learn the identity of the other Werewolves the first night. Every night after the first night, " +
+      "The Werewolves learn the identity of the other Werewolves the first night. Every night after the first night, " +
       "the majority of the Werewolves must agree on a target to eliminate. If the majority of the Werewolves fail to " +
       "vote for a single target, no player will be eliminated that night. The werewolves may not target another " +
       "Werewolf at night. Werewolves try and keep their identity a secret during the day."

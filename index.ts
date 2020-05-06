@@ -24,7 +24,7 @@ async function start(client: D.Client): Promise<void> {
   const player = new Player(member, game)
   const contextPlayer = new Player(member2, game)
 
-  player.role = new Roles.Werewolf(player)
+  player.role = new Roles.Hunter(player)
 
   const votes: VoteArray = [
     { player: player, count: 3 },
