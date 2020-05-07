@@ -19,9 +19,9 @@ export class Mayor extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : Mayor.team }
-  public get name(): string { return this._name ? this._name : Mayor.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : Mayor.appearance }
+  public get team(): Team { return this._team || Mayor.team }
+  public get name(): string { return this._name || Mayor.roleName }
+  public get appearance(): Appearance { return this._appearance || Mayor.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Mayor")

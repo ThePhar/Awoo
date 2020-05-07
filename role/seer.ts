@@ -19,9 +19,9 @@ export class Seer extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : Seer.team }
-  public get name(): string { return this._name ? this._name : Seer.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : Seer.appearance }
+  public get team(): Team { return this._team || Seer.team }
+  public get name(): string { return this._name || Seer.roleName }
+  public get appearance(): Appearance { return this._appearance || Seer.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Seer")

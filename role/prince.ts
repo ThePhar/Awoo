@@ -19,9 +19,9 @@ export class Prince extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : Prince.team }
-  public get name(): string { return this._name ? this._name : Prince.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : Prince.appearance }
+  public get team(): Team { return this._team || Prince.team }
+  public get name(): string { return this._name || Prince.roleName }
+  public get appearance(): Appearance { return this._appearance || Prince.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Prince")

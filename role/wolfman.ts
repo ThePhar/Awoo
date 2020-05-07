@@ -20,9 +20,9 @@ export class WolfMan extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : WolfMan.team }
-  public get name(): string { return this._name ? this._name : WolfMan.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : WolfMan.appearance }
+  public get team(): Team { return this._team || WolfMan.team }
+  public get name(): string { return this._name || WolfMan.roleName }
+  public get appearance(): Appearance { return this._appearance || WolfMan.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Wolf Man")

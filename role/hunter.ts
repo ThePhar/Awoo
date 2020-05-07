@@ -19,9 +19,9 @@ export class Hunter extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : Hunter.team }
-  public get name(): string { return this._name ? this._name : Hunter.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : Hunter.appearance }
+  public get team(): Team { return this._team || Hunter.team }
+  public get name(): string { return this._name || Hunter.roleName }
+  public get appearance(): Appearance { return this._appearance || Hunter.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Hunter")

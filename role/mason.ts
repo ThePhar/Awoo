@@ -19,9 +19,9 @@ export class Mason extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : Mason.team }
-  public get name(): string { return this._name ? this._name : Mason.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : Mason.appearance }
+  public get team(): Team { return this._team || Mason.team }
+  public get name(): string { return this._name || Mason.roleName }
+  public get appearance(): Appearance { return this._appearance || Mason.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Mason")

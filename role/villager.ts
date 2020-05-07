@@ -19,9 +19,9 @@ export class Villager extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : Villager.team }
-  public get name(): string { return this._name ? this._name : Villager.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : Villager.appearance }
+  public get team(): Team { return this._team || Villager.team }
+  public get name(): string { return this._name || Villager.roleName }
+  public get appearance(): Appearance { return this._appearance || Villager.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Villager")

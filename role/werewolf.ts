@@ -18,9 +18,9 @@ export class Werewolf extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : Werewolf.team }
-  public get name(): string { return this._name ? this._name : Werewolf.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : Werewolf.appearance }
+  public get team(): Team { return this._team || Werewolf.team }
+  public get name(): string { return this._name || Werewolf.roleName }
+  public get appearance(): Appearance { return this._appearance || Werewolf.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Werewolf")

@@ -19,9 +19,9 @@ export class Witch extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : Witch.team }
-  public get name(): string { return this._name ? this._name : Witch.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : Witch.appearance }
+  public get team(): Team { return this._team || Witch.team }
+  public get name(): string { return this._name || Witch.roleName }
+  public get appearance(): Appearance { return this._appearance || Witch.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Witch")

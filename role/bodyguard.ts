@@ -19,9 +19,9 @@ export class Bodyguard extends Role {
   `)
 
   /* Accessors for getting role information */
-  public get team(): Team { return this._team ? this._team : Bodyguard.team }
-  public get name(): string { return this._name ? this._name : Bodyguard.roleName }
-  public get appearance(): Appearance { return this._appearance ? this._appearance : Bodyguard.appearance }
+  public get team(): Team { return this._team || Bodyguard.team }
+  public get name(): string { return this._name || Bodyguard.roleName }
+  public get appearance(): Appearance { return this._appearance || Bodyguard.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Bodyguard")
