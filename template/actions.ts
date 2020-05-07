@@ -55,9 +55,10 @@ export const werewolfRules = (): string => dedent(`
 `)
 
 export const witchRules = (): string => dedent(`
-  During the night, you will receive a Direct Message asking if you would like to save any villager(s) being targeted by the werewolves and/or kill a specific player. You will be able to do either action once per game. When you have used an action, it will become unavailable subsequent nights and you will stop receiving notifications when you have used both actions.
+  During the night, you will receive a Direct Message asking if you would like to save any villager(s) being targeted for elimination at night and/or kill a specific player. You will be able to do either action once per game. When you have used an action, it will become unavailable subsequent nights and you will stop receiving notifications when you have used both actions.
   
   *❖ You can only save a player once per game. You can only kill a player once per game.*
   *❖ You are not required to use your actions right away and can wait for the opportune time.*
   *❖ You do not need to use both actions in the same night, but you can if you want.*
+  *❖ You will be notified of what players you saved after the night ends.*
 `)

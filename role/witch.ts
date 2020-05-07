@@ -1,3 +1,4 @@
+import dedent from "dedent"
 import * as D from "discord.js"
 import * as Template from "../template"
 import Appearance from "../enum/appearance"
@@ -7,22 +8,30 @@ import Team from "../enum/team"
 import TeamsInPlay from "../enum/teams-in-play"
 
 export class Witch extends Role {
-  public name = "Witch"
-  public appearance = Appearance.Villager
-  public team = Team.Villagers
-  public actionEmbed = undefined
+  public static readonly roleName = "Witch"
+  public static readonly appearance = Appearance.Villager
+  public static readonly team = Team.Villagers
+  public static readonly thumbnail =
+    "https://media.discordapp.net/attachments/663423717753225227/666427027389415444/witch.png"
+  public static readonly description = dedent(`
+    __**Witch Description**__
+    The witch may use her power to prevent anyone being eliminated at night once during the game. She may also use her other power to eliminate a player of her choice at night once during the game. Both powers may be used in the same night.
+  `)
+
+  /* Accessors for getting role information */
+  public get team(): Team { return this._team ? this._team : Witch.team }
+  public get name(): string { return this._name ? this._name : Witch.roleName }
+  public get appearance(): Appearance { return this._appearance ? this._appearance : Witch.appearance }
 
   public roleEmbed = (): D.MessageEmbed => Template.default(this.game)
     .setTitle("You Are A Witch")
-    .setThumbnail(Template.Role.witchThumbnail)
+    .setThumbnail(Witch.thumbnail)
+    .setDescription(Witch.description)
     .setColor(Color.VillagerBlue)
     .addField("Objective", Template.Objective.villagerObjective(TeamsInPlay.WerewolvesOnly), true)
     .addField("Team", this.team, true)
     .addField("During The Day", Template.Actions.lynchingRules(this.game))
     .addField("During The Night", Template.Actions.witchRules())
-    .setDescription(
-      "The witch may use her power to prevent someone from being eliminated by the werewolves once during the game. " +
-      "She may also use her other power to eliminate a player once during the game to eliminate the player of her " +
-      "choice. Both powers may be used in the same night."
-    )
+
+  public actionEmbed = undefined
 }
