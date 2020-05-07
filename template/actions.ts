@@ -14,6 +14,17 @@ export const lynchingRules = (game: Game): string => dedent(`
   *❖ In the event of a tie vote, no player is eliminated.*
 `)
 
+export const alphaWolfRules = (): string => dedent(`
+  Each night, after a Werewolf is eliminated, you can choose to convert the player the Werewolves are targeting instead of eliminating them. You are not required to make this decision on the first night you are allowed to, but you will be asked each subsequent night until you choose to convert your target or you are eliminated.
+  
+  *❖ You are only allowed to convert one player per game.*
+  *❖ You will not be able to convert a player until after a Werewolf is eliminated.*
+  *❖ The other werewolves will be notified of the player has been converted into a Werewolf when the night ends.*
+  *❖ The other werewolves will not be notified on who the Alpha Werewolf is, even if you decide to convert a player.* 
+  *❖ The player you convert will be notified that their role has changed to Werewolf and who the werewolves are when the action resolves. They will not retain any of their previous role's powers, if any.*
+  *❖ The village will not know if a player has been turned into a Werewolf, other than seeing no werewolf eliminations.*
+`)
+
 export const bodyguardRules = (): string => dedent(`
   During the night, you will receive a Direct Message to choose a player to be protected from elimination at night. You cannot choose the same player twice in a row. You can protect yourself.
   
@@ -43,7 +54,6 @@ export const sorceressRules = (): string => dedent(`
   *❖ You will not receive a notification with your target's appearance if you were eliminated in the night.*
   *❖ If you do not confirm a player, you will forfeit your action.*
 `)
-
 
 export const werewolfRules = (): string => dedent(`
   During the night, you and your werewolf team will receive a Direct Message to choose a player to be eliminated at the end of the night phase. You will be notified if and when your fellow werewolves make or change their target in the night.

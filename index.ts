@@ -111,7 +111,7 @@ async function start(client: D.Client): Promise<void> {
   const player = new Player(member, game)
   const contextPlayer = new Player(member2, game)
 
-  player.role = new Roles.Villager(player)
+  player.role = new Roles.AlphaWolf(player)
 
   const votes: VoteArray = [
     { player: player, count: 3 },
@@ -119,10 +119,10 @@ async function start(client: D.Client): Promise<void> {
   ]
 
   if (player) {
-    // await player.role.startRole()
+    await player.role.startRole()
   }
 
-  await Roles.Bodyguard.printRoleSummary(game)
+  await Roles.AlphaWolf.printRoleSummary(game)
   // await game.announce(generateVotes(names))
 }
 
