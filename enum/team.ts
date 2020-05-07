@@ -3,7 +3,8 @@ enum Team {
   Werewolves = "Werewolves",
   Tanner = "Tanner",
   Cult = "Cult",
-  Vampires = "Vampires"
+  Vampires = "Vampires",
+  Unknown = "Unknown"
 }
 
 export default Team

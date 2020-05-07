@@ -65,6 +65,9 @@ export default abstract class Role {
       case Team.Vampires:
         color = Color.VampirePurple
         break
+      case Team.Unknown:
+        color = Color.Default
+        break
     }
 
     return game.announce(

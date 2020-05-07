@@ -87,3 +87,9 @@ export const witchRules = (): string => dedent(`
   *❖ You do not need to use both actions in the same night, but you can if you want.*
   *❖ You will be notified of what players you saved after the night ends.*
 `)
+
+export const cultLeaderRules = (): string => dedent(`
+  During the night, you will receive a Direct Message asking to choose a player to join your cult. The player you choose will not be notified of joining your cult.
+  
+  *❖ You are not required to be alive to win, so long as all other living players are in the cult.*
+`)
