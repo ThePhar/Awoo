@@ -48,6 +48,12 @@ export const seerRules = (): string => dedent(`
   *❖ If you do not confirm a player, you will forfeit your action.*
 `)
 
+export const apprenticeSeerRules = (): string => dedent(`
+  After the Seer is eliminated:
+  
+  ${seerRules()}
+`)
+
 export const sorceressRules = (): string => dedent(`
   During the night, you will receive a Direct Message to choose a player you can inspect. When the night phase ends, if you were not eliminated, you will receive a notification if they are the Seer or not.
   
