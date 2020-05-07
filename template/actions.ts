@@ -61,6 +61,15 @@ export const sorceressRules = (): string => dedent(`
   *❖ If you do not confirm a player, you will forfeit your action.*
 `)
 
+export const vampireRules = (): string => dedent(`
+  During the night, you and your vampire team will receive a Direct Message to choose a player to be eliminated when any player receives a number of accusations equal to the number of living Vampires. You will be notified if and when your fellow vampires make or change their target in the night.
+  
+  *❖ You cannot choose players to target on the first night.*
+  *❖ The player with the most vampires targeting them will be selected for the vampire effect.*
+  *❖ If you do not confirm a target, you will forfeit your action when the phase ends.* 
+  *❖ In the event of a tie, no player is affected.*
+`)
+
 export const werewolfRules = (): string => dedent(`
   During the night, you and your werewolf team will receive a Direct Message to choose a player to be eliminated at the end of the night phase. You will be notified if and when your fellow werewolves make or change their target in the night.
   
