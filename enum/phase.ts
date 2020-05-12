@@ -1,5 +1,4 @@
 enum Phase {
-  AwaitingInitialization,
   WaitingForPlayers,
   Day,
   Night,

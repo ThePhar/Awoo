@@ -1,10 +1,6 @@
 enum Team {
-  Villagers = "Villagers",
-  Werewolves = "Werewolves",
-  Tanner = "Tanner",
-  Cult = "Cult",
-  Vampires = "Vampires",
-  Unknown = "Unknown"
+  Villagers  = "Villagers",
+  Werewolves = "Werewolves"
 }
 
 export default Team

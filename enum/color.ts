@@ -1,10 +1,18 @@
+import Team from "./team"
+
 enum Color {
-  Default = 0xEEEEEE,
-  WerewolfRed = 0xFF0000,
+  Default      = 0xEEEEEE,
   VillagerBlue = 0x0000FF,
-  CultGreen = 0x00FF00,
-  VampirePurple = 0xBA55D3,
-  TannerBrown = 0x964B00
+  WerewolfRed  = 0xFF0000
 }
 
 export default Color
+
+export function colorFromTeam(team: Team): Color {
+  switch (team) {
+    case Team.Villagers:
+      return Color.VillagerBlue
+    case Team.Werewolves:
+      return Color.WerewolfRed
+  }
+}

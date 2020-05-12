@@ -1,6 +1,6 @@
 enum RoleReveal {
-  ExactRole,
-  SeerAppearance,
+  Exact,
+  Appearance,
   Team,
   NoReveal
 }

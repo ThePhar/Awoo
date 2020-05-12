@@ -1,4 +1,5 @@
 import * as D from "discord.js"
+import * as Roles from "../role"
 import Player from "./player"
 import Phase from "../enum/phase"
 import GameState from "./game-state"
@@ -8,7 +9,8 @@ import Elimination from "../enum/elimination"
 import * as Template from "../template"
 
 export type PlayerMap = Map<string, Player>
-export type VoteArray = { player: Player; count: number }[]
+export type Vote = { count: number; target: Player }
+export type PlayerArray = { alive: Player[]; eliminated: Player[]; all: Player[] }
 
 export default class Game {
   public gameStates: GameState[] = []
@@ -155,8 +157,76 @@ export default class Game {
     this.players.delete(member.id)
   }
 
+  /**
+   * Get a sorted list of all votes currently made by players sorted by most to least votes.
+   */
+  private getLynchVotes(): Vote[] {
+    // Keep track of our votes.
+    const votes = new Map<string, Vote>()
+
+    // Count each vote and increment our counter.
+    this.playerStates.alive.forEach((player) => {
+      if (player.accusation) {
+        // Mayors' votes count twice.
+        const increment = player.role instanceof Roles.Mayor ? 2 : 1
+        const vote = votes.get(player.accusation.id) || { count: 0, target: player.accusation }
+
+        vote.count += increment
+        votes.set(player.accusation.id, vote)
+      }
+    })
+
+    // Convert to an array and sort by vote count.
+    return [...votes.entries()]
+      .sort((a, b) => b[1].count - a[1].count)
+      .map(([, element]) => element)
+  }
+
+  /**
+   * Get a sorted list of all targets made by wolves.
+   */
+  private getWolfVotes(): Vote[] {
+    // Keep track of our votes.
+    const votes = new Map<string, Vote>()
+
+    // Count each vote and increment our counter.
+    this.playerStates.alive
+      .filter((player) => player.role.isWerewolf)
+      .forEach((werewolf) => {
+      if (werewolf.role.target) {
+        // Mayors' votes count twice.
+        const increment = werewolf.role instanceof Roles.Mayor ? 2 : 1
+        const vote = votes.get(werewolf.accusation.id) || { count: 0, target: werewolf.accusation }
+
+        vote.count += increment
+        votes.set(werewolf.accusation.id, vote)
+      }
+    })
+
+    // Convert to an array and sort by vote count.
+    return [...votes.entries()]
+      .sort((a, b) => b[1].count - a[1].count)
+      .map(([, element]) => element)
+  }
+
   public get name(): string { return this.channel.name }
   public get playerCount(): number { return this.players.size }
+  public get playerStates(): PlayerArray {
+    const all: Player[] = []
+    const alive: Player[] = []
+    const eliminated: Player[] = []
+
+    this.players.forEach((player) => {
+      all.push(player)
+
+      if (player.alive)
+        alive.push(player)
+      else
+        eliminated.push(player)
+    })
+
+    return { all, alive, eliminated }
+  }
   public get state(): GameState { return this.gameStates[this.gameStates.length - 1] }
   public get iconURL(): string { return this.channel.guild.iconURL() || "" }
   public get guild(): string { return this.channel.guild.name }
