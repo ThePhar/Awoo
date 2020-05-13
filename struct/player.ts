@@ -1,4 +1,4 @@
-import * as D from "discord.js"
+   import * as D from "discord.js"
 import Game, { Vote } from "./game"
 import Elimination, { EliminationContext, EliminationsWithNoContext } from "../enum/elimination"
 import Role from "./role"

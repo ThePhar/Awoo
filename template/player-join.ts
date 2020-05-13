@@ -59,6 +59,17 @@ export function unableToDMPlayer(game: Game, member: D.GuildMember): D.MessageEm
 }
 
 /**
+ * The message to announce in the channel if a user is banned from joining games.
+ * @param game
+ * @param member
+ */
+export function bannedPlayer(game: Game, member: D.GuildMember): D.MessageEmbed {
+  return summaryEmbed(game)
+      .setDescription(`${member}, you are not allowed to join any games in this channel. Please contact the server administrator for information.`)
+      .setColor(Color.WerewolfRed)
+}
+
+/**
  * The message to announce in the channel if the user successfully joined.
  * @param game The game they joined.
  * @param member The member that joined.
