@@ -1,52 +1,23 @@
 {
-  "env": {
-    "es6": true,
-    "node": true
-  },
-  "extends": [
-    "airbnb-base"
-  ],
-  "globals": {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly",
-    "fail": "readonly"
-  },
+  "root": true,
   "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": 2018,
-    "sourceType": "module"
-  },
   "plugins": [
     "@typescript-eslint"
   ],
+  "extends" : [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+  ],
   "rules": {
-    "import/extensions": ["error", "ignorePackages", {
-      "js": "never",
-      "jsx": "never",
-      "ts": "never",
-      "tsx": "never"
-    }],
-    "import/prefer-default-export": "off",
-    "no-unused-vars": "off",
-    "lines-between-class-members": "off",
-    "max-len": ["error", 120],
-    "no-underscore-dangle": "off",
-    "no-console": "off",
-    "class-methods-use-this": "off",
-    "arrow-body-style": "off",
-    "object-curly-newline": "off",
-    "no-multi-spaces": "off",
-    "semi": "off"
+    "arrow-parens": "error",
+    "comma-dangle": "error",
+    "quotes": "error",
+    "no-return-await": "error",
+    "semi": "error"
   },
-  "settings": {
-    "import/resolver": {
-      "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      }
-    }
-  },
-  "ignorePatterns": [
-    "node_modules/",
-    "coverage/"
-  ]
+  "parserOptions": {
+    "project": "tsconfig.json"
+  }
 }
