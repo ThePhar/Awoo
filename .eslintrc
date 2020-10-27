@@ -12,10 +12,12 @@
   ],
   "rules": {
     "arrow-parens": "error",
-    "comma-dangle": "error",
-    "quotes": "error",
     "no-return-await": "error",
-    "semi": "error"
+    "quotes": "error",
+    "semi": "error",
+
+    "comma-dangle": "warn",
+    "sort-imports": "warn"
   },
   "parserOptions": {
     "project": "tsconfig.json"
