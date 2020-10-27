@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js';
 import * as Env from 'dotenv';
-import Manager from './struct/manager';
+// import Manager from './struct/manager';
 
 const result = Env.config();
 if (result.error) {
@@ -14,6 +14,6 @@ client.login(process.env.DISCORD_BOT_TOKEN)
     console.log(message);
     console.log('We online!')
 
-    return new Manager(client);
+    // return new Manager(client);
   })
   .catch((err) => console.error(err));
