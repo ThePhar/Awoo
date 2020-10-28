@@ -1,16 +1,12 @@
-import * as D     from 'discord.js';
-import * as Embed from '../template/role';
-import Appearance from '../enum/appearance';
-import Role       from '../interface/role';
-import Team       from '../enum/team';
+import Appearance from "../enum/appearance";
+import Role from "../structs/role";
+import RoleType from "../enum/roleType";
+import Team from "../enum/team";
 
 export class Tanner extends Role {
-  public name       = 'Tanner';
-  public pluralName = 'Tanners';
-  public appearance = Appearance.Villager;
-  public team       = Team.Tanner;
-
-  protected roleDescriptionEmbed(): D.MessageEmbed {
-    return Embed.RoleTanner(this);
-  }
+  public readonly type = RoleType.Tanner;
+  public readonly appearance = Appearance.Villager;
+  public readonly team = Team.Tanner;
+  public readonly meta = null;
+  public readonly description = "The Tanner hates his job and his life. The Tanner wins if he is eliminated.";
 }

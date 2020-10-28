@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "npm run build && node dist/index",
-    "dev": "tsnd --respawn src/index.ts",
+    "dev": "tsnd --respawn index.ts",
     "build": "rimraf dist && tsc",
     "lint": "eslint . --ext .ts"
   },

@@ -1,4 +1,3 @@
-import Commando from "discord.js-commando";
 import Manager from "./structs/manager";
 import { config } from "dotenv";
 import { enableMapSet } from "immer";
@@ -18,18 +17,27 @@ async function main() {
   enableMapSet();
 
   // Log into Discord.
-  const client = new Commando.CommandoClient({ commandPrefix: PREFIX, owner: PHAR_ID });
-  await client.login(process.env.DISCORD_BOT_TOKEN);
+  const manager = new Manager({ commandPrefix: PREFIX, owner: PHAR_ID });
+  await manager.login(process.env.DISCORD_BOT_TOKEN);
+  if (manager.user)
+    console.log(`Now logged into Discord as ${manager.user.username}.`);
+  else
+    throw new Error("No manager user object after logging into Discord.");
 
   // Configure Commando commands.
-  client.registry
+  manager.registry
     .registerDefaultTypes()
     .registerDefaultGroups()
+    .registerGroups([
+      ["admin", "Administrative Commands"]
+    ])
     .registerDefaultCommands()
     .registerCommandsIn(path.join(__dirname, "cmd"));
 
   // Create a manager for intercepting non-commands.
-  new Manager(client);
+  return manager;
 }
 
 void main();
+
+console.log(path.join(__dirname, "cmd"));

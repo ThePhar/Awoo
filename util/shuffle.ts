@@ -1,6 +1,9 @@
+/**
+ * Return a copy of the supplied array with all elements' order sufficiently shuffled.
+ * @param array The array to shuffle.
+ */
 export default function shuffle<T>(array: Array<T>): Array<T> {
     const copiedArray = array.slice(0);
-
     let currentIndex = copiedArray.length;
     let temporaryValue, randomIndex;
 
