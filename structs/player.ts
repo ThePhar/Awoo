@@ -13,8 +13,8 @@ export default class Player implements PlayerProperties {
 
   public readonly id: Identifier;
   public readonly accusing: Accusing;
-  public readonly flags: unknown;
-  public readonly role: unknown;
+  public readonly flags: unknown; // TODO: Create struct.
+  public readonly role: unknown; // TODO: Create struct.
 
   public constructor({ id, accusing, flags, role }: PlayerProperties) {
     this.id = id;

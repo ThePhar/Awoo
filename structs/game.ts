@@ -16,7 +16,7 @@ export default class Game implements GameProperties {
   [immerable] = true;
 
   public readonly id: Identifier;
-  public readonly settings: unknown;
+  public readonly settings: unknown; // TODO: Create struct.
   public readonly day: number;
   public readonly phase: Phase;
   public readonly players: ReadonlyMap<Identifier, Player>;
