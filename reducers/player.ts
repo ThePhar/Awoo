@@ -1,5 +1,5 @@
 import { Identifier, SkipVote } from "../types";
-import { AnyPlayerAction } from "../actions/player/structs";
+import { AnyPlayerAction } from "../actions/player/interfaces";
 import { Draft } from "immer";
 import Player from "../structs/player";
 import PlayerActionTypes from "../actions/player/types";
@@ -22,6 +22,11 @@ const playerReducer = (player: Draft<Player>, action: AnyPlayerAction): Draft<Pl
     /** Clear a player's votes to eliminate or not eliminate. */
     case PlayerActionTypes.ClearVote:
       player.accusing = null;
+      break;
+
+    /** Eliminate a player. */
+    case PlayerActionTypes.Eliminate:
+      player.flags.alive = false;
       break;
   }
 

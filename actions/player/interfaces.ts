@@ -1,4 +1,5 @@
 import { AnyAction } from "redux";
+import Elimination from "../../enum/elimination";
 import { Identifier } from "../../types";
 import PlayerActionTypes from "./types";
 
@@ -11,4 +12,8 @@ export interface VoteAction extends PlayerAction {
   readonly accusing: Identifier;
 }
 
-export type AnyPlayerAction = PlayerAction | VoteAction;
+export interface EliminationAction extends PlayerAction {
+  readonly reason: Elimination;
+}
+
+export type AnyPlayerAction = PlayerAction | VoteAction | EliminationAction;

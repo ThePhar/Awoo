@@ -1,4 +1,5 @@
-import { PlayerAction, VoteAction } from "./structs";
+import { EliminationAction, PlayerAction, VoteAction } from "./interfaces";
+import Elimination from "../../enum/elimination";
 import { Identifier } from "../../types";
 import PlayerActionTypes from "./types";
 
@@ -20,4 +21,8 @@ export function playerSkipVote(id: Identifier): PlayerAction {
 
 export function playerClearVote(id: Identifier): PlayerAction {
   return { type: PlayerActionTypes.ClearVote, id };
+}
+
+export function playerEliminate(id: Identifier, reason: Elimination): EliminationAction {
+  return { type: PlayerActionTypes.Eliminate, id, reason };
 }

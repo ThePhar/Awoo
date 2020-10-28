@@ -1,6 +1,6 @@
 import produce, { Draft } from "immer";
 import { AnyAction } from "redux";
-import { AnyPlayerAction } from "../actions/player/structs";
+import { AnyPlayerAction } from "../actions/player/interfaces";
 import Game from "../structs/game";
 import GameActionTypes from "../actions/game/types";
 import { Identifier } from "../types";
