@@ -1,19 +1,31 @@
-import * as Discord from 'discord.js';
-import * as Env from 'dotenv';
-// import Manager from './struct/manager';
+import Commando from "discord.js-commando";
+import Manager from "./struct/manager";
+import { config } from "dotenv";
+import path from "path";
 
-const result = Env.config();
-if (result.error) {
-  throw result.error;
+const PREFIX = "/awoo";
+const PHAR_ID = "196473225268428804";
+
+async function main() {
+  // Set up all environment variables in .env files.
+  const result = config();
+  if (result.error) {
+    throw result.error;
+  }
+
+  // Log into Discord.
+  const client = new Commando.CommandoClient({ commandPrefix: PREFIX, owner: PHAR_ID });
+  await client.login(process.env.DISCORD_BOT_TOKEN);
+
+  // Configure Commando commands.
+  client.registry
+    .registerDefaultTypes()
+    .registerDefaultGroups()
+    .registerDefaultCommands()
+    .registerCommandsIn(path.join(__dirname, "cmd"));
+
+  // Create a manager for intercepting non-commands.
+  new Manager(client);
 }
 
-const client = new Discord.Client();
-
-client.login(process.env.DISCORD_BOT_TOKEN)
-  .then((message) => {
-    console.log(message);
-    console.log('We online!')
-
-    // return new Manager(client);
-  })
-  .catch((err) => console.error(err));
+void main();
