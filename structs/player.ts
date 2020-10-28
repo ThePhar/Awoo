@@ -1,13 +1,16 @@
-import { Accusing, Identifier } from "../types";
+import { Accusing, Identifier, SkipVote } from "../types";
 import { Draft, immerable } from "immer";
 import { AnyAction } from "redux";
+import Flags from "./flags";
+import PlayerActionTypes from "../actions/player/types";
 import Role from "./role";
 import { Villager } from "../role";
+import { VoteAction } from "../actions/player/interfaces";
 
 export interface PlayerProperties {
   readonly id: Identifier;
   readonly accusing?: Accusing;
-  readonly flags?: unknown;
+  readonly flags?: Flags;
   readonly role?: Role;
 }
 
@@ -16,13 +19,13 @@ export default class Player implements PlayerProperties {
 
   public readonly id: Identifier;
   public readonly accusing: Accusing;
-  public readonly flags: unknown; // TODO: Create struct.
+  public readonly flags: Flags;
   public readonly role: Role;
 
   public constructor({ id, accusing, flags, role }: PlayerProperties) {
     this.id = id;
     this.accusing = accusing || null;
-    this.flags = flags;
+    this.flags = flags || { alive: true, werewolf: false };
     this.role = role || new Villager();
   }
 
@@ -33,7 +36,16 @@ export default class Player implements PlayerProperties {
    */
   public static reduce(player: Draft<Player>, action: AnyAction): Draft<Player> {
     switch (action.type) {
-      default:
+      case PlayerActionTypes.Vote:
+        player.accusing = (action as VoteAction).accusing;
+        break;
+
+      case PlayerActionTypes.NoVote:
+        player.accusing = SkipVote;
+        break;
+
+      case PlayerActionTypes.ClearVote:
+        player.accusing = null;
         break;
     }
 

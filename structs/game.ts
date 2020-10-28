@@ -61,9 +61,10 @@ export default class Game implements GameProperties {
           break;
       }
 
-      // Reduce for all player objects as well.
-      for (const [ id, player ] of draft.players) {
-        draft.players.set(id, Player.reduce(player, action));
+      // Reduce for player and role too if a player action was made.
+      if (action.id) {
+        const player = draft.players.get(action.id) as Player;
+        draft.players.set(action.id, Player.reduce(player, action));
       }
 
       // Add this action to our history.
