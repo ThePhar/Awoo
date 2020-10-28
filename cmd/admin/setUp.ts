@@ -29,6 +29,12 @@ export default class SetUpCommand extends Command {
     const store = Game.createStore(id);
     this.manager.games.set(id, store);
 
+    // TODO: Remove this debug.
+    store.subscribe(() => {
+      console.clear();
+      console.log(store.getState());
+    });
+
     return message.reply("a game has been created in this channel.");
   }
 }

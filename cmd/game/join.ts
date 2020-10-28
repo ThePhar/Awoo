@@ -54,9 +54,9 @@ export default class JoinCommand extends Command {
     game = store.getState();
 
     const pluralPlayers = game.players.size === 1 ? "player" : "players";
-    return message.reply(this.createInfoBox(
+    return message.say(this.createInfoBox(
       `${message.member.toString()} has joined the next game, making ${game.players.size} ${pluralPlayers} total.`,
-      message.author.avatarURL()
+      message.author
     ));
   }
 }

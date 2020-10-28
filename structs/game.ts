@@ -41,10 +41,14 @@ export default class Game implements GameProperties {
    */
   public static reduce(game: Game, action: AnyAction): Game {
     return produce(game, (draft) => {
-      // Reduce for the game itself.
       switch (action.type) {
         case PlayerActionTypes.Join:
           Game.addPlayer(draft, action as PlayerAction);
+          break;
+
+        case PlayerActionTypes.Leave:
+          Game.removePlayer(draft, action as PlayerAction);
+          break;
       }
 
       // Reduce for all player objects as well.
@@ -71,6 +75,15 @@ export default class Game implements GameProperties {
    */
   private static addPlayer(game: Draft<Game>, { id }: PlayerAction): Draft<Game> {
     game.players.set(id, new Player({ id }));
+
+    return game;
+  }
+
+  /**
+   * Removes a player from the game.
+   */
+  private static removePlayer(game: Draft<Game>, { id }: PlayerAction): Draft<Game> {
+    game.players.delete(id);
 
     return game;
   }
