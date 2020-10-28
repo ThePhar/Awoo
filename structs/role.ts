@@ -1,8 +1,8 @@
 import { Draft, immerable } from "immer";
 import { AnyAction } from "redux";
-import { AnyPrimitive } from "../types";
 import Appearance from "../enum/appearance";
 import Color from "../enum/color";
+import { MetaProperties } from "../types";
 import RoleType from "../enum/roleType";
 import Team from "../enum/team";
 
@@ -10,7 +10,8 @@ export interface RoleProperties {
   readonly type: RoleType;
   readonly appearance: Appearance;
   readonly team: Team;
-  readonly meta: AnyPrimitive;
+  readonly meta: MetaProperties;
+  readonly defaultMeta: MetaProperties;
   readonly description: string;
 }
 
@@ -20,7 +21,8 @@ export default abstract class Role implements RoleProperties {
   public abstract readonly type: RoleType;
   public abstract readonly appearance: Appearance;
   public abstract readonly team: Team;
-  public abstract readonly meta: AnyPrimitive;
+  public readonly meta: MetaProperties = {};
+  public readonly defaultMeta: MetaProperties = {};
   public abstract readonly description: string;
 
   public get teamColor(): Color {

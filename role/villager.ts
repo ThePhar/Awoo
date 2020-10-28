@@ -7,6 +7,5 @@ export class Villager extends Role {
   public readonly type = RoleType.Villager;
   public readonly appearance = Appearance.Villager;
   public readonly team = Team.Villagers;
-  public readonly meta = null;
   public readonly description = "The Villagers' sole purpose is to find the werewolves and eliminate them.";
 }

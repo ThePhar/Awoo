@@ -7,6 +7,5 @@ export class Tanner extends Role {
   public readonly type = RoleType.Tanner;
   public readonly appearance = Appearance.Villager;
   public readonly team = Team.Tanner;
-  public readonly meta = null;
   public readonly description = "The Tanner hates his job and his life. The Tanner wins if he is eliminated.";
 }

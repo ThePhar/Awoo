@@ -9,8 +9,12 @@ export type SkipVoteType = "__SKIP__VOTE__";
 export const SkipVote = "__SKIP__VOTE__";
 
 export type Primitive = boolean | number | string | null;
-export type PrimitiveCollection = Primitive[] | { [prop: string]: Primitive } | { [prop: string]: Primitive }[];
+export type PrimitiveCollection = Primitive[] | MetaProperties | MetaProperties[];
 export type AnyPrimitive = Primitive | PrimitiveCollection;
+
+export interface MetaProperties {
+  [prop: string]: AnyPrimitive;
+}
 
 export type GameThunkAction<E = unknown, A extends Action = AnyAction, R = void> = ThunkAction<R, Game, E, A>;
 export type GameThunkDispatch = ThunkDispatch<Game, void, AnyAction>;

@@ -7,6 +7,5 @@ export class Prince extends Role {
   public readonly type = RoleType.Prince;
   public readonly appearance = Appearance.Villager;
   public readonly team = Team.Villagers;
-  public readonly meta = null;
   public readonly description = "If the village chooses to lynch the Prince, his role is revealed and he is not eliminated.";
 }
