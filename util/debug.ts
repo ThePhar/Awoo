@@ -10,6 +10,7 @@ export function printGameState(state: Game): void {
     ${chalk.bgBlackBright.whiteBright(" Identifier ")} ${state.id}
     ${chalk.bgBlackBright.whiteBright("    Phase   ")} ${state.phase}
     ${chalk.bgBlackBright.whiteBright("     Day    ")} ${state.day}
+    ${chalk.bgBlackBright.whiteBright(" LastAction ")} ${state.history[state.history.length - 1].action.type as string}
     
     Players:
   `);

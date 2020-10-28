@@ -2,6 +2,7 @@ enum Commands {
   Help = "help",
   Add = "add",
   Remove = "remove",
+  Action = "action",
   SetUp = "setup",
   TearDown = "teardown",
   ClearChannel = "clearchannel",
