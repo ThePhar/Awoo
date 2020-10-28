@@ -1,5 +1,6 @@
 import { Accusing, Identifier } from "../types";
-import { immerable } from "immer";
+import { Draft, immerable } from "immer";
+import { AnyAction } from "redux";
 
 export interface PlayerProperties {
   readonly id: Identifier;
@@ -21,5 +22,17 @@ export default class Player implements PlayerProperties {
     this.accusing = accusing || null;
     this.flags = flags;
     this.role = role;
+  }
+
+  /**
+   * Return a new Draft<Player> object that updates from a predefined action.
+   * @param {Draft<Player>} player - The player to base our drafts from.
+   * @param {AnyAction} action - Action to take on game.
+   */
+  public static reduce(player: Draft<Player>, action: AnyAction): Draft<Player> {
+    switch (action.type) {
+      default:
+        return player;
+    }
   }
 }

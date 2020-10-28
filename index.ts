@@ -1,5 +1,5 @@
 import Commando from "discord.js-commando";
-import Manager from "./struct/manager";
+import Manager from "./structs/manager";
 import { config } from "dotenv";
 import { enableMapSet } from "immer";
 import path from "path";

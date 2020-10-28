@@ -17,7 +17,7 @@
     "semi": "error",
 
     "comma-dangle": "warn",
-    "sort-imports": "warn"
+    "sort-imports": ["warn"]
   },
   "parserOptions": {
     "project": "tsconfig.json"
