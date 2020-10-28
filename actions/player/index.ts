@@ -1,4 +1,4 @@
-import { PlayerAction, VoteAction } from "./interfaces";
+import { PlayerAction, VoteAction } from "./structs";
 import { Identifier } from "../../types";
 import PlayerActionTypes from "./types";
 
