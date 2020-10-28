@@ -29,7 +29,8 @@ async function main() {
     .registerDefaultTypes()
     .registerDefaultGroups()
     .registerGroups([
-      ["admin", "Administrative Commands"]
+      ["admin", "Administrative Commands"],
+      ["game", "Game Commands"]
     ])
     .registerDefaultCommands()
     .registerCommandsIn(path.join(__dirname, "cmd"));

@@ -1,6 +1,6 @@
-import AdminCommand from "../../enum/adminCommand";
 import { Command } from "../../structs/command";
 import { CommandoMessage } from "discord.js-commando";
+import Commands from "../../enum/commands";
 import Manager from "../../structs/manager";
 import { Message } from "discord.js";
 import { adminCommandBaseSettings } from "../constants";
@@ -9,9 +9,9 @@ export default class TearDownCommand extends Command {
   public constructor(client: Manager) {
     super(client, {
       ...adminCommandBaseSettings,
-      name: AdminCommand.TearDown,
+      name: Commands.TearDown,
       group: "admin",
-      memberName: AdminCommand.TearDown,
+      memberName: Commands.TearDown,
       description: "Stops any games in the current channel and stops managing events in the channel."
     });
   }

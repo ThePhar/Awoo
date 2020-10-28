@@ -1,8 +1,10 @@
 import { ActionWithTimestamp, Identifier } from "../types";
 import { AnyAction, Reducer, Store, createStore } from "redux";
-import { immerable, produce } from "immer";
+import { Draft, immerable, produce } from "immer";
 import Phase from "../enum/phase";
 import Player from "./player";
+import { PlayerAction } from "../actions/player/interfaces";
+import PlayerActionTypes from "../actions/player/types";
 
 export interface GameProperties {
   readonly id: Identifier;
@@ -27,7 +29,7 @@ export default class Game implements GameProperties {
     this.id = id;
     this.settings = settings;
     this.day = day || 1;
-    this.phase = phase || Phase.Waiting;
+    this.phase = phase || Phase.Pregame;
     this.players = players || new Map<Identifier, Player>();
     this.history = history || [];
   }
@@ -41,8 +43,8 @@ export default class Game implements GameProperties {
     return produce(game, (draft) => {
       // Reduce for the game itself.
       switch (action.type) {
-        default:
-          break;
+        case PlayerActionTypes.Join:
+          Game.addPlayer(draft, action as PlayerAction);
       }
 
       // Reduce for all player objects as well.
@@ -62,5 +64,14 @@ export default class Game implements GameProperties {
   public static createStore(id: Identifier): Store<Game> {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     return createStore(Game.reduce as Reducer<Game>, new Game({ id }));
+  }
+
+  /**
+   * Adds a player to the game.
+   */
+  private static addPlayer(game: Draft<Game>, { id }: PlayerAction): Draft<Game> {
+    game.players.set(id, new Player({ id }));
+
+    return game;
   }
 }

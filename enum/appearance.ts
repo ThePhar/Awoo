@@ -1,6 +1,6 @@
 enum Appearance {
-  Villager = 'villager',
-  Werewolf = 'werewolf',
+  Villager = "Villager",
+  Werewolf = "Werewolf",
 }
 
 export default Appearance;

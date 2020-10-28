@@ -1,6 +1,6 @@
-import AdminCommand from "../../enum/adminCommand";
 import { Command } from "../../structs/command";
 import { CommandoMessage } from "discord.js-commando";
+import Commands from "../../enum/commands";
 import Game from "../../structs/game";
 import Manager from "../../structs/manager";
 import { Message } from "discord.js";
@@ -10,10 +10,10 @@ export default class SetUpCommand extends Command {
   public constructor(client: Manager) {
     super(client, {
       ...adminCommandBaseSettings,
-      name: AdminCommand.SetUp,
+      name: Commands.SetUp,
       aliases: ["init"],
       group: "admin",
-      memberName: AdminCommand.SetUp,
+      memberName: Commands.SetUp,
       description: "Sets up and initializes a game in the channel this command is invoked in. Moderator will then take over managing messages, events, and commands in that channel."
     });
   }
@@ -28,10 +28,6 @@ export default class SetUpCommand extends Command {
     // Create our game and add it to the manager for managing.
     const store = Game.createStore(id);
     this.manager.games.set(id, store);
-
-    // TODO: Remove this debug, it's only to test stuff.
-    store.subscribe(() => console.log(store.getState()));
-    store.dispatch({ type: "TEST_ACTION" });
 
     return message.reply("a game has been created in this channel.");
   }
