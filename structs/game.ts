@@ -1,6 +1,6 @@
 import { ActionWithTimestamp, Identifier } from "../types";
+import { AnyAction, Reducer, Store, createStore } from "redux";
 import { immerable, produce } from "immer";
-import { AnyAction } from "redux";
 import Phase from "../enum/phase";
 import Player from "./player";
 
@@ -34,10 +34,11 @@ export default class Game implements GameProperties {
 
   /**
    * Return a new Game object that updates from a predefined action.
+   * @param {Game} game - The game object to base off.
    * @param {AnyAction} action - Action to take on game.
    */
-  public reduce(action: AnyAction): Game {
-    return produce(this, (draft) => {
+  public static reduce(game: Game, action: AnyAction): Game {
+    return produce(game, (draft) => {
       // Reduce for the game itself.
       switch (action.type) {
         default:
@@ -52,5 +53,14 @@ export default class Game implements GameProperties {
       // Add this action to our history.
       draft.history.push({ action, timestamp: Date.now() });
     });
+  }
+
+  /**
+   * Creates a redux store centered around a new game object with a given identifier.
+   * @param {Identifier} id - The identifier for this game.
+   */
+  public static createStore(id: Identifier): Store<Game> {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    return createStore(Game.reduce as Reducer<Game>, new Game({ id }));
   }
 }

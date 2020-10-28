@@ -19,16 +19,20 @@ export default class SetUpCommand extends Command {
   }
 
   public run(message: CommandoMessage): Promise<Message | Message[]> {
-    // TODO: Create new game embed message.
-
     const id = message.channel.id;
-    const game = this.manager.games.get(id);
 
     // A game is already initialized for this channel.
-    if (game)
+    if (this.manager.games.has(id))
       return message.reply("there is already a game in this channel.");
 
-    this.manager.games.set(id, new Game({ id }));
+    // Create our game and add it to the manager for managing.
+    const store = Game.createStore(id);
+    this.manager.games.set(id, store);
+
+    // TODO: Remove this debug, it's only to test stuff.
+    store.subscribe(() => console.log(store.getState()));
+    store.dispatch({ type: "TEST_ACTION" });
+
     return message.reply("a game has been created in this channel.");
   }
 }
