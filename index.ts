@@ -1,6 +1,7 @@
 import Commando from "discord.js-commando";
 import Manager from "./struct/manager";
 import { config } from "dotenv";
+import { enableMapSet } from "immer";
 import path from "path";
 
 const PREFIX = "/awoo";
@@ -12,6 +13,9 @@ async function main() {
   if (result.error) {
     throw result.error;
   }
+
+  // Immer will be required to work with maps, so we need to enable that setting.
+  enableMapSet();
 
   // Log into Discord.
   const client = new Commando.CommandoClient({ commandPrefix: PREFIX, owner: PHAR_ID });

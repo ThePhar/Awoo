@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 import dedent from 'dedent';
-import Moment from 'moment';
 import * as Discord from 'discord.js';
 import Game from '../struct/game';
 import Color from '../enum/color';
