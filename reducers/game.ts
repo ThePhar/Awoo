@@ -1,10 +1,11 @@
 import produce, { Draft } from "immer";
 import { AnyAction } from "redux";
+import { AnyPlayerAction } from "../actions/player/structs";
 import Game from "../structs/game";
 import GameActionTypes from "../actions/game/types";
+import { Identifier } from "../types";
 import Phase from "../enum/phase";
 import Player from "../structs/player";
-import { PlayerAction } from "../actions/player/structs";
 import PlayerActionTypes from "../actions/player/types";
 import playerReducer from "./player";
 
@@ -12,18 +13,18 @@ const gameReducer = (game: Game, action: AnyAction): Game => produce(game, (stat
   switch (action.type) {
     /** Add a player to the game. */
     case PlayerActionTypes.Join:
-      if (!(action instanceof PlayerAction))
+      if (!action.id)
         throw new Error("Attempting to reduce add player action with invalid action.");
 
-      state.players.set(action.id, new Player({ id: action.id }));
+      state.players.set(action.id, new Player({ id: action.id as Identifier }));
       break;
 
     /** Remove a player from the game. */
     case PlayerActionTypes.Leave:
-      if (!(action instanceof PlayerAction))
+      if (!action.id)
         throw new Error("Attempting to reduce remove player action with invalid action.");
 
-      state.players.delete(action.id);
+      state.players.delete(action.id as Identifier);
       break;
 
     /** Set the phase to start on day 1 and Night Phase. */
@@ -45,11 +46,11 @@ const gameReducer = (game: Game, action: AnyAction): Game => produce(game, (stat
   }
 
   // Fire any player actions as well.
-  if (action instanceof PlayerAction) {
+  if (action.id) {
     const player = state.players.get(action.id);
 
     if (player)
-      state.players.set(action.id, playerReducer(player, action));
+      state.players.set(action.id, playerReducer(player, action as AnyPlayerAction));
   }
 
   // Push this action to the game's history.

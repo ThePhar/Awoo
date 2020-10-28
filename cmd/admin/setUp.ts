@@ -5,6 +5,7 @@ import Game from "../../structs/game";
 import Manager from "../../structs/manager";
 import { Message } from "discord.js";
 import { adminCommandBaseSettings } from "../constants";
+import { printGameState } from "../../util/debug";
 
 export default class SetUpCommand extends Command {
   public constructor(client: Manager) {
@@ -32,7 +33,7 @@ export default class SetUpCommand extends Command {
     // TODO: Remove this debug.
     store.subscribe(() => {
       console.clear();
-      console.log(store.getState());
+      printGameState(store.getState());
     });
 
     return message.reply("a game has been created in this channel.");

@@ -13,6 +13,7 @@ export default class NextPhaseCommand extends Command {
       ...adminCommandBaseSettings,
       name: Commands.NextPhase,
       group: "admin",
+      aliases: ["next"],
       memberName: Commands.NextPhase,
       description: "Forces the next phase of the game."
     });

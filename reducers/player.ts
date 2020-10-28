@@ -1,17 +1,17 @@
-import { PlayerAction, VoteAction } from "../actions/player/structs";
+import { Identifier, SkipVote } from "../types";
+import { AnyPlayerAction } from "../actions/player/structs";
 import { Draft } from "immer";
 import Player from "../structs/player";
 import PlayerActionTypes from "../actions/player/types";
-import { SkipVote } from "../types";
 
-const playerReducer = (player: Draft<Player>, action: PlayerAction): Draft<Player> => {
+const playerReducer = (player: Draft<Player>, action: AnyPlayerAction): Draft<Player> => {
   switch (action.type) {
     /** Vote to eliminate a player. */
     case PlayerActionTypes.Vote:
-      if (!(action instanceof VoteAction))
+      if (!action.accusing)
         throw new Error("Attempting to reduce vote action with invalid action.");
 
-      player.accusing = action.accusing;
+      player.accusing = action.accusing as Identifier;
       break;
 
     /** Vote to not eliminate any player. */

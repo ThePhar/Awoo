@@ -2,22 +2,13 @@ import { AnyAction } from "redux";
 import { Identifier } from "../../types";
 import PlayerActionTypes from "./types";
 
-export class PlayerAction implements AnyAction {
-  public readonly type: PlayerActionTypes;
-  public readonly id: Identifier;
-
-  constructor(type: PlayerActionTypes, id: Identifier) {
-    this.type = type;
-    this.id = id;
-  }
+export interface PlayerAction extends AnyAction {
+  readonly type: PlayerActionTypes;
+  readonly id: Identifier;
 }
 
-export class VoteAction extends PlayerAction {
-  public readonly accusing: Identifier;
-
-  constructor(type: PlayerActionTypes, accuser: Identifier, accusing: Identifier) {
-    super(type, accuser);
-
-    this.accusing = accusing;
-  }
+export interface VoteAction extends PlayerAction {
+  readonly accusing: Identifier;
 }
+
+export type AnyPlayerAction = PlayerAction | VoteAction;
