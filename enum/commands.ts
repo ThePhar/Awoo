@@ -5,6 +5,8 @@ enum Commands {
   SetUp = "setup",
   TearDown = "teardown",
   ClearChannel = "clearchannel",
+  ForceStart = "start",
+  NextPhase = "nextphase",
   Rules = "rules",
   Join = "join",
   Leave = "leave",

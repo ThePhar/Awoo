@@ -1,6 +1,7 @@
 import { ActionWithTimestamp, Identifier } from "../types";
 import { AnyAction, Reducer, Store, createStore } from "redux";
 import { Draft, immerable, produce } from "immer";
+import GameActionTypes from "../actions/game/types";
 import Phase from "../enum/phase";
 import Player from "./player";
 import { PlayerAction } from "../actions/player/interfaces";
@@ -49,6 +50,15 @@ export default class Game implements GameProperties {
         case PlayerActionTypes.Leave:
           Game.removePlayer(draft, action as PlayerAction);
           break;
+
+        case GameActionTypes.GameStart:
+          draft.phase = Phase.Night;
+          draft.day = 1;
+          break;
+
+        case GameActionTypes.NextPhase:
+          Game.nextPhase(draft);
+          break;
       }
 
       // Reduce for all player objects as well.
@@ -84,6 +94,20 @@ export default class Game implements GameProperties {
    */
   private static removePlayer(game: Draft<Game>, { id }: PlayerAction): Draft<Game> {
     game.players.delete(id);
+
+    return game;
+  }
+
+  /**
+   * Starts the next phase of the game.
+   */
+  private static nextPhase(game: Draft<Game>): Draft<Game> {
+    if (game.phase === Phase.Day) {
+      game.phase = Phase.Night;
+      game.day += 1;
+    } else {
+      game.phase = Phase.Day;
+    }
 
     return game;
   }
