@@ -35,8 +35,9 @@ async function main() {
     .registerDefaultCommands()
     .registerCommandsIn(path.join(__dirname, "cmd"));
 
-  // Create a manager for intercepting non-commands.
-  return manager;
+  // Start the manager's event listeners.
+  manager.on("messageReactionAdd", manager.reactionHandler.bind(manager));
+  manager.on("messageReactionRemove", manager.reactionHandler.bind(manager));
 }
 
 void main();
