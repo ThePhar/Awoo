@@ -1,10 +1,10 @@
-import { EliminationAction, PlayerAction, VoteAction } from "./interfaces";
+import { EliminationAction, NamedPlayerAction, PlayerAction, VoteAction } from "./interfaces";
 import Elimination from "../../enum/elimination";
 import { Identifier } from "../../types";
 import PlayerActionTypes from "./types";
 
-export function playerJoin(id: Identifier): PlayerAction {
-  return { type: PlayerActionTypes.Join, id };
+export function playerJoin(id: Identifier, name: string): NamedPlayerAction {
+  return { type: PlayerActionTypes.Join, id, name };
 }
 
 export function playerLeave(id: Identifier): PlayerAction {

@@ -20,6 +20,7 @@ export function printGameState(state: Game): void {
   for (const [, player] of state.players) {
     gameStatus += dedent(`
       ${chalk.bgBlackBright.whiteBright("     ID     ")} ${player.id}
+      ${chalk.bgBlackBright.whiteBright("    Name    ")} ${player.name}
       ${chalk.bgBlackBright.whiteBright("   Alive    ")} ${player.flags.alive.toString()}
       ${chalk.bgBlackBright.whiteBright("    Role    ")} ${player.role.type}
           ${chalk.bgBlackBright.whiteBright(" Team ")} ${player.role.team}

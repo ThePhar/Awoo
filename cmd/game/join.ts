@@ -50,7 +50,7 @@ export default class JoinCommand extends Command {
     }
 
     // Dispatch the action, and get a new game object.
-    store.dispatch(playerJoin(playerID));
+    store.dispatch(playerJoin(playerID, message.member.displayName));
     game = store.getState();
 
     const pluralPlayers = game.players.size === 1 ? "player" : "players";

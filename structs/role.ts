@@ -12,6 +12,7 @@ export interface RoleProperties {
   readonly team: Team;
   readonly meta: MetaProperties;
   readonly defaultMeta: MetaProperties;
+  readonly werewolf: boolean;
   readonly description: string;
 }
 
@@ -23,6 +24,7 @@ export default abstract class Role implements RoleProperties {
   public abstract readonly team: Team;
   public readonly meta: MetaProperties = {};
   public readonly defaultMeta: MetaProperties = {};
+  public readonly werewolf: boolean = false;
   public abstract readonly description: string;
 
   public get teamColor(): Color {
@@ -35,6 +37,18 @@ export default abstract class Role implements RoleProperties {
 
       case Team.Tanner:
         return Color.Brown;
+
+      case Team.Vampires:
+        return Color.Purple;
+
+      case Team.CultLeader:
+        return Color.Green;
+
+      case Team.LoneWolf:
+        return Color.Orange;
+
+      case Team.Lovers:
+        return Color.Pink;
 
       default:
         return Color.White;

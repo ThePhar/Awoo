@@ -13,10 +13,13 @@ const gameReducer = (game: Game, action: AnyAction): Game => produce(game, (stat
   switch (action.type) {
     /** Add a player to the game. */
     case PlayerActionTypes.Join:
-      if (!action.id)
+      if (!action.id || !action.name)
         throw new Error("Attempting to reduce add player action with invalid action.");
 
-      state.players.set(action.id, new Player({ id: action.id as Identifier }));
+      state.players.set(action.id, new Player({
+        id: action.id as Identifier,
+        name: action.name as string
+      }));
       break;
 
     /** Remove a player from the game. */
