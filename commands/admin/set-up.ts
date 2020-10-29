@@ -1,6 +1,8 @@
-import { Command, Game, Manager } from "../../structs";
+import { Command } from "../../structs/command";
 import { Command as CommandType } from "../../types/command";
 import { CommandoMessage } from "discord.js-commando";
+import { Game } from "../../structs/game";
+import { Manager } from "../../structs/manager";
 import { Message } from "discord.js";
 import { adminCommandBaseSettings } from "../constants";
 import { printGameState } from "../../util";

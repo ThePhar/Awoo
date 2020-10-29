@@ -1,8 +1,9 @@
-import { Command, Manager } from "../../structs";
 import { Command as CommandType, Phase } from "../../types";
+import { Command } from "../../structs/command";
 import { CommandoMessage } from "discord.js-commando";
+import { Manager } from "../../structs/manager";
 import { Message } from "discord.js";
-import { playerClearVote } from "../../actions";
+import { playerClearVote } from "../../actions/player/creators";
 import { userCommandBaseSettings } from "../constants";
 
 export default class ClearVoteCommand extends Command {

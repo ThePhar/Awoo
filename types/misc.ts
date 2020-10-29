@@ -1,6 +1,6 @@
 import { Action, AnyAction } from "redux";
 import { ThunkAction, ThunkDispatch } from "redux-thunk";
-import { Game } from "../structs";
+import { Game } from "../structs/game";
 
 export type Accusing = Identifier | SkipVoteType | null;
 export type ActionWithTimestamp = { timestamp: number, action: AnyAction };
@@ -18,3 +18,5 @@ export interface MetaProperties {
 
 export type GameThunkAction<E = unknown, A extends Action = AnyAction, R = void> = ThunkAction<R, Game, E, A>;
 export type GameThunkDispatch = ThunkDispatch<Game, void, AnyAction>;
+
+export const werewolfEmoji = "https://cdn.discordapp.com/emojis/667194685374332969";

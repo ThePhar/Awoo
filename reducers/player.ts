@@ -4,7 +4,7 @@ import { Draft } from "immer";
 import { Player } from "../structs/player";
 import { PlayerActionType } from "../actions/player/types";
 import { SkipVote } from "../types";
-import { Villager } from "../roles/villager";
+import { getRole } from "../roles";
 
 export const playerReducer = (player: Draft<Player>, action: AnyAction): Draft<Player> => {
   switch (action.type) {
@@ -25,8 +25,7 @@ export const playerReducer = (player: Draft<Player>, action: AnyAction): Draft<P
       break;
 
     case PlayerActionType.AssignRole:
-      // TODO: Write role getter logic.
-      player.role = new Villager();
+      player.role = getRole(action.role);
       break;
   }
 

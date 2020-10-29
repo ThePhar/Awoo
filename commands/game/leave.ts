@@ -1,8 +1,9 @@
-import { Command, Manager } from "../../structs";
+import { Command } from "../../structs/command";
 import { Command as CommandType } from "../../types";
 import { CommandoMessage } from "discord.js-commando";
+import { Manager} from "../../structs/manager";
 import { Message } from "discord.js";
-import { gameRemovePlayer } from "../../actions";
+import { gameRemovePlayer } from "../../actions/game/creators";
 import { userCommandBaseSettings } from "../constants";
 
 export default class LeaveCommand extends Command {

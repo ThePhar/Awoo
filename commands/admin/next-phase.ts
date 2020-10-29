@@ -1,9 +1,10 @@
-import { Command, Manager } from "../../structs";
 import { Command as CommandType, GameThunkDispatch } from "../../types";
+import { Command } from "../../structs/command";
 import { CommandoMessage } from "discord.js-commando";
+import { Manager } from "../../structs/manager";
 import { Message } from "discord.js";
 import { adminCommandBaseSettings } from "../constants";
-import { nextPhase } from "../../actions";
+import { nextPhase } from "../../actions/game/thunks";
 
 export default class NextPhaseCommand extends Command {
   public constructor(client: Manager) {

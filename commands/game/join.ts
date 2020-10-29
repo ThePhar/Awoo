@@ -1,8 +1,9 @@
-import { Command, Manager } from "../../structs";
 import { Command as CommandType, Phase } from "../../types";
+import { Command } from "../../structs/command";
 import { CommandoMessage } from "discord.js-commando";
+import { Manager } from "../../structs/manager";
 import { Message } from "discord.js";
-import { gameAddPlayer } from "../../actions";
+import { gameAddPlayer } from "../../actions/game/creators";
 import { userCommandBaseSettings } from "../constants";
 
 export default class JoinCommand extends Command {

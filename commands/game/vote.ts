@@ -1,8 +1,9 @@
-import { Command, Manager } from "../../structs";
 import { Command as CommandType, Phase } from "../../types";
 import { GuildMember, Message } from "discord.js";
+import { Command } from "../../structs/command";
 import { CommandoMessage } from "discord.js-commando";
-import { playerVoteLynch } from "../../actions";
+import { Manager } from "../../structs/manager";
+import { playerVoteLynch } from "../../actions/player/creators";
 import { userCommandBaseSettings } from "../constants";
 
 export default class VoteCommand extends Command {

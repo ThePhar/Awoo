@@ -1,8 +1,9 @@
-import { Command, Manager } from "../../structs";
 import { Command as CommandType, Phase, SkipVote } from "../../types";
+import { Command } from "../../structs/command";
 import { CommandoMessage } from "discord.js-commando";
+import { Manager } from "../../structs/manager";
 import { Message } from "discord.js";
-import { playerVoteSkip } from "../../actions";
+import { playerVoteSkip } from "../../actions/player/creators";
 import { userCommandBaseSettings } from "../constants";
 
 export default class SkipVoteCommand extends Command {

@@ -1,7 +1,8 @@
-import { Command, Manager } from "../../structs";
 import { Message, TextChannel } from "discord.js";
+import { Command } from "../../structs/command";
 import { Command as CommandType } from "../../types";
 import { CommandoMessage } from "discord.js-commando";
+import { Manager } from "../../structs/manager";
 import { adminCommandBaseSettings } from "../constants";
 
 export default class ClearChannelCommand extends Command {

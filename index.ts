@@ -3,12 +3,12 @@ import { Manager } from "./structs/manager";
 import { config } from "dotenv";
 import { enableMapSet } from "immer";
 import path from "path";
-
 // TODO: Remove this debug import.
 import { WerewolfTargetPrompt } from "./prompts/roles/werewolf/target";
 import { gameAddPlayer, nextPhase } from "./actions/game/creators";
-import { GameThunkDispatch } from "./types";
+import { GameThunkDispatch, RoleType } from "./types";
 import { printGameState } from "./util";
+import { playerAssignRole } from "./actions/player/creators";
 
 const PREFIX = "/awoo";
 const PHAR_ID = "196473225268428804";
@@ -50,13 +50,17 @@ async function main() {
   const store = Game.createStore("770866934912385024");
   store.subscribe(() => printGameState(store.getState()));
 
-  store.dispatch(gameAddPlayer("196473225268428804", "Phar")); // Phar
-  store.dispatch(gameAddPlayer("415060065255424002", "TestPhar")); // TestPhar
-  store.dispatch(gameAddPlayer("151839470369505280", "Cainsith")); // Cainsith
+  store.dispatch(gameAddPlayer("196473225268428804", "Phar"));
+  store.dispatch(gameAddPlayer("415060065255424002", "TestPhar"));
+  store.dispatch(gameAddPlayer("661764578924953631", "Knaer 2.0 Alpha"));
+
+  store.dispatch(playerAssignRole("196473225268428804", RoleType.Werewolf));
+  store.dispatch(playerAssignRole("415060065255424002", RoleType.Werewolf));
 
   (store.dispatch as GameThunkDispatch)(nextPhase());
 
   await WerewolfTargetPrompt.create(manager, store, "196473225268428804");
+  await WerewolfTargetPrompt.create(manager, store, "415060065255424002");
 }
 
 void main();
