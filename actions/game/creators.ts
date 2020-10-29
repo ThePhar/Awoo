@@ -1,4 +1,4 @@
-import { NamedPlayerAction, PlayerAction } from "../player";
+import { NamedPlayerAction, PlayerAction } from "../player/interfaces";
 import { Action } from "redux";
 import { PromptAction } from "./interfaces";
 import { GameActionType as Type } from "./types";
@@ -23,3 +23,5 @@ export const gameAddPrompt = (id: string): PromptAction =>
 
 export const gameRemovePrompt = (id: string): PromptAction =>
   ({ type: Type.RemovePrompt, id });
+
+export * from "./thunks";

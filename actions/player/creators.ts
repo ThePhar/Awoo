@@ -1,5 +1,5 @@
 import * as Action from "./interfaces";
-import { Elimination, Role } from "../../types";
+import { Elimination, RoleType } from "../../types";
 import { PlayerActionType as Type } from "./types";
 
 export const playerEliminate = (id: string, reason: Elimination): Action.EliminationAction =>
@@ -14,5 +14,5 @@ export const playerVoteSkip = (id: string): Action.PlayerAction =>
 export const playerClearVote = (id: string): Action.PlayerAction =>
   ({ type: Type.ClearVote, id });
 
-export const playerAssignRole = (id: string, role: Role): Action.RoleAssignAction =>
+export const playerAssignRole = (id: string, role: RoleType): Action.RoleAssignAction =>
   ({ type: Type.AssignRole, id, role });

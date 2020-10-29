@@ -1,6 +1,6 @@
 import { Accusing, Identifier } from "../types";
 import { Role } from "./role";
-import { Villager } from "../roles";
+import { Villager } from "../roles/villager";
 import { immerable } from "immer";
 
 export interface PlayerProperties {

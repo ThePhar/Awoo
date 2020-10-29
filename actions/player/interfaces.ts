@@ -1,4 +1,4 @@
-import { Elimination, Role } from "../../types";
+import { Elimination, RoleType } from "../../types";
 import { Action } from "redux";
 
 export type AnyPlayerAction = PlayerAction | VoteAction | EliminationAction | NamedPlayerAction;
@@ -20,5 +20,5 @@ export interface EliminationAction extends PlayerAction {
 }
 
 export interface RoleAssignAction extends PlayerAction {
-  readonly role: Role;
+  readonly role: RoleType;
 }

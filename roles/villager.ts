@@ -1,5 +1,5 @@
-import { Appearance, Role as RoleType, Team } from "../types";
-import { Role } from "../structs";
+import { Appearance, RoleType as RoleType, Team } from "../types";
+import { Role } from "../structs/role";
 
 export class Villager extends Role {
   public readonly appearance = Appearance.Villager;

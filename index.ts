@@ -1,7 +1,14 @@
-import Manager from "./structs/manager";
+import { Game } from "./structs/game";
+import { Manager } from "./structs/manager";
 import { config } from "dotenv";
 import { enableMapSet } from "immer";
 import path from "path";
+
+// TODO: Remove this debug import.
+import { WerewolfTargetPrompt } from "./prompts/roles/werewolf/target";
+import { gameAddPlayer, nextPhase } from "./actions/game/creators";
+import { GameThunkDispatch } from "./types";
+import { printGameState } from "./util";
 
 const PREFIX = "/awoo";
 const PHAR_ID = "196473225268428804";
@@ -33,11 +40,23 @@ async function main() {
       ["game", "Game Commands"]
     ])
     .registerDefaultCommands()
-    .registerCommandsIn(path.join(__dirname, "cmd"));
+    .registerCommandsIn(path.join(__dirname, "commands"));
 
   // Start the manager's event listeners.
   manager.on("messageReactionAdd", manager.reactionHandler.bind(manager));
   manager.on("messageReactionRemove", manager.reactionHandler.bind(manager));
+
+  // TODO: Remove this debug code.
+  const store = Game.createStore("770866934912385024");
+  store.subscribe(() => printGameState(store.getState()));
+
+  store.dispatch(gameAddPlayer("196473225268428804", "Phar")); // Phar
+  store.dispatch(gameAddPlayer("415060065255424002", "TestPhar")); // TestPhar
+  store.dispatch(gameAddPlayer("151839470369505280", "Cainsith")); // Cainsith
+
+  (store.dispatch as GameThunkDispatch)(nextPhase());
+
+  await WerewolfTargetPrompt.create(manager, store, "196473225268428804");
 }
 
 void main();

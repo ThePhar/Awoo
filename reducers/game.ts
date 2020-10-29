@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Draft, produce } from "immer";
-import { Game, Player } from "../structs";
 import { AnyAction } from "redux";
-import { GameActionType } from "../actions";
+import { Game } from "../structs/game";
+import { GameActionType } from "../actions/game/types";
 import { Phase } from "../types";
+import { Player } from "../structs/player";
 import { playerReducer } from "./player";
 
 export const gameReducer = (game: Game, action: AnyAction): Game => produce(game, (state: Draft<Game>) => {

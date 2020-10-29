@@ -1,7 +1,8 @@
-import { Command, Manager } from "../../structs";
 import { AnyAction } from "redux";
+import { Command } from "../../structs/command";
 import { Command as CommandType } from "../../types";
 import { CommandoMessage } from "discord.js-commando";
+import { Manager } from "../../structs/manager";
 import { Message } from "discord.js";
 import { adminCommandBaseSettings } from "../constants";
 

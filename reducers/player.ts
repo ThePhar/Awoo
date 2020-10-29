@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { AnyAction } from "redux";
 import { Draft } from "immer";
-import { Player } from "../structs";
-import { PlayerActionType } from "../actions";
+import { Player } from "../structs/player";
+import { PlayerActionType } from "../actions/player/types";
 import { SkipVote } from "../types";
-import { Villager } from "../roles";
+import { Villager } from "../roles/villager";
 
 export const playerReducer = (player: Draft<Player>, action: AnyAction): Draft<Player> => {
   switch (action.type) {

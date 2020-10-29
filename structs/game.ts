@@ -1,7 +1,7 @@
 import { ActionWithTimestamp, Phase } from "../types";
 import { Reducer, Store, applyMiddleware, createStore } from "redux";
 import { Player } from "./player";
-import { gameReducer } from "../reducers";
+import { gameReducer } from "../reducers/game";
 import { immerable } from "immer";
 import thunk from "redux-thunk";
 

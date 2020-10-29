@@ -1,4 +1,4 @@
-import { Appearance, Color, MetaProperties, Role as RoleType, Team } from "../types";
+import { Appearance, Color, MetaProperties, RoleType, Team } from "../types";
 import { immerable } from "immer";
 
 export interface RoleProperties {

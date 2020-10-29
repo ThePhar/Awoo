@@ -1,6 +1,8 @@
-import { Game, Manager, Player } from "../structs";
 import { Message, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
-import { gameAddPrompt, gameRemovePrompt } from "../actions";
+import { gameAddPrompt, gameRemovePrompt } from "../actions/game/creators";
+import { Game } from "../structs/game";
+import { Manager } from "../structs/manager";
+import { Player } from "../structs/player";
 import { Store } from "redux";
 
 export type EmojiList = { [name: string]: { emoji: string, description: string } };

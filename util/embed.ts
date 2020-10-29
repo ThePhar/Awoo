@@ -1,5 +1,5 @@
-import { EmojiList } from "../prompts";
-import { Player } from "../structs";
+import { EmojiList } from "../prompts/prompt";
+import { Player } from "../structs/player";
 
 /**
  * Checks a given array to ensure there is at least one element in it. If not, returns an array with a single

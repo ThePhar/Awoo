@@ -1,4 +1,4 @@
-export enum Role {
+export enum RoleType {
   /* Villager Team */
   ApprenticeSeer = "Apprentice Seer",
   Beholder = "Beholder",

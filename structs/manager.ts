@@ -1,7 +1,7 @@
 import { MessageReaction, User } from "discord.js";
 import { CommandoClient } from "discord.js-commando";
 import { Game } from "./game";
-import { Prompt } from "../prompts";
+import { Prompt } from "../prompts/prompt";
 import { Store } from "redux";
 
 export class Manager extends CommandoClient {

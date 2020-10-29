@@ -1,11 +1,13 @@
 import { EmojiList, Prompt } from "../../prompt";
-import { Game, Manager, Player } from "../../../structs";
 import { MessageEmbed, MessageReaction, TextChannel } from "discord.js";
 import { formatPrompts, formatTargets, safeFormat, version } from "../../../util";
 import { Color } from "../../../types";
+import { Game } from "../../../structs/game";
+import { Manager } from "../../../structs/manager";
+import { Player } from "../../../structs/player";
 import { Store } from "redux";
 import dedent from "dedent";
-import { werewolfTarget } from "../../../actions/";
+import { werewolfTarget } from "../../../actions/roles/werewolf/creators";
 
 interface WerewolfTargetMetaProperties {
   availableTargets: Player[];

@@ -1,5 +1,5 @@
-import { Appearance, MetaProperties, Role as RoleType, Team } from "../types";
-import { Role } from "../structs";
+import { Appearance, MetaProperties, RoleType as RoleType, Team } from "../types";
+import { Role } from "../structs/role";
 
 interface WerewolfMeta extends MetaProperties {
   target: string | null;

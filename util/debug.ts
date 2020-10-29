@@ -1,4 +1,4 @@
-import { Game } from "../structs";
+import { Game } from "../structs/game";
 import { SkipVote } from "../types";
 import chalk from "chalk";
 import dedent from "dedent";
