@@ -1,7 +1,7 @@
 import { MessageEmbed, User } from "discord.js";
-import Color from "../enum/color";
+import { Color } from "../types";
 import { Command as CommandoCommand } from "discord.js-commando";
-import Manager from "./manager";
+import { Manager } from "./manager";
 
 export class Command extends CommandoCommand {
   public get manager(): Manager {

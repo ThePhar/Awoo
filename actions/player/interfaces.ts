@@ -1,9 +1,10 @@
-import { AnyAction } from "redux";
-import Elimination from "../../enum/elimination";
-import { Identifier } from "../../types";
+import { Elimination, Role } from "../../types";
+import { Action } from "redux";
 
-export interface PlayerAction extends AnyAction {
-  readonly id: Identifier;
+export type AnyPlayerAction = PlayerAction | VoteAction | EliminationAction | NamedPlayerAction;
+
+export interface PlayerAction extends Action {
+  readonly id: string;
 }
 
 export interface NamedPlayerAction extends PlayerAction {
@@ -11,11 +12,13 @@ export interface NamedPlayerAction extends PlayerAction {
 }
 
 export interface VoteAction extends PlayerAction {
-  readonly accusing: Identifier;
+  readonly accusing: string;
 }
 
 export interface EliminationAction extends PlayerAction {
   readonly reason: Elimination;
 }
 
-export type AnyPlayerAction = PlayerAction | VoteAction | EliminationAction | NamedPlayerAction;
+export interface RoleAssignAction extends PlayerAction {
+  readonly role: Role;
+}

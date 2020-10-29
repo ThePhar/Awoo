@@ -1,11 +1,7 @@
-enum PlayerActionTypes {
-  Join = "PLAYER_JOIN",
-  Leave = "PLAYER_LEAVE",
+export enum PlayerActionType {
   Eliminate = "PLAYER_ELIMINATE",
-  Vote = "PLAYER_VOTE",
-  ClearVote = "PLAYER_CLEAR_VOTE",
-  NoVote = "PLAYER_NO_VOTE",
+  VoteLynch = "PLAYER_VOTE_LYNCH",
+  VoteSkip = "PLAYER_VOTE_SKIP",
+  ClearVote = "PLAYER_VOTE_CLEAR",
   AssignRole = "PLAYER_ASSIGN_ROLE"
 }
-
-export default PlayerActionTypes;

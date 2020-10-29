@@ -1,4 +1,4 @@
-import Game from "../structs/game";
+import { Game } from "../structs";
 import { SkipVote } from "../types";
 import chalk from "chalk";
 import dedent from "dedent";
@@ -21,7 +21,7 @@ export function printGameState(state: Game): void {
     gameStatus += dedent(`
       ${chalk.bgBlackBright.whiteBright("     ID     ")} ${player.id}
       ${chalk.bgBlackBright.whiteBright("    Name    ")} ${player.name}
-      ${chalk.bgBlackBright.whiteBright("   Alive    ")} ${player.flags.alive.toString()}
+      ${chalk.bgBlackBright.whiteBright("   Alive    ")} ${player.alive.toString()}
       ${chalk.bgBlackBright.whiteBright("    Role    ")} ${player.role.type}
           ${chalk.bgBlackBright.whiteBright(" Team ")} ${player.role.team}
           ${chalk.bgBlackBright.whiteBright(" Appr ")} ${player.role.appearance}

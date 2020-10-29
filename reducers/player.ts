@@ -1,32 +1,32 @@
-import { Identifier, SkipVote } from "../types";
-import { AnyPlayerAction } from "../actions/player/interfaces";
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+import { AnyAction } from "redux";
 import { Draft } from "immer";
-import Player from "../structs/player";
-import PlayerActionTypes from "../actions/player/types";
+import { Player } from "../structs";
+import { PlayerActionType } from "../actions";
+import { SkipVote } from "../types";
+import { Villager } from "../roles";
 
-const playerReducer = (player: Draft<Player>, action: AnyPlayerAction): Draft<Player> => {
+export const playerReducer = (player: Draft<Player>, action: AnyAction): Draft<Player> => {
   switch (action.type) {
-    /** Vote to eliminate a player. */
-    case PlayerActionTypes.Vote:
-      if (!action.accusing)
-        throw new Error("Attempting to reduce vote action with invalid action.");
-
-      player.accusing = action.accusing as Identifier;
+    case PlayerActionType.Eliminate:
+      player.alive = false;
       break;
 
-    /** Vote to not eliminate any player. */
-    case PlayerActionTypes.NoVote:
+    case PlayerActionType.VoteLynch:
+      player.accusing = action.accusing;
+      break;
+
+    case PlayerActionType.VoteSkip:
       player.accusing = SkipVote;
       break;
 
-    /** Clear a player's votes to eliminate or not eliminate. */
-    case PlayerActionTypes.ClearVote:
+    case PlayerActionType.ClearVote:
       player.accusing = null;
       break;
 
-    /** Eliminate a player. */
-    case PlayerActionTypes.Eliminate:
-      player.flags.alive = false;
+    case PlayerActionType.AssignRole:
+      // TODO: Write role getter logic.
+      player.role = new Villager();
       break;
   }
 
@@ -34,5 +34,3 @@ const playerReducer = (player: Draft<Player>, action: AnyPlayerAction): Draft<Pl
 
   return player;
 };
-
-export default playerReducer;
