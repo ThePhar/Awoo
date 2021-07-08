@@ -9,7 +9,6 @@ import * as Time from "../util/date";
 import Manager from "./manager";
 import Player from "./player";
 import Phase from "../enum/phase";
-import Shuffle from "../util/shuffle";
 
 /* Constants */
 const RequiredPermissions: D.PermissionResolvable = [

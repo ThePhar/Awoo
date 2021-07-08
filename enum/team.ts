@@ -1,7 +1,7 @@
 enum Team {
     Villagers = "Villagers",
     Werewolves = "Werewolves",
-    Tanner = "Tanner",
+    Tanner = "The Tanner",
 }
 
 export default Team;
