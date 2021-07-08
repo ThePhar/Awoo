@@ -28,7 +28,7 @@ export default function getMostDuplicates(array: Array<Player>): Array<Player> {
         }
     }
 
-    Object.entries(objectCounter).forEach(item => newArray.push(item));
+    Object.entries(objectCounter).forEach((item) => newArray.push(item));
     newArray = newArray.sort((a, b) => b[1].count - a[1].count);
 
     const values = [];
@@ -42,7 +42,7 @@ export default function getMostDuplicates(array: Array<Player>): Array<Player> {
         }
     }
 
-    return values.map(v => v[1].value);
+    return values.map((v) => v[1].value);
 }
 
 // export function getDuplicateCounts(array: Array<Player>): Array<string> {

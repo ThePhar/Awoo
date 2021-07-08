@@ -1,6 +1,6 @@
 import Player from "../struct/player";
 
 export default interface PlayerState {
-    alive:    boolean;
+    alive: boolean;
     accusing: Player | null;
 }

@@ -1,16 +1,16 @@
-import * as D       from 'discord.js';
-import * as Embed   from '../template/role';
-import Appearance   from '../enum/appearance';
-import Team         from '../enum/team';
-import { Villager } from './villager';
+import * as D from "discord.js";
+import * as Embed from "../template/role";
+import Appearance from "../enum/appearance";
+import Team from "../enum/team";
+import { Villager } from "./villager";
 
 export class Lycan extends Villager {
-  public name       = 'Lycan';
-  public pluralName = 'Lycans';
-  public appearance = Appearance.Werewolf;
-  public team       = Team.Villagers;
+    public override name = "Lycan";
+    public override pluralName = "Lycans";
+    public override appearance = Appearance.Werewolf;
+    public override team = Team.Villagers;
 
-  protected roleDescriptionEmbed(): D.MessageEmbed {
-    return Embed.RoleLycan(this);
-  }
+    protected override roleDescriptionEmbed(): D.MessageEmbed {
+        return Embed.RoleLycan(this);
+    }
 }
