@@ -1,20 +1,32 @@
-import * as D from "discord.js";
+import * as Discord from "discord.js";
+
 import Appearance from "../enum/appearance";
-import Player from "../struct/player";
-import Prompt from "../struct/prompt";
+import Roles from "../constants/role-names";
 import Team from "../enum/team";
 
-export default abstract class Role {
-    public readonly player: Player;
-    public prompt?: Prompt;
+/**
+ * A serializable version of Role to make saving of data in a document-database easy.
+ */
+export interface SerializableRole {
+    readonly name: Roles;
+    readonly appearance: Appearance;
+    readonly team: Team;
+}
 
-    public abstract name: string;
-    public abstract pluralName: string;
-    public abstract appearance: Appearance;
-    public abstract team: Team;
+export abstract class Role implements SerializableRole {
+    public name: string;
+    public appearance: Appearance;
+    public team: Team;
 
-    public constructor(player: Player) {
-        this.player = player;
+    /**
+     * Generate a new role with predetermined information.
+     * @param role
+     */
+    public constructor(role: SerializableRole) {
+        this.singularName = role.singularName;
+        this.pluralName = role.pluralName;
+        this.appearance = role.appearance;
+        this.team = role.team;
     }
 
     public async startRole(): Promise<void> {
