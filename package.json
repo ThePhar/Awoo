@@ -1,6 +1,6 @@
 {
   "name": "awoo",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "A realtime Werewolf moderator and game manager for Discord.",
   "main": "./index.js",
   "repository": "https://github.com/ThePhar/awoo.git",
@@ -15,29 +15,24 @@
   "devDependencies": {
     "@types/dedent": "^0.7.0",
     "@types/moment": "^2.13.0",
-    "@types/node": "^13.1.2",
-    "@types/node-schedule": "^1.3.0",
+    "@types/node": "^16.0.1",
+    "@types/node-schedule": "^1.3.2",
     "@types/random-item": "^2.0.0",
-    "@types/redux": "^3.6.0",
-    "@types/ws": "^7.2.4",
-    "@typescript-eslint/eslint-plugin": "^2.14.0",
-    "@typescript-eslint/parser": "^2.14.0",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.2",
-    "nodemon": "^2.0.2",
-    "rimraf": "^3.0.0",
-    "ts-node": "^8.5.4",
-    "typescript": "^3.7.4"
+    "@types/redux": "^3.6.31",
+    "@types/ws": "^7.4.6",
+    "nodemon": "^2.0.10",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.5"
   },
   "dependencies": {
-    "chalk": "^3.0.0",
+    "chalk": "^4.1.1",
     "dedent": "^0.7.0",
-    "discord.js": "^12.2.0",
-    "dotenv": "^8.2.0",
-    "moment": "^2.24.0",
-    "node-schedule": "^1.3.2",
-    "random-item": "^3.0.0",
+    "discord.js": "^12.5.3",
+    "dotenv": "^10.0.0",
+    "moment": "^2.29.1",
+    "node-schedule": "^2.0.0",
+    "random-item": "^4.0.1",
     "sql-template-strings": "^2.2.2"
   }
 }
