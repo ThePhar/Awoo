@@ -53,6 +53,10 @@ export class Game implements SerializableGame {
         return players;
     }
 
+    public scheduleGameStart(): void {
+        this.schedule = Schedule.scheduleJob();
+    }
+
     /**
      * Cancel the next scheduled game and mark it undefined.
      */

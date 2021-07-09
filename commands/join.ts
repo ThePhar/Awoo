@@ -53,9 +53,7 @@ export default class Join extends Command {
 
         // Check if we passed the threshold of minimum players. Schedule a game start.
         if (game.players.length >= 6 && !game.schedule) {
-            // TODO: Do schedule logic.
-            game.schedule = "TEST";
-
+            game.scheduleGameStart();
             await interaction.reply(`${member} has joined the game, and we now have the minimum required players!`);
         } else {
             await interaction.reply(`${member} has joined the next game.`);

@@ -1,40 +1,29 @@
-import moment from "moment";
+import * as DateFNS from "date-fns";
 
-export function getNextMorning(): moment.Moment {
-    const morning = moment();
-
-    // TODO: DEBUG
-    // return moment().add('60', 'seconds');
-
-    // Set the hour and minutes to a specific time.
-    morning.hour(8);
-    morning.minute(0);
-    morning.second(0);
-    morning.millisecond(0);
+/**
+ * Returns the next morning time.
+ */
+export function getNextMorning(): Date {
+    const morningToday = DateFNS.set(Date.now(), { hours: 8, minutes: 0, seconds: 0, milliseconds: 0 });
 
     // If we are already past the morning time for today, use tomorrow.
-    if (moment().isAfter(morning)) {
-        morning.add(1, "days");
+    if (DateFNS.isAfter(morningToday, Date.now())) {
+        return DateFNS.add(morningToday, { days: 1 });
     }
 
-    return morning;
+    return morningToday;
 }
-export function getNextNight(): moment.Moment {
-    const night = moment();
 
-    // TODO: DEBUG
-    // return moment().add('60', 'seconds');
+/**
+ * Returns the next evening time.
+ */
+export function getNextNight(): Date {
+    const eveningToday = DateFNS.set(Date.now(), { hours: 20, minutes: 0, seconds: 0, milliseconds: 0 });
 
-    // // Set the hour and minutes to a specific time.
-    night.hour(20);
-    night.minute(0);
-    night.second(0);
-    night.millisecond(0);
-
-    // If we are already past the night time for today, use tomorrow.
-    if (moment().isAfter(night)) {
-        night.add(1, "days");
+    // If we are already past the evening time for today, use tomorrow.
+    if (DateFNS.isAfter(eveningToday, Date.now())) {
+        return DateFNS.add(eveningToday, { days: 1 });
     }
 
-    return night;
+    return eveningToday;
 }
