@@ -36,7 +36,7 @@ export const RoleDescriptions: RoleDescriptionDefinitions = {
     [Roles.Tanner]:       "The Tanner is a Villager that only wins if they are eliminated.",
     [Roles.ToughGuy]:     "The Tough Guy is a Villager that does not get eliminated by Werewolves until the following night after being initially targeted.",
     [Roles.Troublemaker]: "The Troublemaker is a Villager that can, once per game, choose a day to force two players to be eliminated by lynching.",
-    [Roles.Villager]:     "The Villagers has no special abilities and must find the Werewolves and eliminate them.",
+    [Roles.Villager]:     "The Villagers have no special abilities and must find the Werewolves and eliminate them.",
     [Roles.Werewolf]:     "The Werewolves choose a player each night to eliminate. They win when they outnumber the remaining Villagers.",
     [Roles.WildChild]:    "The Wild Child is a Villager that chooses a player on the first night to be their role model. If their role model is eliminated, the Wild Child becomes a Werewolf",
     [Roles.Witch]:        "The Witch is a Villager that may, once per game per ability, choose to eliminate a player and/or save any player targeted by the Werewolves that night.",

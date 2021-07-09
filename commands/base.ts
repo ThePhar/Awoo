@@ -1,5 +1,7 @@
 import * as Discord from "discord.js";
 
+import { AwooClient } from "../client";
+
 import equal from "deep-equal";
 import fs from "fs";
 import path from "path";
@@ -8,7 +10,7 @@ export abstract class Command implements Discord.ApplicationCommandData {
     // Required Properties
     public abstract readonly name: string;
     public abstract readonly description: string;
-    public abstract readonly handler: (interaction: Discord.CommandInteraction) => Promise<void>;
+    public abstract readonly handler: (interaction: Discord.CommandInteraction, client: AwooClient) => Promise<void>;
 
     // Optional Properties
     public readonly defaultPermission?: boolean = true;
@@ -30,7 +32,7 @@ export abstract class Command implements Discord.ApplicationCommandData {
 
             // Attempt to add a command.
             try {
-                const command = new $class.default();
+                const command: Command = new $class.default();
                 commands.set(command.name, command);
             } catch {
                 // Just ignore this class and move on...
@@ -72,11 +74,14 @@ export abstract class Command implements Discord.ApplicationCommandData {
             if (
                 command.description !== guildCommand.description ||
                 command.defaultPermission !== guildCommand.defaultPermission ||
-                !equal(command.options, guildCommand.options)
+                !equal(guildCommand.options, command.options)
             ) {
                 console.log(`Updating '${guildCommand.name}' in ${guild.name}...`);
                 await guild.commands.edit(id, command);
                 updated++;
+
+                console.log(command.options);
+                console.log(guildCommand.options);
             }
         }
 

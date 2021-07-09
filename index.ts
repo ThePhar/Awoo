@@ -26,6 +26,7 @@ async function main() {
 
     // Login and initialize our bot.
     await client.login(process.env["DISCORD_BOT_TOKEN"]);
+    await client.loadRoles();
     await client.loadCommands();
 }
 

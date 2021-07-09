@@ -1,8 +1,25 @@
 import * as Discord from "discord.js";
 
 import { Command } from "./commands";
+import { Role } from "./roles";
 
 export class AwooClient extends Discord.Client {
+    public roles: Map<string, Role> = new Map();
+
+    /**
+     * Loads a list of all roles that are currently supported by this bot.
+     */
+    public async loadRoles(): Promise<void> {
+        // Change presence to announce we're loading roles.
+        this.user?.setActivity("Loading roles...");
+
+        // Load all of our roles.
+        this.roles = await Role.fetchRoles();
+
+        // We have finished, clear our activity.
+        this.user?.setActivity();
+    }
+
     /**
      * Loads commands and updates each server's command list to match the commands directory.
      */
@@ -21,12 +38,12 @@ export class AwooClient extends Discord.Client {
         }
 
         // Create an event listener for command interactions.
-        this.on("interaction", async (interaction) => {
+        this.on("interactionCreate", async (interaction) => {
             if (interaction instanceof Discord.CommandInteraction && interaction.command) {
                 const command = commands.get(interaction.command.name);
 
                 try {
-                    await command?.handler(interaction);
+                    await command?.handler(interaction, this);
                 } catch (err) {
                     console.error(`Error while attempting to handle command: ${interaction.command.name}`);
                     console.error(err);
