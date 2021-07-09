@@ -41,6 +41,8 @@ export default class Delete extends Command {
         // All is good!
         client.games.delete(game.id);
 
+        game.clearSchedules();
+
         await interaction.reply("The administrator has deleted this game. The game is over.");
         await channel.permissionOverwrites.set(game.defaultPermissions);
     };

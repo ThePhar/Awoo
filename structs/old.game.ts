@@ -68,59 +68,7 @@ export default class Game {
     }
 
     /* Static Methods */
-    /**
-     * Do a check to see if we have all the valid permissions required to start a game in this channel, and if so, create
-     * it.
-     * @param channel The Discord TextChannel to use for this game.
-     * @param manager The Manager handling this game.
-     */
-    public static async generateGame(channel: D.TextChannel, manager: OldManager): Promise<Game | undefined> {
-        // Do not continue if we have no user object for this bot.
-        if (!manager.client.user) {
-            return undefined;
-        }
 
-        // Check our permissions and create a game if they are good..
-        const perms = channel.permissionsFor(manager.client.user);
-        if (perms && (perms.has("ADMINISTRATOR") || perms.has(RequiredPermissions))) {
-            const message = await channel.send(Embed.lobby());
-            await message.pin();
-            return new Game(channel, manager, message);
-        }
-
-        // We do not have the correct level of permissions, tell them!
-        await channel.send(
-            dedent(`
-      Sorry, but I need a minimum level of permissions to start and manage a game in this channel.
-      
-      Required Permissions:
-      \`\`\`
-      Manage Channel
-      Manage Permissions
-      Read Messages
-      Send Messages
-      Manage Messages
-      Embed Links
-      Read Message History
-      Use External Emojis
-      Add Reactions
-      \`\`\`
-    `),
-        );
-        return undefined;
-    }
-
-    /* Async Methods */
-    /**
-     * Remove this game from the Manager and reset the channel to its default settings.
-     */
-    private async destroyGame(): Promise<void> {
-        this.clearSchedules();
-        this.manager.games.delete(this.id);
-
-        // Restore previous channel state.
-        await this.channel.overwritePermissions(this.defaultPerms);
-    }
     /**
      * Checks if a win condition was met for any team.
      */
@@ -417,32 +365,6 @@ export default class Game {
         });
 
         return players;
-    }
-    /**
-     * Attempt to find a player by a particular id string.
-     * @param id The id string of the player being selected.
-     */
-    public getPlayer(id: string): OldPlayer | undefined {
-        return this.playerMap.get(id);
-    }
-    /**
-     * Print a human readable string that represents this game.
-     */
-    public toString(): string {
-        return `${this.channel.guild.name} #${this.channel.name}`;
-    }
-    /**
-     * Cancel the next scheduled game and mark it undefined.
-     */
-    private clearSchedules(): void {
-        if (this.schedule) {
-            this.schedule.cancelNext();
-            this.schedule = undefined;
-        }
-        if (this.reminder) {
-            this.reminder.cancelNext();
-            this.reminder = undefined;
-        }
     }
     /**
      * Randomly assign roles to every player.
