@@ -14,9 +14,10 @@ export interface SerializablePlayer {
 
 export class Player implements SerializablePlayer {
     public readonly member: Discord.GuildMember;
-    public readonly alive = true;
-    public readonly role: Role = new Villager();
-    public readonly vote: Vote = Vote.noVote(this);
+
+    public alive = true;
+    public role: Role = new Villager();
+    public vote: Vote = Vote.noVote(this);
 
     public constructor(member: Discord.GuildMember) {
         this.member = member;

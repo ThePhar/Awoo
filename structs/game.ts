@@ -13,19 +13,21 @@ export interface SerializableGame {
 
 export class Game implements SerializableGame {
     public readonly channel: Discord.TextChannel;
+    public readonly defaultPermissions: Discord.Collection<`${bigint}`, Discord.PermissionOverwrites>;
     public readonly playerMap: Map<string, Player> = new Map();
-    public readonly day = 1;
-    public readonly phase = Phase.Night;
-    public readonly active = false;
     public readonly embeds: Map<string, Discord.Message | undefined> = new Map([
         ["start", undefined],
         ["latest", undefined],
     ]);
 
+    public day = 1;
+    public phase = Phase.Night;
+    public active = false;
     public schedule: any = undefined;
 
     public constructor(channel: Discord.TextChannel) {
         this.channel = channel;
+        this.defaultPermissions = channel.permissionOverwrites.valueOf();
     }
 
     /**

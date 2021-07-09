@@ -2,6 +2,7 @@ import * as Discord from "discord.js";
 
 import { AwooClient } from "../structs/client";
 import { Command } from "./base";
+import { Game } from "../structs/game";
 
 export default class Delete extends Command {
     public readonly name = "delete";
@@ -35,8 +36,12 @@ export default class Delete extends Command {
             });
         }
 
+        const game = client.games.get(channel.id) as Game;
+
         // All is good!
-        client.games.delete(channel.id);
-        return interaction.reply("The administrator has deleted this game. The game is over.");
+        client.games.delete(game.id);
+
+        await interaction.reply("The administrator has deleted this game. The game is over.");
+        await channel.permissionOverwrites.set(game.defaultPermissions);
     };
 }
