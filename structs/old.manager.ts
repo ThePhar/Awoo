@@ -8,7 +8,7 @@ import RecognisedCommand from "../enum/recognised-command";
 type Identifier = string;
 type User = D.User | D.PartialUser;
 
-export default class Manager {
+export default class OldManager {
     public client: D.Client;
     public games = new Map<Identifier, Game>();
     public prompts = new Map<Identifier, Prompt>();
@@ -90,7 +90,7 @@ export default class Manager {
 
     /* Command Handlers */
     private commandNewGame(member: D.GuildMember, channel: D.TextChannel) {
-        if (Manager.isAdministrator(member)) {
+        if (OldManager.isAdministrator(member)) {
             Game.generateGame(channel, this).then((game) => (game ? this.games.set(channel.id, game) : ""));
             return;
         }

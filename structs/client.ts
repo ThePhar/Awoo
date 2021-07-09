@@ -1,10 +1,12 @@
 import * as Discord from "discord.js";
 
-import { Command } from "./commands";
-import { Role } from "./roles";
+import { Command } from "../commands";
+import { Game } from "./game";
+import { Role } from "../roles";
 
 export class AwooClient extends Discord.Client {
     public roles: Map<string, Role> = new Map();
+    public games: Map<bigint, Game> = new Map();
 
     /**
      * Loads a list of all roles that are currently supported by this bot.

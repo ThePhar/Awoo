@@ -1,6 +1,6 @@
 import * as Discord from "discord.js";
 
-import { AwooClient } from "../client";
+import { AwooClient } from "../structs/client";
 
 import equal from "deep-equal";
 import fs from "fs";

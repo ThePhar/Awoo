@@ -1,7 +1,7 @@
 import * as Discord from "discord.js";
 import * as Env from "dotenv";
 
-import { AwooClient } from "./client";
+import { AwooClient } from "./structs/client";
 
 /**
  * Main entry point for this application.

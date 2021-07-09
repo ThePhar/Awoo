@@ -1,6 +1,6 @@
 import * as Discord from "discord.js";
 
-import { AwooClient } from "../client";
+import { AwooClient } from "../structs/client";
 import { Command } from "./base";
 import { Role as BaseRole } from "../roles";
 
