@@ -17,6 +17,12 @@ export class Game implements SerializableGame {
     public readonly day = 1;
     public readonly phase = Phase.Night;
     public readonly active = false;
+    public readonly embeds: Map<string, Discord.Message | undefined> = new Map([
+        ["start", undefined],
+        ["latest", undefined],
+    ]);
+
+    public schedule: any = undefined;
 
     public constructor(channel: Discord.TextChannel) {
         this.channel = channel;

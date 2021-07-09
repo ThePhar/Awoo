@@ -66,6 +66,7 @@ export default class Create extends Command {
         const game = new Game(channel);
         client.games.set(game.id, game);
 
-        return interaction.reply({ embeds: [new StartEmbed(game)] });
+        const reply = await interaction.reply({ embeds: [new StartEmbed(game)], fetchReply: true });
+        game.embeds.set("start", reply as Discord.Message);
     };
 }
