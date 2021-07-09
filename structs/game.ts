@@ -5,6 +5,7 @@ import { Player, SerializablePlayer } from "./player";
 import { getNextNight } from "../util/date";
 
 import Schedule from "node-schedule";
+import { Randomize } from "../roles";
 
 export interface SerializableGame {
     readonly id: string;
@@ -56,8 +57,10 @@ export class Game implements SerializableGame {
 
     public async startNewGame(): Promise<void> {
         this.active = true;
+        this.clearSchedules();
 
-        // TODO: Randomize roles.
+        // Randomize roles.
+        Randomize(this.players);
 
         // Mute all non-players.
         const permissions: Discord.OverwriteData[] = [
@@ -96,6 +99,7 @@ export class Game implements SerializableGame {
         }
 
         // TODO: Start Night Phase 1
+        // await this.startNightPhase();
     }
 
     /**

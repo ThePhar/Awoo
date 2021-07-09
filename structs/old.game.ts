@@ -366,52 +366,6 @@ export default class Game {
 
         return players;
     }
-    /**
-     * Randomly assign roles to every player.
-     */
-    private randomizeRoles(): void {
-        // Shuffle our player list.
-        const players = Shuffle(this.players.all);
-        players[0].role = new Roles.Seer(players[0]);
-
-        // Index variable for use later.
-        let i = 1;
-
-        // Generate our werewolves.
-        const werewolfCount = Math.floor(players.length / 4);
-        for (; i <= werewolfCount; i += 1) {
-            players[i].role = new Roles.Werewolf(players[i]);
-        }
-
-        // No Tanner
-        if (players.length >= 8) {
-            players[i].role = new Roles.Mayor(players[i]);
-            i++;
-            players[i].role = new Roles.Bodyguard(players[i]);
-            i++;
-            players[i].role = new Roles.Lycan(players[i]);
-            i++;
-        }
-
-        // New Roles
-        if (players.length >= 12) {
-            players[i].role = new Roles.Witch(players[i]);
-            i++;
-            players[i].role = new Roles.Sorceress(players[i]);
-            i++;
-            players[i].role = new Roles.Prince(players[i]);
-            i++;
-            players[i].role = new Roles.Hunter(players[i]);
-            i++;
-        }
-
-        // Masons
-        if (players.length >= 16) {
-            for (let j = 0; j < werewolfCount - 2; j += 1) {
-                players[i + j].role = new Roles.Mason(players[i + j]);
-            }
-        }
-    }
 
     /* Role Logic */
     private werewolfNightAction(): OldPlayer | undefined {

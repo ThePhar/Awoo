@@ -83,7 +83,29 @@ export class AwooClient extends Discord.Client {
     public printGamesInterval(interval: number) {
         setInterval(() => {
             console.clear();
-            console.log(util.inspect(this.games, { showHidden: false, depth: null, colors: true }));
+
+            for (const game of this.games.values()) {
+                console.log(`GAME     ${game.id}`);
+                console.log(`SCHEDULE ${game.schedule?.nextInvocation().toISOString()}`);
+                console.log(`PHASE    ${game.phase}`);
+                console.log(`DAY      ${game.day}`);
+                console.log(`ACTIVE   ${game.active}`);
+
+                for (const player of game.players) {
+                    console.log(`\nPLAYER ${player.id} (${player.member.displayName})`);
+                    console.log(`ALIVE  ${player.alive}`);
+                    console.log(
+                        `VOTE   ${player.vote.type} ${player.vote.voter.member.displayName} > ${player.vote.target.member.displayName}`,
+                    );
+                    console.log(
+                        `ROLE =====\n${util.inspect(player.role, {
+                            showHidden: false,
+                            depth: null,
+                            colors: true,
+                        })}\n`,
+                    );
+                }
+            }
         }, interval);
     }
 }
