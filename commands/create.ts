@@ -5,6 +5,7 @@ import { Command } from "./base";
 import { Game } from "../structs/game";
 
 import dedent from "dedent";
+import { StartEmbed } from "../embeds/start";
 
 export default class Create extends Command {
     public readonly name = "create";
@@ -65,6 +66,6 @@ export default class Create extends Command {
         const game = new Game(channel);
         client.games.set(game.id, game);
 
-        return interaction.reply("TEST START");
+        return interaction.reply({ embeds: [new StartEmbed(game)] });
     };
 }
