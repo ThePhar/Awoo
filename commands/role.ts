@@ -62,7 +62,7 @@ export default class Role extends Command {
 
             // Multiple found.
             default:
-                await interaction.followUp({
+                await interaction.reply({
                     ephemeral: true,
                     content:
                         `There are many roles with that search term, can you be more specific?\n\nFound: ` +

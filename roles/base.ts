@@ -55,11 +55,15 @@ export abstract class Role implements SerializableRole {
      * Returns an embed that contains all the needed information about a specific role.
      */
     public get embed(): Discord.MessageEmbed {
+        const name = this.plural() === this.toString() ? this.toString() : `${this} (${this.plural()})`;
+
         return new Discord.MessageEmbed()
-            .setTitle(`${this}`)
+            .setTitle(`${name}`)
             .setColor(this.team.color)
             .setDescription(this.description)
-            .setFooter("PLACEHOLDER TEXT");
+            .setFooter("PLACEHOLDER TEXT")
+            .addField("Team", this.team.name, true)
+            .addField("The Seer Sees", this.appearance, true);
     }
 
     /**
