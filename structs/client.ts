@@ -4,6 +4,8 @@ import { Command } from "../commands";
 import { Game } from "./game";
 import { Role } from "../roles";
 
+import util from "util";
+
 export class AwooClient extends Discord.Client {
     public roles: Map<string, Role> = new Map();
     public games: Map<string, Game> = new Map();
@@ -81,7 +83,7 @@ export class AwooClient extends Discord.Client {
     public printGamesInterval(interval: number) {
         setInterval(() => {
             console.clear();
-            console.log(this.games);
+            console.log(util.inspect(this.games, { showHidden: false, depth: null, colors: true }));
         }, interval);
     }
 }
