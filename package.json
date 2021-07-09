@@ -36,7 +36,6 @@
     "discord.js": "github:discordjs/discord.js",
     "dotenv": "^10.0.0",
     "immer": "^9.0.5",
-    "moment": "^2.29.1",
     "node-schedule": "^2.0.0",
     "random-item": "^4.0.1",
     "sql-template-strings": "^2.2.2"
