@@ -95,4 +95,12 @@ export abstract class Command implements Discord.ApplicationCommandData {
         console.log(`Finished commands for ${guild.name}.`);
         console.log(`DELETED: ${deleted} - UPDATED: ${updated} - CREATED: ${created}`);
     }
+
+    /**
+     * Checks if a particular guild member is an administrator.
+     * @param member The member to check.
+     */
+    public static isAdministrator(member: Discord.GuildMember): boolean {
+        return member.permissions.has("ADMINISTRATOR");
+    }
 }

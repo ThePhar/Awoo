@@ -28,6 +28,9 @@ async function main() {
     await client.login(process.env["DISCORD_BOT_TOKEN"]);
     await client.loadRoles();
     await client.loadCommands();
+
+    // TODO: Remove this!
+    client.printGamesInterval(2000);
 }
 
 void main();

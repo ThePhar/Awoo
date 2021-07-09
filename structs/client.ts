@@ -6,7 +6,7 @@ import { Role } from "../roles";
 
 export class AwooClient extends Discord.Client {
     public roles: Map<string, Role> = new Map();
-    public games: Map<bigint, Game> = new Map();
+    public games: Map<string, Game> = new Map();
 
     /**
      * Loads a list of all roles that are currently supported by this bot.
@@ -55,5 +55,33 @@ export class AwooClient extends Discord.Client {
 
         // We have finished, clear our activity.
         this.user?.setActivity();
+    }
+
+    /**
+     * Checks if this bot has the required permissions in a given channel to run a game of Werewolf.
+     * @param channel The channel to check permissions in.
+     */
+    public hasRequiredPermissions(channel: Discord.TextChannel): boolean {
+        const required: Discord.PermissionResolvable = [
+            "MANAGE_CHANNELS",
+            "EMBED_LINKS",
+            "SEND_MESSAGES",
+            "MANAGE_ROLES",
+            "READ_MESSAGE_HISTORY",
+            "ADD_REACTIONS",
+            "MANAGE_MESSAGES",
+            "USE_EXTERNAL_EMOJIS",
+        ];
+
+        const permissions = channel.permissionsFor(this.user as Discord.ClientUser);
+        return !!permissions && (permissions.has("ADMINISTRATOR") || permissions.has(required));
+    }
+
+    // TODO: Remove these debug commands.
+    public printGamesInterval(interval: number) {
+        setInterval(() => {
+            console.clear();
+            console.log(this.games);
+        }, interval);
     }
 }
