@@ -39,6 +39,8 @@ export class StartEmbed extends Discord.MessageEmbed {
         }
 
         // Show a scheduled start time, if at least 6 players are signed up.
-        // TODO: Write me.
+        if (game.schedule) {
+            this.addField("Scheduled Start", game.schedule.nextInvocation().toISOString());
+        }
     }
 }

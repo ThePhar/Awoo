@@ -9,6 +9,7 @@ import { TeamDefinition } from "../constants/teams";
 import produce from "immer";
 import fs from "fs";
 import path from "path";
+import { Game } from "../structs/game";
 
 export interface SerializableRole {
     readonly type: Roles;
@@ -116,5 +117,13 @@ export abstract class Role implements SerializableRole {
         return produce(this, (draft) => {
             draft.team = newTeam;
         });
+    }
+
+    /**
+     * Returns an embed that tells the player what they are.
+     * @param _game The current game object.
+     */
+    public personalEmbed(_game: Game): Discord.MessageEmbed {
+        return this.embed.setTitle(`You are a ${this}`);
     }
 }

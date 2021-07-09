@@ -2,6 +2,7 @@ import * as Discord from "discord.js";
 
 import { Phase } from "../constants/phase";
 import { Player, SerializablePlayer } from "./player";
+import { getNextNight } from "../util/date";
 
 import Schedule from "node-schedule";
 
@@ -22,8 +23,8 @@ export class Game implements SerializableGame {
         ["latest", undefined],
     ]);
 
-    public day = 1;
-    public phase = Phase.Night;
+    public day = 0;
+    public phase = Phase.Day;
     public active = false;
 
     public schedule?: Schedule.Job;
@@ -53,8 +54,55 @@ export class Game implements SerializableGame {
         return players;
     }
 
+    public async startNewGame(): Promise<void> {
+        this.active = true;
+
+        // TODO: Randomize roles.
+
+        // Mute all non-players.
+        const permissions: Discord.OverwriteData[] = [
+            {
+                id: this.channel.guild.roles.everyone,
+                deny: "SEND_MESSAGES",
+                type: "role",
+            },
+        ];
+
+        const failedToSend: Player[] = [];
+
+        // Add all players to this overwrite list.
+        for (const player of this.players) {
+            permissions.push({
+                id: player.member.id,
+                allow: "SEND_MESSAGES",
+                type: "member",
+            });
+
+            try {
+                await player.member.send({ embeds: [player.role.personalEmbed(this)] });
+            } catch {
+                failedToSend.push(player);
+            }
+        }
+
+        await this.channel.permissionOverwrites.set(permissions);
+
+        if (failedToSend.length > 0) {
+            await this.channel.send(
+                `I was unable to send your roles via DM, ${failedToSend
+                    .map((p) => `${p}`)
+                    .join(", ")}. To see your role, type \`/myrole\``,
+            );
+        }
+
+        // TODO: Start Night Phase 1
+    }
+
+    /**
+     * Schedule the start of the game for the next night.
+     */
     public scheduleGameStart(): void {
-        this.schedule = Schedule.scheduleJob();
+        this.schedule = Schedule.scheduleJob(getNextNight(), this.startNewGame.bind(this));
     }
 
     /**
