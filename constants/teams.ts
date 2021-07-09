@@ -9,11 +9,11 @@ export const Teams: TeamDefinitions = {
     Vampires:   { name: "Vampires",         self: false },
 }
 
+export interface TeamDefinition {
+    name: string;
+    self: boolean;
+}
+
 export interface TeamDefinitions {
-    [team: string]: {
-        // Name of the team.
-        name: string;
-        // Is this team an individual player type of deal?
-        self: boolean;
-    };
+    [team: string]: TeamDefinition;
 }

@@ -45,6 +45,8 @@ export const RoleNames: RoleNameDefinitions = {
     [Roles.Vampire]:      ["Vampire",       "Vampires"],
 };
 
+export type NameDefinition = [singular: string, plural: string];
+
 export interface RoleNameDefinitions {
-    [role: string]: [singular: string, plural: string];
+    [role: string]: NameDefinition;
 }
