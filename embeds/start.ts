@@ -8,7 +8,7 @@ export class StartEmbed extends Discord.MessageEmbed {
     public constructor(game: Game) {
         super();
 
-        this.setTitle(`Welcome to Awoo!`)
+        this.setTitle(`Welcome to Awoo, the Discord Werewolf Game!`)
             .setDescription(
                 "Werewolf is an interactive game of deception and deduction for two teams: Villagers and Werewolves. " +
                     "The villagers do not know who the werewolves are, and the werewolves are trying to remain undiscovered while " +
