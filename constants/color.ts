@@ -6,6 +6,7 @@ export enum Color {
     Orange = 0xfeb144,
     Yellow = 0xfdfd97,
     Green  = 0x9ee09e,
-    Blue   = 0x9ec1cf,
+    Blue   = 0x5370c5,
     Violet = 0xcc99c9,
+    Pink   = 0xf098a8,
 }
