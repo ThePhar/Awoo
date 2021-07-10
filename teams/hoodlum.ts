@@ -1,9 +1,9 @@
 import { Color } from "../constants/color";
-import { TeamInterface } from "../interfaces";
+import { Team } from "./base";
 
 import dedent from "dedent";
 
-export class Hoodlum implements TeamInterface {
+export class Hoodlum extends Team {
     public readonly name = "Hoodlum";
     public readonly color = Color.Yellow;
     public readonly data = {};

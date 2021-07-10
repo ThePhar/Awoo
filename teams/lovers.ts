@@ -1,9 +1,9 @@
 import { Color } from "../constants/color";
-import { TeamInterface } from "../interfaces";
+import { Team } from "./base";
 
 import dedent from "dedent";
 
-export class Lovers implements TeamInterface {
+export class Lovers extends Team {
     public readonly name = "Forbidden Lovers";
     public readonly color = Color.Pink;
     public readonly data = {};
