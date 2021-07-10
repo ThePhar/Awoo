@@ -1,6 +1,8 @@
 import { Phase } from "../constants/phase";
-import { SettingsInterface } from "./settings";
 import { ActionInterface } from "./action";
+import { SettingsInterface } from "./settings";
+import { PlayerInterface } from "./player";
+import { TeamInterface } from "./team";
 
 /**
  * This is a serializable interface for games. All derived games must include this information.
@@ -32,6 +34,12 @@ export interface GameInterface {
     /** The current phase. */
     readonly phase: Phase;
 
+    /** A list of players currently active in this game. */
+    readonly players: ReadonlyArray<PlayerInterface>;
+
     /** An interface of settings for this game. */
     readonly settings: SettingsInterface;
+
+    /** A list of currently active teams in this game. */
+    readonly teams: ReadonlyArray<TeamInterface>;
 }
