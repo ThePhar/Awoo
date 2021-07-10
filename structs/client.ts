@@ -2,27 +2,27 @@ import * as Discord from "discord.js";
 
 import { Command } from "../commands";
 import { Game } from "./game";
-import { Role } from "../roles";
+// import { Role } from "../roles";
 
 import util from "util";
 
 export class AwooClient extends Discord.Client {
-    public roles: Map<string, Role> = new Map();
+    // public roles: Map<string, Role> = new Map();
     public games: Map<string, Game> = new Map();
 
     /**
      * Loads a list of all roles that are currently supported by this bot.
      */
-    public async loadRoles(): Promise<void> {
-        // Change presence to announce we're loading roles.
-        this.user?.setActivity("Loading roles...");
-
-        // Load all of our roles.
-        this.roles = await Role.fetchRoles();
-
-        // We have finished, clear our activity.
-        this.user?.setActivity();
-    }
+    // public async loadRoles(): Promise<void> {
+    //     // Change presence to announce we're loading roles.
+    //     this.user?.setActivity("Loading roles...");
+    //
+    //     // Load all of our roles.
+    //     this.roles = await Role.fetchRoles();
+    //
+    //     // We have finished, clear our activity.
+    //     this.user?.setActivity();
+    // }
 
     /**
      * Loads commands and updates each server's command list to match the commands directory.
