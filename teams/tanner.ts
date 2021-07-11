@@ -1,5 +1,6 @@
 import { Color } from "../constants/color";
 import { Team } from "./base";
+import { GameInterface } from "../interfaces";
 
 import dedent from "dedent";
 
@@ -19,4 +20,9 @@ export class Tanner extends Team {
         
         *To win, the **Tanner** must be eliminated. They are not counted when determining how many eliminated players are required for other teams' win conditions.*
     `;
+
+    public override reachedWinCondition(game: GameInterface): boolean {
+        // Check if the team is eliminated.
+        return this.teammates(game).every((p) => !p.alive);
+    }
 }

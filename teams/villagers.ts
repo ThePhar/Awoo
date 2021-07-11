@@ -1,4 +1,6 @@
 import { Color } from "../constants/color";
+import { GameInterface } from "../interfaces";
+import { RoleType } from "../constants/role-type";
 import { Team } from "./base";
 
 import dedent from "dedent";
@@ -20,4 +22,14 @@ export class Villagers extends Team {
         
         *To win, the **Villagers** must eliminate all supernatural teams (i.e. Werewolves and Vampires) before any other team reaches their win conditions.* 
     `;
+
+    public override reachedWinCondition(game: GameInterface): boolean {
+        // Check to see if all the supernatural players are eliminated.
+        for (const player of game.players) {
+            if (player.role.type !== RoleType.Villager) return false;
+        }
+
+        // We didn't find any, so they must have won!
+        return true;
+    }
 }

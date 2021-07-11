@@ -2,6 +2,8 @@ import { Color } from "../constants/color";
 import { Team } from "./base";
 
 import dedent from "dedent";
+import { GameInterface } from "../interfaces";
+import { RoleFlags } from "../constants/role-flags";
 
 export class Cult extends Team {
     public readonly name = "Cult";
@@ -19,4 +21,11 @@ export class Cult extends Team {
         
         *To win, the **Cult** must have all remaining players as members of the cult. The Cult Leader does not need to be alive and players in the cult will not win with the Cult Leader. This win condition takes precedence over all other win conditions.*
     `;
+
+    public override reachedWinCondition(game: GameInterface): boolean {
+        // All living players must be in the cult.
+        return game.players
+            .filter((p) => p.alive)
+            .every((p) => (p.role.flags & RoleFlags.CultMember) === RoleFlags.CultMember);
+    }
 }

@@ -1,4 +1,6 @@
 import { Color } from "../constants/color";
+import { GameInterface } from "../interfaces";
+import { RoleType } from "../constants/role-type";
 import { Team } from "./base";
 
 import dedent from "dedent";
@@ -21,4 +23,19 @@ export class LoneWolf extends Team {
         
         *To win, the **Lone Wolf** must eliminate at least all but one player before anyone else reaches their win condition. If the Werewolves win, you do not win with them, so be sure to eliminate them before that happens.*
     `;
+
+    public override reachedWinCondition(game: GameInterface): boolean {
+        // Check if the team is eliminated.
+        if (!this.teammates(game).every((p) => p.alive)) return false;
+
+        // This will count Lone Wolf as well.
+        const aliveWerewolves = game.players.filter((p) => p.alive && p.role.type === RoleType.Werewolf).length;
+
+        // If more than one werewolf is alive, then we aren't done.
+        if (aliveWerewolves > 1) return false;
+
+        // Lone wolf must be the last player alive or have only one other.
+        const alive = game.players.filter((p) => p.alive && p.role.team.name !== "Tanner").length;
+        return 2 >= alive;
+    }
 }

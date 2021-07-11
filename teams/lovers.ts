@@ -1,4 +1,5 @@
 import { Color } from "../constants/color";
+import { GameInterface } from "../interfaces";
 import { Team } from "./base";
 
 import dedent from "dedent";
@@ -19,4 +20,13 @@ export class Lovers extends Team {
         
         *To win, the **Forbidden Lovers** must eliminate all other players before any other team reaches their win condition.*
     `;
+
+    public override reachedWinCondition(game: GameInterface): boolean {
+        // The team must still be all alive.
+        if (!this.teammates(game).every((p) => p.alive)) return false;
+
+        // Lovers must be the last ones alive.
+        const alive = game.players.filter((p) => p.alive && p.role.team.name !== "Tanner").length;
+        return 2 === alive;
+    }
 }

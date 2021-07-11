@@ -1,4 +1,6 @@
 import { Color } from "../constants/color";
+import { GameInterface } from "../interfaces";
+import { RoleType } from "../constants/role-type";
 import { Team } from "./base";
 
 import dedent from "dedent";
@@ -20,4 +22,20 @@ export class Vampires extends Team {
         
         *To win, the **Vampires** must eliminate all other supernatural teams (i.e. Werewolves, if any) then eliminate villagers until their team outnumbers them.*
     `;
+
+    public override reachedWinCondition(game: GameInterface): boolean {
+        const aliveVampires = this.teammates(game).filter((p) => p.alive && p.role.type === RoleType.Vampire).length;
+
+        // At least one vampire must be alive.
+        if (aliveVampires === 0) return false;
+
+        // Ensure that all werewolves are eliminated.
+        for (const player of game.players) {
+            if (player.role.type === RoleType.Werewolf && player.alive) return false;
+        }
+
+        // Vampires must be at least double the size of living players. Also ignore tanners.
+        const alive = game.players.filter((p) => p.alive && p.role.team.name !== "Tanner").length;
+        return aliveVampires * 2 >= alive;
+    }
 }

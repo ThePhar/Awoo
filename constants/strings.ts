@@ -1,3 +1,5 @@
-export const Constants = {
-    Version: "0.11.0",
+import PackageJSON from "../package.json";
+
+export const Strings = {
+    version: PackageJSON.version,
 };

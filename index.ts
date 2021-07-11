@@ -2,8 +2,16 @@ import * as Discord from "discord.js";
 import * as Env from "dotenv";
 
 import { AwooClient } from "./structs/client";
-import { TeamInterface } from "./interfaces";
+import { Team } from "./teams/base";
+import { Villagers } from "./teams/villagers";
+import { Werewolves } from "./teams/werewolves";
+import { Vampires } from "./teams/vampires";
+import { Tanner } from "./teams/tanner";
+import { Cult } from "./teams/cult";
 import { Hoodlum } from "./teams/hoodlum";
+import { LoneWolf } from "./teams/lone-wolf";
+import { Lovers } from "./teams/lovers";
+import { Spectators } from "./teams/spectators";
 
 /**
  * Main entry point for this application.
@@ -33,21 +41,20 @@ async function main() {
 
     const channel = (await client.channels.fetch("785349255958495262")) as Discord.TextChannel;
 
-    const teams: TeamInterface[] = [new Hoodlum()];
-
-    const makeEmbed = (team: TeamInterface) => {
-        return new Discord.MessageEmbed()
-            .setTitle(`The ${team.name}`)
-            .setDescription(team.description)
-            .setThumbnail(team.iconURL)
-            .setColor(team.color)
-            .setFooter("Awoo v0.12.0")
-            .addField("Solo Team?", team.solo ? "Yes" : "No", true)
-            .addField("Objective Summary", team.objective, true);
-    };
+    const teams: Team[] = [
+        new Villagers(),
+        new Werewolves(),
+        new Vampires(),
+        new Tanner(),
+        new Cult(),
+        new Hoodlum(),
+        new LoneWolf(),
+        new Lovers(),
+        new Spectators(),
+    ];
 
     for (const team of teams) {
-        await channel?.send({ embeds: [makeEmbed(team)] });
+        await channel?.send({ embeds: [team.embed()] });
     }
 
     // TODO: Remove this!

@@ -1,5 +1,5 @@
 // prettier-ignore
-export enum Appearance {
+export enum RoleType {
     Villager = "Villager",
     Werewolf = "Werewolf",
     Vampire  = "Vampire",

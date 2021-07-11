@@ -1,7 +1,7 @@
 import * as Discord from "discord.js";
 
 import { Color } from "../constants/color";
-import { Constants } from "../constants/strings";
+import { Strings } from "../constants/strings";
 import { Game } from "../structs/game";
 
 export class StartEmbed extends Discord.MessageEmbed {
@@ -23,10 +23,10 @@ export class StartEmbed extends Discord.MessageEmbed {
                     "continue, but that is the gist of it.\n\n" +
                     "If you're ready to play, you can use `/join` to join the next game or start typing `/` to see the available commands " +
                     "from this bot.\n\n" +
-                    `*This is v${Constants.Version} of Phar's Development build, so expect many issues.*`,
+                    `*This is v${Strings.Version} of Phar's Development build, so expect many issues.*`,
             )
             .setColor(Color.White)
-            .setFooter(`v${Constants.Version}`);
+            .setFooter(`v${Strings.Version}`);
 
         const plCount = game.players.length;
 
